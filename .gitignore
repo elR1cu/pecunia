@@ -1,0 +1,37 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
+
+# Build outputs
+target/
+dist/
+build/
+out/
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Generated sources (regenerated on each build)
+**/generated-sources/
+**/generated/
+
+# Local certs
+*.pem
+*.key
+*.crt
+mkcert-CAROOT/
