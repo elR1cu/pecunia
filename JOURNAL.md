@@ -38,6 +38,37 @@ Each entry follows this structure:
 
 ## Entries
 
+---
+
+### 2026-06-03 — Session 02
+
+**Block / Task**: Block 1 — Secured Skeleton, steps 4–5/7 (Keycloak realm import + Spring Security wiring)
+
+**Done**:
+- Verified the dev stack, then bumped Postgres 17→18, Keycloak 26.1→26.6, Redis 7→8 (with Postgres 18 volume layout fix and `KC_BOOTSTRAP_ADMIN_*` rename).
+- Added Flyway, JPA, Postgres, Spring Security, OAuth2 Client and `spring-session-data-redis` to `apps/api/pom.xml`.
+- Wrote `application.yml`: datasource, Flyway, Redis session, OAuth2 client registration against the `pecunia` realm via OIDC discovery.
+- Sourced the BFF client secret strictly from `${PECUNIA_BFF_CLIENT_SECRET}` (no fallback); loaded from `apps/api/.env` via `spring.config.import`; `.env.example` documents the variable.
+- Replaced the plaintext `testuser` password in `pecunia-realm.json` with the Argon2id hash actually produced by Keycloak 26.6.
+- Committed everything as `feat(api): scaffold OIDC login via Keycloak realm and BFF config`.
+
+**Learned**:
+- `spring.session.store-type` was removed in Spring Boot 3.0 (M4); classpath detection now picks the store.
+- Keycloak intentionally does not substitute env vars in realm import (issue #20199, "not planned").
+- Keycloak 26.6 uses Argon2id (type `id`, v1.3) as the default password hash and accepts the same format on import.
+- Postgres 18 changed its Docker volume layout: mount at `/var/lib/postgresql` rather than `/var/lib/postgresql/data`.
+
+**Next**:
+- Write `V1__init.sql` for Flyway.
+- Implement `SecurityConfig`/`SecurityFilterChain` (BFF login, public health probes, CSRF cookie, OIDC logout).
+- Boot the backend end-to-end against the docker-compose stack and walk through the login flow in a browser.
+
+**Notes**:
+- Account console "Something went wrong" on `/realms/pecunia/account` is a known quirk of minimal realm imports, not a blocker for the OAuth2 flow.
+- `apps/api/.env` is gitignored; document the IntelliJ Run Configuration env-var setup at some point.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-03-session-02.md).
+
 ### 2026-06-01 — Session 01
 
 **Block / Task**: Block 1 — Secured Skeleton, step 1/7 (backend scaffolding)
