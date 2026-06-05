@@ -40,6 +40,35 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-05 — Session 03
+
+**Block / Task**: Block 1 — Secured Skeleton, step 5/7 (Flyway baseline + dev workflow tooling)
+
+**Done**:
+- Wrote `V1__init.sql`, a portable baseline migration pinning the database timezone to UTC via `DO $$ … $$` + `current_database()`.
+- Added `spring-boot-docker-compose` (`start-only` lifecycle, `optional: true`) so launching `PecuniaApplication` auto-starts Postgres, Keycloak, and Redis. Documented in ADR-0020.
+- Added `spring-boot-devtools` for classpath-change restart, with a note on the two IntelliJ settings required to make it fire.
+- Created `docs/dev-setup.md` (full local-dev guide) and updated `README.md` + `apps/api/.env.example` to point at it.
+- Created ADR-0021 documenting the two-layer actuator policy (HTTP exposure allowlist + Spring Security tiered access) and updated `architecture.md` (Observability section, PostgreSQL 18 fix, restructure of the BFF H3 subsections under `## Authentication and Authorization`).
+- Diagnosed Flyway silently not running (no `flyway_schema_history` table) and fixed it by replacing the direct `flyway-core` dep with `spring-boot-starter-flyway` (commit `706a940`).
+
+**Learned**:
+- Spring service connections are one abstraction shared by `spring-boot-docker-compose` and Testcontainers' `@ServiceConnection`.
+- Keycloak has no built-in `ConnectionDetails` factory in Spring Boot 4 → its OIDC config stays driven by `application.yml`, only Postgres/Redis are silently overridden.
+- DevTools requires a classpath change to fire, and IntelliJ does not recompile by default while an app is running.
+- Spring Boot 4 split auto-configurations out of `spring-boot-autoconfigure` into per-feature modules (`spring-boot-flyway`, `spring-boot-data-jpa`, etc.). Declaring only the third-party lib gives the runtime code but no autoconfig — and no error log either. Rule of thumb: prefer `spring-boot-starter-<feature>` over the raw dep.
+
+**Next**:
+- Toggle the two IntelliJ DevTools settings and verify hot reload.
+- Write `SecurityConfig` / `SecurityFilterChain` (target shape now specified by ADR-0021 + Session 02 BFF concept set).
+- Wire `/actuator/info` to expose build-info metadata (the Maven goal is already active).
+
+**Notes**:
+- Repo root must be the working directory for both CLI and IntelliJ launches (both `apps/api/.env` and the compose file are referenced by relative paths).
+- The Flyway gotcha shipped in the initial Session 03 commits — the bug was inert because there are no entities yet under `ddl-auto: validate`. Worth checking the same pattern for any future Spring-integrated tech I add (Cache, Mail, Batch, Quartz, etc.).
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-05-session-03.md).
+
 ### 2026-06-03 — Session 02
 
 **Block / Task**: Block 1 — Secured Skeleton, steps 4–5/7 (Keycloak realm import + Spring Security wiring)
