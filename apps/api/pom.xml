@@ -79,6 +79,20 @@
             <artifactId>spring-session-data-redis</artifactId>
         </dependency>
 
+        <!-- Dev-only: starts docker-compose services and wires service connections -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-docker-compose</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Dev-only: classpath-change restart and LiveReload server -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

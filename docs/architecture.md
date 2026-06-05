@@ -172,6 +172,48 @@ reaching into another context's internals.
 Pecunia uses the **Backend-for-Frontend (BFF) pattern** with Keycloak as the
 OIDC provider.
 
+### Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User Browser
+    participant A as Angular SPA
+    participant B as Spring Boot BFF
+    participant K as Keycloak
+    participant R as Redis
+
+    U->>A: Open app
+    A->>B: GET /api/me (no session)
+    B-->>A: 401 Unauthorized
+    A->>B: Redirect to /oauth2/authorization/keycloak
+    B->>K: Initiate OIDC Authorization Code + PKCE
+    K-->>U: Login page
+    U->>K: Credentials
+    K->>B: Authorization code (callback)
+    B->>K: Exchange code for tokens
+    K-->>B: Access token, refresh token, ID token
+    B->>R: Store session with tokens (server-side)
+    B-->>A: Set HttpOnly session cookie
+    A->>B: GET /api/me (with cookie)
+    B->>R: Retrieve session
+    B-->>A: User info
+```
+
+### Why BFF instead of SPA + JWT
+
+- **Tokens never reach the browser**: no risk of XSS exfiltrating access tokens.
+- **CSRF protection** is straightforward with session cookies.
+- **Session revocation is immediate** server-side (no waiting for JWT
+  expiration).
+- **Recommended by OWASP** for SPAs accessing sensitive APIs.
+
+### Authorization model
+
+- All endpoints require authentication by default.
+- `@PreAuthorize` on use case methods enforces ownership checks
+  (a user accesses only their own data).
+- Roles are minimal in the MVP: `USER` only.
+
 ## Multi-tenancy and User Isolation
 
 Pecunia is designed as a **multi-tenant single-tenant-MVP application**:
@@ -232,48 +274,6 @@ A non-negotiable integration test exists from Block 2 onwards:
 
 This test runs on every CI build and is the canary for multi-tenancy
 regressions.
-
-### Flow
-
-```mermaid
-sequenceDiagram
-    participant U as User Browser
-    participant A as Angular SPA
-    participant B as Spring Boot BFF
-    participant K as Keycloak
-    participant R as Redis
-
-    U->>A: Open app
-    A->>B: GET /api/me (no session)
-    B-->>A: 401 Unauthorized
-    A->>B: Redirect to /oauth2/authorization/keycloak
-    B->>K: Initiate OIDC Authorization Code + PKCE
-    K-->>U: Login page
-    U->>K: Credentials
-    K->>B: Authorization code (callback)
-    B->>K: Exchange code for tokens
-    K-->>B: Access token, refresh token, ID token
-    B->>R: Store session with tokens (server-side)
-    B-->>A: Set HttpOnly session cookie
-    A->>B: GET /api/me (with cookie)
-    B->>R: Retrieve session
-    B-->>A: User info
-```
-
-### Why BFF instead of SPA + JWT
-
-- **Tokens never reach the browser**: no risk of XSS exfiltrating access tokens.
-- **CSRF protection** is straightforward with session cookies.
-- **Session revocation is immediate** server-side (no waiting for JWT
-  expiration).
-- **Recommended by OWASP** for SPAs accessing sensitive APIs.
-
-### Authorization model
-
-- All endpoints require authentication by default.
-- `@PreAuthorize` on use case methods enforces ownership checks
-  (a user accesses only their own data).
-- Roles are minimal in the MVP: `USER` only.
 
 ## Eventing
 
@@ -337,7 +337,7 @@ All events are `record` types implementing a marker `DomainEvent` interface.
 
 ### PostgreSQL
 
-PostgreSQL 17 is the single primary datastore for Pecunia.
+PostgreSQL 18 is the single primary datastore for Pecunia.
 
 - **Schema management**: Flyway migrations in `apps/api/src/main/resources/db/migration`.
 - **IDs**: UUIDs generated application-side (UUIDv7 where applicable for
@@ -431,10 +431,15 @@ separate codebase.
 
 ### Local development
 
-- `docker compose up` starts PostgreSQL, Keycloak, and Redis.
-- Backend runs natively from IntelliJ (with Spring DevTools for hot reload).
+- Starting `PecuniaApplication` (from IntelliJ or `mvn -pl apps/api spring-boot:run`
+  at the repository root) auto-starts PostgreSQL, Keycloak, and Redis through
+  `spring-boot-docker-compose` —
+  see [ADR-0020](adr/0020-spring-boot-docker-compose-for-local-dev.md).
+- **Spring Boot DevTools** triggers an automatic application restart on
+  classpath change.
 - Frontend runs natively from VS Code (`ng serve` with hot reload).
-- TLS is provided locally via mkcert-generated certificates.
+- TLS is provided locally via mkcert-generated certificates (planned).
+- See [`docs/dev-setup.md`](dev-setup.md) for the detailed setup guide.
 
 ### Production (target)
 
@@ -457,13 +462,35 @@ Horizontal Pod Autoscaling, secrets management, and observability with
 Prometheus and Grafana. See [`docs/adr/0010-k3d-instead-of-aws.md`](adr/0010-k3d-instead-of-aws.md)
 for the rationale.
 
-## Observability (post-MVP)
+## Observability
 
-The MVP exposes Spring Boot Actuator endpoints with health and metrics
-information. Post-MVP, full observability is added:
+### MVP
+
+The MVP exposes a minimal set of Spring Boot Actuator endpoints designed
+around two priorities: zero secret leak, and Kubernetes-style probe
+readiness.
+
+- `/actuator/health` — overall application status. Anonymous callers see
+  only `{"status":"UP"}`; authenticated callers see component details
+  (datasource, Redis, …) thanks to `show-details: when-authorized`.
+- `/actuator/health/liveness` and `/actuator/health/readiness` — boolean
+  probes for liveness and readiness, designed for Kubernetes and reverse-
+  proxy health checks. They never include component details.
+- `/actuator/info` — build metadata (version, commit, build time), wired
+  via the `build-info` Maven goal.
+
+The exposure list, the `show-details` posture, and the upcoming
+`SecurityFilterChain` policy (which endpoints are `permitAll` vs
+`authenticated`) are documented in
+[ADR-0021](adr/0021-actuator-endpoints-and-security.md).
+
+### Post-MVP
+
+Full observability is added in Block 9:
 
 - **Metrics**: Micrometer exporting to Prometheus.
-- **Logs**: structured JSON logs with correlation IDs.
+- **Logs**: structured JSON logs with correlation IDs (see
+  [ADR-0018](adr/0018-logging-strategy.md)).
 - **Traces**: OpenTelemetry, exported to Tempo or Jaeger.
 - **Dashboards**: Grafana with custom dashboards for application metrics.
 

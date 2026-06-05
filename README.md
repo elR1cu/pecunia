@@ -59,7 +59,7 @@ _TODO: screenshots will be added at the end of Block 4 (dashboard + transactions
   pattern matching, virtual threads)
 - **Spring Boot 4** with Spring Security 7 (OAuth2 Client / BFF pattern)
 - **Spring Data JPA** with Hibernate
-- **PostgreSQL 17** as the primary datastore
+- **PostgreSQL 18** as the primary datastore
 - **Redis** for distributed session storage (BFF pattern)
 - **Flyway** for database migrations
 - **MapStruct** for type-safe object mapping
@@ -172,29 +172,30 @@ pecunia/
 
 ### Local development
 
-_TODO: this section will be filled in at the end of Block 1 (skeleton ready)._
-
-The intended workflow:
+The backend uses `spring-boot-docker-compose` to start PostgreSQL, Keycloak
+and Redis automatically — no manual `docker compose up` is required.
 
 ```bash
-# 1. Clone the repo
+# 1. Clone
 git clone https://github.com/elR1cu/pecunia.git
 cd pecunia
 
-# 2. Start infrastructure (PostgreSQL, Keycloak, Redis)
-docker compose -f deploy/docker-compose/docker-compose.dev.yml up -d
+# 2. Copy the local environment file
+cp apps/api/.env.example apps/api/.env
 
-# 3. Run the backend (from IntelliJ or CLI)
-cd apps/api
-./mvnw spring-boot:run
+# 3. Start the backend (Docker Desktop must be running)
+mvn -pl apps/api spring-boot:run
 
-# 4. Run the frontend (from VS Code or CLI)
+# 4. (Once Block 1 step 6 is delivered) start the frontend
 cd apps/frontend
 npm install
 npm start
-
-# 5. Open https://localhost:4200
 ```
+
+Always run from the **repository root** so the relative paths in
+`application.yml` resolve correctly. See
+[`docs/dev-setup.md`](docs/dev-setup.md) for the detailed guide
+(IntelliJ Run Configuration, sanity checks, troubleshooting).
 
 ### Running tests
 
@@ -261,6 +262,7 @@ This project demonstrates production-grade engineering practices:
 - [Architecture](docs/architecture.md) — technical design and trade-offs
 - [Domain Model](docs/domain-model.md) — business concepts and entities
 - [Roadmap](docs/roadmap.md) — block-by-block plan
+- [Local Development Setup](docs/dev-setup.md) — running the backend on your machine
 - [Learning Plan](docs/learning-plan.md) — resources used during the project
 - [UI Mockups](docs/ui-mockups.md) — wireframes and Figma references
 - [ADRs](docs/adr/) — Architecture Decision Records
