@@ -184,7 +184,7 @@ cd pecunia
 cp apps/api/.env.example apps/api/.env
 
 # 3. Start the backend (Docker Desktop must be running)
-mvn -pl apps/api spring-boot:run
+mvn -f apps/api/pom.xml spring-boot:run
 
 # 4. (Once Block 1 step 6 is delivered) start the frontend
 cd apps/frontend

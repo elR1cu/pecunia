@@ -431,7 +431,7 @@ separate codebase.
 
 ### Local development
 
-- Starting `PecuniaApplication` (from IntelliJ or `mvn -pl apps/api spring-boot:run`
+- Starting `PecuniaApplication` (from IntelliJ or `mvn -f apps/api/pom.xml spring-boot:run`
   at the repository root) auto-starts PostgreSQL, Keycloak, and Redis through
   `spring-boot-docker-compose` —
   see [ADR-0020](adr/0020-spring-boot-docker-compose-for-local-dev.md).

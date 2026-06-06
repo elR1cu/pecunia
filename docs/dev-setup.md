@@ -47,7 +47,7 @@ against the process working directory.
 
 ```bash
 # From the repo root:
-mvn -pl apps/api spring-boot:run
+mvn -f apps/api/pom.xml spring-boot:run
 ```
 
 ### From IntelliJ IDEA
@@ -144,7 +144,7 @@ open http://localhost:9090/realms/pecunia/.well-known/openid-configuration
 ## Day-to-Day Workflow
 
 - **Start the stack + app**: run `PecuniaApplication` from IntelliJ or
-  `mvn -pl apps/api spring-boot:run` from the repo root. The stack auto-starts
+  `mvn -f apps/api/pom.xml spring-boot:run` from the repo root. The stack auto-starts
   if not already running.
 - **Restart the app only**: kill the JVM and re-run. The Docker stack is
   not touched.
