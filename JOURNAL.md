@@ -40,6 +40,33 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-06 — Session 04
+
+**Block / Task**: Block 1 — Secured Skeleton, step 6/7 (`SecurityFilterChain` + ergonomie de build)
+
+**Done**:
+- Wrote `SecurityConfig` with the BFF chain: typed actuator allowlist (`EndpointRequest.to(HealthEndpoint.class, InfoEndpoint.class)`), OAuth2 login against Keycloak, OIDC RP-initiated logout, `SessionCreationPolicy.IF_REQUIRED`, and CSRF.
+- Built CSRF manually first (`CookieCsrfTokenRepository` + plain handler + custom `CsrfCookieFilter`), then replaced the three pieces with `csrf(CsrfConfigurer::spa)` — Spring Security 6.5+ shortcut. Wrote ADR-0022 to capture the decision and the BREACH analysis behind the plain-handler choice.
+- Wired Spotless with Palantir Java Format (Java + conservative `sortPom`). First attempt failed on Java 25 internals — bumped `palantir-java-format` to 2.91.0 (latest Maven Central). Picked `spotless-maven-plugin` 3.6.0 over 2.46.1 because Spotless docs flag the 2.x line as "JRE 11 only"; XML config unchanged. `check` bound to `verify`; `apply` manual.
+- Diagnosed `mvn -pl apps/api …` as silently broken (no root pom by design). Replaced all 5 doc occurrences with `mvn -f apps/api/pom.xml …`.
+
+**Learned**:
+- `csrf.spa()` (Spring Security 6.5+) bundles `CookieCsrfTokenRepository.withHttpOnlyFalse()` + plain `CsrfTokenRequestAttributeHandler` + a built-in materialization filter. Replaces the entire historical three-part pattern.
+- Spring Security 6+ uses a `DeferredCsrfToken`: the `XSRF-TOKEN` cookie is only written when something calls `CsrfToken#getToken()` during the request. Plain GETs never materialize it without help.
+- BREACH attack only applies when the secret is rendered in a compressible response body — not the case in a BFF/SPA where the token lives in a cookie header. The Xor handler defends against an attack our architecture closes structurally.
+- Palantir Java Format depends on internal JDK APIs (`com.sun.tools.javac.*`); a new JDK major can break older Palantir releases — pin and bump deliberately.
+- `mvn -pl <module>` requires a reactor parent pom. No root pom = use `mvn -f apps/api/pom.xml …`.
+
+**Next**:
+- Commit the session work — likely split as (a) `feat(api): SecurityFilterChain`, (b) `build(api): wire Spotless`, (c) `docs: fix mvn invocation form`.
+- Wire `BuildInfoContributor` so `/actuator/info` returns build metadata (pending since Session 03).
+- Write the applicative `GET /me` controller to formally satisfy Block 1's exit criterion.
+
+**Notes**:
+- Minor typo in `SecurityConfig.java` line 30 comment ("what spa() bundle" → "bundles"). Cosmetic.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-06-session-04.md).
+
 ### 2026-06-05 — Session 03
 
 **Block / Task**: Block 1 — Secured Skeleton, step 5/7 (Flyway baseline + dev workflow tooling)
