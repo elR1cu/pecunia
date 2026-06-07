@@ -40,6 +40,51 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-07 — Session 05
+
+**Block / Task**: Block 1 — Secured Skeleton, step 7/7 (OpenAPI codegen + Springdoc pipeline)
+
+**Done**:
+- Verified Session 04 TODOs: `/actuator/info` returns the full `build` block, `SecurityConfig` typo fixed.
+- Settled the design choices for `GET /me` (schema `CurrentUser`, 4 required fields, `id` = Keycloak `sub` UUID v4 for MVP, refactor to   
+  internal UserId v7 in Block 2).
+- Research on current state of `openapi-generator-maven-plugin` 7.22.0 and Springdoc 3.0.3: confirmed `useSpringBoot4` / `useJackson3`,   
+  confirmed records are NOT natively supported by the `spring` generator (issue #10490 open since 2021), MapStruct 1.6 supports both POJOs  
+  and records via canonical constructor.
+- Wired `openapi-generator-maven-plugin` (one `<execution>` per tag, scoped to `Identity`) + `maven-resources-plugin` (copies             
+  `contracts/openapi.yaml` → `target/classes/static/`) + `springdoc-openapi-starter-webmvc-ui:3.0.3` dependency in `apps/api/pom.xml`.      
+  Springdoc configured for static-spec serving (`api-docs.enabled: false`, `documentationProvider: none`).
+- Created `contracts/openapi.yaml` (3.1.0) with the `GET /me` operation, `CurrentUser` schema, and `bffSession` security scheme (cookie   
+  SESSION).
+- Established the dev-profile convention: `application-dev.yml` enables Swagger UI, `spring.profiles.active=dev` documented in            
+  `.env.example`.
+- `mvn clean compile`: BUILD SUCCESS after adding `skipDefaultInterface: true` (fix for `ApiUtil` symbol-not-found when supporting files  
+  are disabled).
+
+**Learned**:
+- The `spring` generator has no record option; only the Chrimle preview templates produce them. Stable default stays POJOs.
+- `useSpringBoot4` + `useJackson3` are the right flags for Boot 4; enabling `useSpringBoot4` also enables `useJakartaEe`.
+- `skipDefaultInterface: true` strips the default mock method bodies that reference `ApiUtil` — required combo with                       
+  `generateSupportingFiles: false`.
+- BFF pattern: `DelegatingAuthenticationEntryPoint` discriminates by `Accept` header to return 401 for AJAX and 302 for browser           
+  navigation. Without it, a `fetch('/me')` while unauthenticated receives unusable Keycloak HTML.
+- Java override constraint: you cannot add `@AuthenticationPrincipal OidcUser` as a parameter to an override of a generated interface     
+  method — must use `SecurityContextHolder` to retrieve the principal.
+- Spring Boot 4 needs Springdoc 3.x (currently 3.0.3); Springdoc 2.x targets Boot 3.
+
+**Next**:
+- Write `MeController` (`com.pecunia.identity.api`) implementing `IdentityApi`.
+- Add `DelegatingAuthenticationEntryPoint` to the main `SecurityFilterChain` to align runtime behavior with the spec's documented 401.
+- Write `SwaggerSecurityConfig` (`@Profile("dev")`), activate the dev profile in the local `.env`, restart, validate end-to-end (browser +
+  Swagger UI).
+
+**Notes**:
+- ADR-0023 candidate to capture the OpenAPI pipeline decisions (B/C/D/E1/F1).
+- OpenAPI 3.1 "beta" warning from the codegen is non-blocking; downgrade to 3.0.3 possible if it becomes noisy.
+- The running app must be restarted to pick up the new dependencies and the static spec copy.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-07-session-05.md).
+
 ### 2026-06-06 — Session 04
 
 **Block / Task**: Block 1 — Secured Skeleton, step 6/7 (`SecurityFilterChain` + ergonomie de build)
