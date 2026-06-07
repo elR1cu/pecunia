@@ -1,0 +1,66 @@
+openapi: 3.1.0
+
+info:
+  title: Pecunia API
+  version: 0.1.0
+  description: |
+    Personal budget management API. Single source of truth for the
+    backend Spring controller interfaces and the frontend TypeScript
+    Angular client.
+
+tags:
+  - name: Identity
+    description: Authenticated user identity.
+
+paths:
+  /me:
+    get:
+      tags: [Identity]
+      operationId: getCurrentUser
+      summary: Return the currently authenticated user.
+      security:
+        - bffSession: []
+      responses:
+        '200':
+          description: The authenticated user's profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+        '401':
+          description: No active session; client must authenticate via /oauth2/authorization/pecunia.
+
+components:
+  securitySchemes:
+    bffSession:
+      type: apiKey
+      in: cookie
+      name: SESSION
+      description: |
+        HttpOnly session cookie set by the BFF after a successful OIDC
+        login against Keycloak. Sent automatically by the browser on
+        same-origin requests.
+
+  schemas:
+    CurrentUser:
+      type: object
+      description: Profile of the currently authenticated user.
+      required: [id, username, displayName, email]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: |
+            Stable identifier. Currently the Keycloak `sub` claim;
+            will become the internal UserId once the User domain entity
+            is introduced in Block 2.
+        username:
+          type: string
+          example: testuser
+        displayName:
+          type: string
+          example: Test User
+        email:
+          type: string
+          format: email
+          example: testuser@pecunia.local

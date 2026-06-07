@@ -66,3 +66,15 @@ management:
       # Anonymous callers see only the overall status; authenticated callers
       # also see component details (datasource, Redis, ...).
       show-details: when-authorized
+
+springdoc:
+  # Schema-first: contracts/openapi.yaml is the source of truth.
+  # Runtime introspection (/v3/api-docs) is disabled to prevent silent drift.
+  api-docs:
+    enabled: false
+  swagger-ui:
+    # Disabled by default; the dev profile re-enables it.
+    enabled: false
+    # Swagger UI fetches the spec from this URL instead of the default /v3/api-docs.
+    url: /openapi.yaml
+    disable-swagger-default-url: true
