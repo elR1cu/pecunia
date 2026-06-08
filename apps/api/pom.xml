@@ -16,7 +16,9 @@
 
         <spring-boot.version>4.0.6</spring-boot.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+        <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
         <maven-resources-plugin.version>3.5.0</maven-resources-plugin.version>
+        <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
         <spotless-maven-plugin.version>3.6.0</spotless-maven-plugin.version>
         <palantir-java-format.version>2.91.0</palantir-java-format.version>
         <openapi-generator-maven-plugin.version>7.22.0</openapi-generator-maven-plugin.version>
@@ -211,6 +213,29 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>${maven-dependency-plugin.version}</version>
+                <executions>
+                    <!-- Exposes ${org.mockito:mockito-core:jar} so Surefire can load Mockito as a Java agent
+                         (avoids the self-attach warning that will be a hard failure in a future JDK). -->
+                    <execution>
+                        <id>resolve-dependency-paths</id>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

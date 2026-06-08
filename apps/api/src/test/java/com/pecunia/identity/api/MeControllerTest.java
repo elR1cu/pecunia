@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(MeController.class)
@@ -26,6 +28,13 @@ class MeControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    /**
+     * Prevents OAuth2ClientAutoConfiguration from building a real ClientRegistrationRepository
+     * (which would trigger an OIDC discovery HTTP call to Keycloak). Keeps the slice hermetic.
+     */
+    @MockitoBean
+    private ClientRegistrationRepository clientRegistrationRepository;
 
     @Test
     @DisplayName("returns the current user profile when authenticated")
