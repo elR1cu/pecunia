@@ -40,6 +40,44 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-08 — Session 06
+
+**Block / Task**: Block 1 — Secured Skeleton, step 7/7 (MeController, MapStruct pipeline, first slice tests)
+
+**Done**:
+- Wrote `MeController` with pattern matching + `throw IllegalStateException` for principal extraction; converged on assertive (not defensive) coding through several review iterations, with IntelliJ NPE warnings resolved cleanly by Java 25 pattern matching.
+- Introduced MapStruct as the project's mapper convention (Option A): pom wiring (`1.6.3`), `CurrentUserMapper` interface with `componentModel = "spring"` and `ReportingPolicy.ERROR`, method named `toDto` (establishing the `toDto` / `toEntity` / `toDomain` convention), `expression = "java(...)"` escape hatch for the multi-source             
+  `displayName`.
+- Added Lombok to the pom (selective per ADR-0013) with annotation processor ordered before MapStruct; `@RequiredArgsConstructor` on `MeController`.
+- Enriched the OpenAPI contract: added `emailVerified` (required boolean, fallback to `false` in mapper) and `description` on all `CurrentUser` fields.
+- First slice test `MeControllerTest`: `@WebMvcTest` + `@Import({SecurityConfig.class, CurrentUserMapperImpl.class})` + `oidcLogin()`, 4 scenarios covering the happy path and the two mapper fallbacks. `@DisplayName` for human-readable labels; constants extracted to `SUBJECT_UUID` and `StandardClaimNames.*`.
+
+**Post-session follow-up**:
+- Silenced the Mockito self-attach warning: wired `maven-surefire-plugin` with `-javaagent:${org.mockito:mockito-core:jar}` (path exposed by the `maven-dependency-plugin` `properties` goal). Future-proofs against the JDK change that will forbid dynamic agent attach.
+- Re-added `@MockitoBean ClientRegistrationRepository` to `MeControllerTest` to short-circuit `OAuth2ClientAutoConfiguration`'s OIDC discovery against Keycloak at context load. Reverses the in-session "unnecessary mock removed" call — it's needed for CI safety and slice hermeticity.
+- Unchecked **Settings → Build, Execution, Deployment → Build Tools → Maven → Runner → "Delegate IDE build/run actions to Maven"** in IntelliJ. IntelliJ now uses its native incremental compiler, which lets `automake` regenerate `target/classes` while the app runs — the trigger DevTools watches for. Hot reload from Session 03's TODO finally works. Side effect: `spring-boot:build-info` no longer runs on every IDE build, so `/actuator/info` may serve stale `time`/`version` until the next `mvn` invocation. Acceptable in dev.
+
+**Learned**:
+- Spring Boot 4 split test slice autoconfigs the same way it split runtime autoconfigs: `@WebMvcTest` moved to `org.springframework.boot.webmvc.test.autoconfigure`, pulled via `spring-boot-starter-webmvc-test`. Same pattern for `spring-boot-starter-security-test`.
+- `Authentication` wraps the `OidcUser`; the principal lives in `.getPrincipal()`. Casting the wrapper directly was the original bug.
+- Assertive coding (`throw IllegalStateException`) is the right shape for invariants the `SecurityFilterChain` already guarantees — defensive `Optional` chains hide bugs.
+- IntelliJ's flow analysis propagates non-null through `Objects.requireNonNull` but not always through a cast; pattern matching with `instanceof` is recognized natively and gives the warning-free path.
+- `Optional.orElse(...)` is eager, `.orElseGet(...)` is lazy — choose by whether the fallback is a constant or a computation.
+- MapStruct doesn't elegantly handle multi-source field computation; `expression = "java(...)"` is the least-ugly escape hatch. The generated impl uses setters, not the required-args constructor — implication for Jakarta Validation.
+- `oidcLogin()` builds an `OAuth2AuthenticationToken` with `DefaultOidcUser` from configured claims; bypasses the actual OAuth2 flow but populates the `SecurityContext`. `StandardClaimNames` exposes canonical OIDC claim constants — use them instead of string literals.
+
+**Next**:
+- Add `DelegatingAuthenticationEntryPoint` to `SecurityConfig` (`Accept: application/json` → 401, fallback → 302). Update the 4th slice test accordingly.
+- Write `SwaggerSecurityConfig` (`@Profile("dev")`, second `SecurityFilterChain`, `@Order(0)`, `permitAll` on Swagger paths).
+- End-to-end validation: activate dev profile locally, walk through login, `/me` 200, fetch logged-out 401, browser logged-out 302, Swagger UI loads.
+
+**Notes**:
+- ADR-0023 still pending; this session added more material for it (MapStruct convention, `toDto` naming, `ReportingPolicy.ERROR`).
+- Memory `project-spring-boot-4-autoconfig-modules` should be extended to cover test slice autoconfigs (same per-feature module pattern).
+- Logging setup deferred. Options laid out, no choice made yet.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-08-session-06.md).
+
 ### 2026-06-07 — Session 05
 
 **Block / Task**: Block 1 — Secured Skeleton, step 7/7 (OpenAPI codegen + Springdoc pipeline)
