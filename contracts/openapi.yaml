@@ -45,7 +45,7 @@ components:
     CurrentUser:
       type: object
       description: Profile of the currently authenticated user.
-      required: [id, username, displayName, email]
+      required: [id, username, displayName, email, emailVerified]
       properties:
         id:
           type: string
@@ -56,11 +56,25 @@ components:
             is introduced in Block 2.
         username:
           type: string
+          description: |
+            Stable login handle, sourced from the identity provider's
+            `preferred_username` claim.
           example: testuser
         displayName:
           type: string
+          description: |
+            Human-readable name shown in the UI. Resolved from the OIDC
+            `name` claim, with a fallback to `username` when the claim is
+            absent.
           example: Test User
         email:
           type: string
           format: email
+          description: User's email address, sourced from the OIDC `email` claim.
           example: testuser@pecunia.local
+        emailVerified:
+          type: boolean
+          description: |
+            Whether the user's email address has been verified at the
+            identity provider.
+          example: true

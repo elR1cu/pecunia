@@ -16,10 +16,13 @@
 
         <spring-boot.version>4.0.6</spring-boot.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+        <maven-resources-plugin.version>3.5.0</maven-resources-plugin.version>
         <spotless-maven-plugin.version>3.6.0</spotless-maven-plugin.version>
         <palantir-java-format.version>2.91.0</palantir-java-format.version>
         <openapi-generator-maven-plugin.version>7.22.0</openapi-generator-maven-plugin.version>
         <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <lombok.version>1.18.38</lombok.version>
     </properties>
 
     <dependencyManagement>
@@ -88,6 +91,21 @@
             <version>${springdoc-openapi.version}</version>
         </dependency>
 
+        <!-- Bean mapping (annotation processor declared in maven-compiler-plugin) -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
+
+        <!-- Boilerplate reduction (annotation processor declared in maven-compiler-plugin; selective use per ADR-0013) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Dev-only: starts docker-compose services and wires service connections -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -107,6 +125,16 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -115,6 +143,21 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <!-- Lombok must run before MapStruct so its generated accessors are visible. -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -172,6 +215,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven-resources-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>copy-openapi-spec</id>
