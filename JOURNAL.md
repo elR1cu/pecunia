@@ -40,6 +40,47 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-09 — Session 07
+
+**Block / Task**: Block 1 — Secured Skeleton, step 7/7 (DelegatingAuthenticationEntryPoint, SwaggerSecurityConfig, ADR-0023, ADR-0024)
+
+**Done**:
+- Reverted a `MeController` Optional-chain refactor back to Session 06's pattern-matching form after re-litigating                        
+  Optional-vs-pattern-matching for invariant extraction.
+- Wired `DelegatingAuthenticationEntryPoint` on the main chain via Spring Security 7's `.builder()` (after self-correcting from the       
+  deprecated `LinkedHashMap` pattern). `MediaTypeRequestMatcher(APPLICATION_JSON)` with `useEquals(true)` and                               
+  `ignoredMediaTypes(MediaType.ALL)` routes AJAX → 401 and browser → 302 to `/oauth2/authorization/pecunia`. Main chain marked `@Order(1)`.
+- New `SwaggerSecurityConfig` (`@Profile("dev")`, `@Order(0)`): second `SecurityFilterChain` matching `/swagger-ui/**`,                   
+  `/swagger-ui.html`, `/openapi.yaml`, `/v3/api-docs/swagger-config` with `permitAll`, CSRF disabled, stateless. Slice tests in two classes
+  (parameterized dev + default-profile).
+- End-to-end walk-through validated (logged-in 200, AJAX 401, browser 302, Swagger UI 200 in private browsing). Surfaced two Springdoc    
+  3.0.3 gotchas during the walk-through: `api-docs.enabled` gates `swagger-ui` autoconfig (fixed by enabling only in `application-dev.yml`),
+  and `/v3/api-docs/swagger-config` must be reachable without auth (added to the matcher).
+- ADR-0023 (OpenAPI schema-first pipeline) and ADR-0024 (MapStruct mapper convention) drafted and committed.
+
+**Learned**:
+- `DelegatingAuthenticationEntryPoint`'s `LinkedHashMap` constructor + `setDefaultEntryPoint` is `@Deprecated(forRemoval = true)` in      
+  Spring Security 7; the modern form is `(default, List<RequestMatcherEntry>)`, and `.builder()` is the most idiomatic.
+- Springdoc 3.0.3 gates a chunk of `swagger-ui` autoconfig on `api-docs.enabled=true` despite docs implying independence. Setting         
+  `api-docs.enabled=false` in main config and overriding in `application-dev.yml` keeps prod minimal.
+- `/v3/api-docs/swagger-config` is the Swagger UI bootstrap endpoint; the UI can't initialize without it reachable.
+- `WebMvcAutoConfiguration` registers static resource serving even in `@WebMvcTest` slices, so `/openapi.yaml` returns 200 from           
+  `target/classes/static/` if `maven-resources-plugin` has run.
+- `@WebMvcTest(controllers = {})` does NOT mean "no controllers" — the empty default means "include all".
+
+**Next**:
+- Push the branch (4 commits ahead).
+- Logging (ADR-0018): still pending choice.
+- Angular skeleton + login redirect — required for the formal Block 1 exit criterion.
+
+**Notes**:
+- 4 commits sur la branche : `feat(api): delegate authentication entry point on Accept header` / `feat(api): expose Swagger UI under dev  
+  profile` / `test(api): cover delegating entry point and swagger security` / `docs: add ADR-0023 and ADR-0024`.
+- Le commentaire de classe sur `SwaggerSecurityConfig` est placé entre annotations et déclaration — convertir en Javadoc reste une        
+  coquetterie en suspens.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-09-session-07.md).
+
 ### 2026-06-08 — Session 06
 
 **Block / Task**: Block 1 — Secured Skeleton, step 7/7 (MeController, MapStruct pipeline, first slice tests)
