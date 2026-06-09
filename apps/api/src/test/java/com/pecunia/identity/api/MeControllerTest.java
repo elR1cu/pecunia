@@ -6,8 +6,7 @@ import static org.springframework.security.oauth2.core.oidc.StandardClaimNames.N
 import static org.springframework.security.oauth2.core.oidc.StandardClaimNames.PREFERRED_USERNAME;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.pecunia.identity.api.mapper.CurrentUserMapperImpl;
 import com.pecunia.shared.security.SecurityConfig;
@@ -16,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -81,8 +81,16 @@ class MeControllerTest {
     }
 
     @Test
-    @DisplayName("redirects to login when unauthenticated")
-    void redirectsToLoginWhenUnauthenticated() throws Exception {
-        mockMvc.perform(get("/me")).andExpect(status().is3xxRedirection());
+    @DisplayName("redirects browser to login when unauthenticated")
+    void redirectsBrowserToLogin() throws Exception {
+        mockMvc.perform(get("/me").accept(MediaType.TEXT_HTML))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/oauth2/authorization/pecunia"));
+    }
+
+    @Test
+    @DisplayName("returns 401 for json request when unauthenticated")
+    void returnsUnauthorizedForJsonRequest() throws Exception {
+        mockMvc.perform(get("/me").accept(MediaType.APPLICATION_JSON)).andExpect(status().isUnauthorized());
     }
 }
