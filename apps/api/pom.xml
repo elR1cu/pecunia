@@ -86,6 +86,15 @@
             <artifactId>spring-session-data-redis</artifactId>
         </dependency>
 
+        <!-- Observability: Spring Boot 4 OpenTelemetry starter. Bundles Micrometer Tracing,
+             the OpenTelemetry SDK, the matching autoconfig (split per Spring Boot 4 module layout),
+             and the OTLP exporters. Populates traceId/spanId in MDC automatically (see ADR-0018).
+             The trace and metrics OTLP exporters are disabled via configuration until Block 9. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-opentelemetry</artifactId>
+        </dependency>
+
         <!-- API documentation (Swagger UI; spec served statically, runtime introspection disabled) -->
         <dependency>
             <groupId>org.springdoc</groupId>

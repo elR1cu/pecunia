@@ -66,6 +66,34 @@ management:
       # Anonymous callers see only the overall status; authenticated callers
       # also see component details (datasource, Redis, ...).
       show-details: when-authorized
+  tracing:
+    sampling:
+      # Override Micrometer Tracing's 10% default so every request produces
+      # a traceId/spanId in the MDC (see ADR-0018). At Pecunia's scale this
+      # has no measurable cost. Block 9 may revisit if span volume justifies it.
+      probability: 1.0
+  # The spring-boot-starter-opentelemetry starter bundles OTLP exporters
+  # for traces, metrics and logs. Disable all three at Block 1 — spans /
+  # metrics / logs are still observed locally (traceId/spanId reach the
+  # MDC) but nothing is shipped over the wire. Block 9 will flip the
+  # tracing flag and configure an endpoint.
+  # Note: tracing and logging use the SB4 `management.opentelemetry.*.export.otlp.*`
+  # namespace; metrics kept the older `management.otlp.metrics.export.*` namespace.
+  # See Spring Boot 4 properties appendix; bug #49304 may keep some exporters
+  # active despite these flags.
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          enabled: false
+    logging:
+      export:
+        otlp:
+          enabled: false
+  otlp:
+    metrics:
+      export:
+        enabled: false
 
 logging:
   # Native Spring Boot 4 structured logging (see ADR-0018). The `logstash`
