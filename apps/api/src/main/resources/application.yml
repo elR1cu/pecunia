@@ -67,6 +67,18 @@ management:
       # also see component details (datasource, Redis, ...).
       show-details: when-authorized
 
+logging:
+  # Native Spring Boot 4 structured logging (see ADR-0018). The `logstash`
+  # format produces the same JSON wire format that ELK / Loki / Grafana Cloud
+  # consume, with MDC entries promoted to top-level fields. The dev profile
+  # disables it to keep readable text locally.
+  structured:
+    format:
+      console: logstash
+    json:
+      add:
+        service: pecunia-api
+
 springdoc:
   # Schema-first: contracts/openapi.yaml is the source of truth.
   # Runtime introspection (/v3/api-docs) is disabled to prevent silent drift.

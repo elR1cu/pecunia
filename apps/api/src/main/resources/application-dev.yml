@@ -1,3 +1,10 @@
+logging:
+  structured:
+    format:
+      # Override to empty: disable JSON output in dev and fall back to
+      # Spring Boot's default colored console pattern.
+      console:
+
 springdoc:
   api-docs:
     enabled: true
