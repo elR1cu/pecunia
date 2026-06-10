@@ -40,6 +40,50 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-10 — Session 08
+
+**Block / Task**: Block 1 — Secured Skeleton, logging substep (sub-sessions A + B)
+
+**Done**:
+- Sub-session A: enabled Spring Boot 4 native structured logging (`logging.structured.format.console: logstash`, global custom field `service: pecunia-api`); dev profile     
+  overrides to empty to keep the colored text pattern. Two commits.
+- Sub-session B: Micrometer Tracing wired via `spring-boot-starter-opentelemetry` (after a failed first attempt with the bare bridge — SB4 autoconfig split bit us), sampling
+  forced to 1.0, OTLP exporters disabled for traces / logs / metrics under the SB4 asymmetric namespaces, dev pattern enriched with `[app,traceId,spanId]` plus `%kvp` after the
+  message to render SLF4J 2.x fluent `addKeyValue` pairs. `MeController` emits its first non-PII structured log. Two commits.
+- ADR-0018 revised **three times** in the session: encoder (native vs `logstash-logback-encoder`), correlation (Micrometer Tracing vs custom `RequestIdFilter`), dependency   
+  (starter vs bare bridge). Each revision triggered by web verification after I had proposed a pre-SB4 pattern.
+- Sub-session C (sanitization) scoped and time-estimated: C-min ~2h, C-full ~3h30–4h. Recommendation C-min — concrete IBAN / amount patterns deferred to Block 2 / Block 3    
+  when the data actually appears.
+
+**Learned**:
+- Spring Boot 3.4+ ships native structured logging (`logging.structured.format.console=logstash`) with the same JSON wire format as `logstash-logback-encoder`, without the   
+  dependency. Spring Boot 4 carries it forward.
+- Micrometer Tracing populates `traceId` / `spanId` in the MDC automatically once a bridge (OTel or Brave) is on the classpath. No custom `RequestIdFilter` needed.
+- Spring Boot 4 split autoconfigurations (cf. memory `project-spring-boot-4-autoconfig-modules`): `micrometer-tracing-bridge-otel` alone brings the runtime but not the       
+  autoconfig. The `spring-boot-starter-opentelemetry` starter is the one-line SB4 path.
+- SB4 namespace asymmetry: `management.opentelemetry.*.export.otlp.*` for traces and logs (OTel SDK), `management.otlp.metrics.export.*` for metrics (Micrometer              
+  `OtlpMeterRegistry`). Intentional and historical.
+- OTLP = OpenTelemetry Protocol, vendor-neutral wire format (protobuf over gRPC :4317 or HTTP :4318) that supersedes proprietary ingestion protocols (Jaeger Thrift, Zipkin   
+  B3, Datadog API).
+- SLF4J 2.x fluent API: `log.atInfo().addKeyValue(k, v).log(msg)` separates structured payload from message. Spring Boot rejected adding `%kvp` to the default pattern for    
+  security reasons — opt-in required in dev.
+- The span starts in `ServerHttpObservationFilter`. Logs emitted before this filter (startup banner, scheduler, non-propagated threads) legitimately have no `traceId`.       
+  `%X{traceId:-}` renders them as empty rather than crashing.
+
+**Next**:
+- Push the branch (5 commits ahead of origin).
+- Sub-session C — sanitization at C-min scope (~2h): `SensitiveDataLoggingCustomizer` + one demonstrative test + minimal `logback-spring.xml` + ADR-0018 follow-up.
+- Angular skeleton — the gating item for the Block 1 exit criterion once the backend logging story is closed.
+
+**Notes**:
+- 5 commits on the branch: `feat(api): enable native structured JSON logging`, `docs: revise ADR-0018 to use Spring Boot 4 native structured logging`, `docs: use Micrometer  
+  Tracing for correlation IDs in ADR-0018`, `docs: switch ADR-0018 to spring-boot-starter-opentelemetry`, `feat(api): enable Micrometer Tracing for log correlation IDs`.
+- Spring Boot bug #49304 noted in ADR-0018: the `enabled: false` OTLP flags may not fully suppress export attempts. Invisible at Block 1 (no collector reachable). Re-check at
+  Block 9.
+- Logback 1.5.22+ auto-masks variables whose names contain `password`, `secret`, `confidential`. Worth leaning on as a free safety net in Sub-session C.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-10-session-08.md).
+
 ### 2026-06-09 — Session 07
 
 **Block / Task**: Block 1 — Secured Skeleton, step 7/7 (DelegatingAuthenticationEntryPoint, SwaggerSecurityConfig, ADR-0023, ADR-0024)
