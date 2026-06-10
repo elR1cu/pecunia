@@ -24,8 +24,7 @@ public class MeController implements IdentityApi {
         if (auth == null || !(auth.getPrincipal() instanceof OidcUser oidcUser)) {
             throw new IllegalStateException("Expected an OIDC-authenticated principal on /me");
         }
-        CurrentUser currentUser = currentUserMapper.toDto(oidcUser);
-        log.atInfo().addKeyValue("userId", currentUser.getId()).log("/me resolved");
-        return ResponseEntity.ok(currentUser);
+        log.atDebug().addKeyValue("sub", oidcUser.getSubject()).log("/me principal verified");
+        return ResponseEntity.ok(currentUserMapper.toDto(oidcUser));
     }
 }
