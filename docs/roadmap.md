@@ -70,8 +70,9 @@ to receive features.
 - Conventional Commits enforced (commitlint).
 - **SonarCloud integration**: project setup with Quality Gates enforced
   on Pull Requests. Badge displayed in README.
-- **Structured JSON logging**: `logstash-logback-encoder` configured with
-  MDC correlation IDs and sanitization patterns for financial data.
+- **Structured JSON logging**: Spring Boot 4 native structured logging
+  (`logging.structured.format.console=logstash`) with MDC correlation IDs
+  and sanitization patterns for financial data. See ADR-0018.
 
 **Exit criteria**: the user can log in via Keycloak, the session cookie
 works end to end, and a protected endpoint returns the user's identity.
