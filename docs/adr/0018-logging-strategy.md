@@ -3,8 +3,9 @@
 ## Status
 
 Accepted (2026-05-24). Revised 2026-06-10 to use Spring Boot 4's native
-structured logging support instead of the `logstash-logback-encoder`
-third-party library.
+structured logging support (instead of the `logstash-logback-encoder`
+third-party library) and Micrometer Tracing (instead of a custom
+`OncePerRequestFilter`) for correlation IDs.
 
 ## Context
 
@@ -31,19 +32,28 @@ that actually matter for the project are:
 These dimensions are framework-agnostic: they can be implemented with
 either Logback or Log4j2 with comparable effort.
 
-A second fact became relevant during Block 1 implementation: Spring
-Boot 3.4 (August 2024) introduced **native structured logging**,
-exposing the `logstash`, `ecs`, and `gelf` JSON formats as built-in
-configuration options. This makes the third-party
-`logstash-logback-encoder` library no longer necessary to obtain the
-same JSON wire format that ELK, Loki, and Grafana Cloud consume. Spring
-Boot 4 carries this feature forward.
+Two facts about the modern Spring Boot ecosystem reshape the
+sub-decisions inside this strategy:
+
+- Spring Boot 3.4 (August 2024) introduced **native structured
+  logging**, exposing the `logstash`, `ecs`, and `gelf` JSON formats
+  as built-in configuration options. The third-party
+  `logstash-logback-encoder` library is no longer necessary to obtain
+  the same JSON wire format that ELK, Loki, and Grafana Cloud consume.
+  Spring Boot 4 carries this feature forward.
+- Since Spring Boot 3.0, **Micrometer Tracing** populates the MDC with
+  `traceId` and `spanId` automatically when a tracing bridge
+  (OpenTelemetry or Brave) is on the classpath, propagates the W3C
+  `traceparent` header to downstream calls, and handles async / reactive
+  context propagation correctly. A custom servlet filter is no longer
+  required to obtain correlation IDs in logs.
 
 ## Decision
 
 Pecunia uses **Logback** (the Spring Boot default), with structured
 JSON output configured through **Spring Boot 4's native structured
-logging support**:
+logging support**, and correlation IDs provided by **Micrometer
+Tracing**:
 
 ### Structured JSON output
 
@@ -77,15 +87,33 @@ logging:
         service: pecunia-api
 ```
 
-### Correlation IDs via MDC
+### Correlation IDs via Micrometer Tracing
 
-A `RequestIdFilter` populates the MDC with a `traceId` at the start of
-every HTTP request. The `traceId` is included in all log statements
-during the request and is also returned in the response header for
-client correlation. Spring Boot's native `logstash` format promotes
-MDC entries to top-level JSON fields automatically, so `traceId` is
-queryable as `traceId:abc123` in log platforms without further
-configuration.
+Micrometer Tracing populates the MDC with `traceId` and `spanId`
+automatically at the start of every HTTP request, propagates the W3C
+`traceparent` context to downstream calls, and integrates cleanly with
+Spring Boot 4's `logstash` format (MDC entries are promoted to
+top-level JSON fields, so `traceId` and `spanId` become queryable
+fields without further configuration).
+
+The minimal dependency to enable this is the OpenTelemetry bridge:
+
+```xml
+<dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-tracing-bridge-otel</artifactId>
+</dependency>
+```
+
+No span exporter is required at this stage — spans are generated, their
+IDs land in the MDC, then the spans are dropped at the end of the
+request. Block 9 will add an OTLP exporter to ship spans to a tracing
+backend.
+
+If a separate per-request identifier echoed to the client (e.g. via an
+`X-Request-Id` response header) is later needed for support workflows,
+it can be layered on top of Micrometer Tracing via a small filter
+that copies `traceId` from the MDC into a response header.
 
 ### Sanitization
 
@@ -115,25 +143,34 @@ Patterns masked:
 
 ### Future evolution
 
-- **Block 9**: OpenTelemetry integration for distributed tracing.
-  Logback supports this natively via the `logback-mdc-otel` integration.
+- **Block 9**: add the OpenTelemetry OTLP exporter to ship spans to a
+  tracing backend (Tempo, Jaeger, Grafana Cloud). The Micrometer
+  Tracing bridge is already in place from Block 1, so this is an
+  exporter dependency and configuration only — not a new architecture.
 
 ## Consequences
 
 ### Positive
 
-- **Zero external dependency**: no `logstash-logback-encoder`, no
-  transitive Jackson 2 to manage alongside Spring Boot 4's Jackson 3.
+- **Zero external logging dependency**: no `logstash-logback-encoder`,
+  no transitive Jackson 2 to manage alongside Spring Boot 4's
+  Jackson 3.
+- **No custom request-id filter** to write or maintain: Micrometer
+  Tracing handles MDC population, async / reactive context
+  propagation, and W3C `traceparent` header propagation out of the
+  box.
 - **Configuration in YAML**: the structured-logging knobs live next to
   the rest of the Spring Boot config, not in a separate XML file.
-- **Maintained by the Spring Boot team**: structured logging evolves
-  with the framework's release cycle rather than a third-party cadence.
+- **Maintained by the Spring Boot team**: structured logging and
+  tracing evolve with the framework's release cycle rather than a
+  third-party cadence.
 - **Same JSON wire format** (`logstash`): consumers (Loki, ELK,
   Grafana Cloud, Datadog) are unaffected.
 - **Security-first**: sanitization plugs into an explicit Spring Boot
   SPI rather than monkey-patching a third-party encoder.
-- **OpenTelemetry-ready**: the choice does not preclude advanced
-  observability later.
+- **OpenTelemetry-ready by construction**: choosing the OTel bridge
+  for tracing in Block 1 makes Block 9 a one-dependency addition (the
+  exporter) rather than an architectural pivot.
 - **Format pivot is easy**: switching to `ecs` or `gelf` later is a
   one-line change.
 
@@ -148,12 +185,22 @@ Patterns masked:
 - **JSON logs are less readable in development**: leaving
   `logging.structured.format.console` unset in the dev profile keeps
   human-readable output locally.
+- **Anticipates the OTel commitment**: the Micrometer Tracing bridge
+  pulls a transitive OpenTelemetry runtime in Block 1, earlier than
+  the roadmap originally placed it (Block 9). The runtime is small
+  and dormant (no exporter, no remote calls) until Block 9 activates
+  it.
+- **Hex IDs, not UUIDs**: `traceId` is a 32-character hex string from
+  the W3C Trace Context standard, not a project-style UUID v7. This
+  is correct (interop with tracing platforms requires it) but
+  cosmetically inconsistent with database IDs.
 
 ### Neutral
 
-- **No vendor lock-in**: SLF4J remains the API, and the JSON formats
-  are open standards. The underlying implementation can still be
-  swapped if a strong reason emerges.
+- **No vendor lock-in**: SLF4J remains the API, Micrometer Tracing is
+  a facade over Brave and OpenTelemetry, and the JSON formats are
+  open standards. The underlying implementations can still be swapped
+  if a strong reason emerges.
 
 ## Alternatives Considered
 
@@ -207,13 +254,109 @@ Rejected because:
 - No correlation IDs by default.
 - No sanitization of sensitive data.
 
+### Custom `RequestIdFilter` (`OncePerRequestFilter` + MDC)
+
+Before Micrometer Tracing became the idiomatic Spring Boot path, the
+classic pattern for correlation IDs was a servlet filter that
+generates an identifier per request, places it in the MDC, and echoes
+it in a response header. For reference and as a learning artifact,
+the equivalent shape is:
+
+```java
+package com.pecunia.shared.observability;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.UUID;
+import org.slf4j.MDC;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+public final class RequestIdFilter extends OncePerRequestFilter {
+
+    private static final String HEADER = "X-Request-Id";
+    private static final String MDC_KEY = "trace_id";
+
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+        String traceId = resolveTraceId(request);
+        MDC.put(MDC_KEY, traceId);
+        response.setHeader(HEADER, traceId);
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            MDC.remove(MDC_KEY);
+        }
+    }
+
+    private static String resolveTraceId(HttpServletRequest request) {
+        String incoming = request.getHeader(HEADER);
+        return (incoming == null || incoming.isBlank())
+                ? UUID.randomUUID().toString()
+                : incoming;
+    }
+}
+```
+
+Registered with an order that runs **before** the Spring Security
+filter chain so that 401/302 responses also carry `trace_id` in their
+log lines (Spring Security registers at `-100` by default;
+`HIGHEST_PRECEDENCE` runs first):
+
+```java
+package com.pecunia.shared.observability;
+
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+
+@Configuration
+class RequestIdFilterConfig {
+
+    @Bean
+    FilterRegistrationBean<RequestIdFilter> requestIdFilterRegistration() {
+        var registration = new FilterRegistrationBean<>(new RequestIdFilter());
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return registration;
+    }
+}
+```
+
+Notes for a real implementation of this alternative:
+- Replace `UUID.randomUUID()` with `UuidCreator.getTimeOrderedEpoch()`
+  to align with ADR-0015 (UUID v7 across the project) — at the cost
+  of pulling the `com.github.f4b6a3:uuid-creator` dependency.
+- The MDC key is `trace_id` (snake_case) to match the `logstash`
+  format convention (`logger_name`, `thread_name`, `level_value`).
+- The filter does **not** propagate context across reactive or async
+  boundaries; doing so correctly is non-trivial and is one of the
+  reasons Micrometer Tracing was preferred.
+
+Rejected because:
+- Micrometer Tracing covers the same need with zero application code,
+  handles async / reactive context propagation correctly, propagates
+  the W3C `traceparent` header to downstream HTTP calls, and provides
+  a clean path to span export when distributed tracing arrives.
+- A custom filter adds a maintenance surface (cleanup edge cases,
+  ThreadLocal leaks, future async support) for a problem the framework
+  already solves.
+
 ## References
 
 - Logback documentation: https://logback.qos.ch/
 - Spring Boot Reference — Logging:
   https://docs.spring.io/spring-boot/reference/features/logging.html
+- Spring Boot Reference — Tracing:
+  https://docs.spring.io/spring-boot/reference/actuator/tracing.html
 - "Structured logging in Spring Boot 3.4" (Spring blog, 2024-08-23):
   https://spring.io/blog/2024/08/23/structured-logging-in-spring-boot-3-4/
+- Micrometer Tracing documentation:
+  https://docs.micrometer.io/tracing/reference/
 - `logstash-logback-encoder`:
   https://github.com/logfellow/logstash-logback-encoder
 - "Logging Best Practices" by OWASP:

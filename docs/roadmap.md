@@ -72,7 +72,8 @@ to receive features.
   on Pull Requests. Badge displayed in README.
 - **Structured JSON logging**: Spring Boot 4 native structured logging
   (`logging.structured.format.console=logstash`) with MDC correlation IDs
-  and sanitization patterns for financial data. See ADR-0018.
+  via Micrometer Tracing (OpenTelemetry bridge, no exporter yet) and
+  sanitization patterns for financial data. See ADR-0018.
 
 **Exit criteria**: the user can log in via Keycloak, the session cookie
 works end to end, and a protected endpoint returns the user's identity.
