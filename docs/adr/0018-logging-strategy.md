@@ -96,19 +96,50 @@ Spring Boot 4's `logstash` format (MDC entries are promoted to
 top-level JSON fields, so `traceId` and `spanId` become queryable
 fields without further configuration).
 
-The minimal dependency to enable this is the OpenTelemetry bridge:
+The Spring Boot 4 starter wires the Micrometer Tracing bridge, the
+OpenTelemetry SDK, and the matching autoconfig (split into a dedicated
+module per Spring Boot 4's autoconfig layout) in one step:
 
 ```xml
 <dependency>
-    <groupId>io.micrometer</groupId>
-    <artifactId>micrometer-tracing-bridge-otel</artifactId>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-opentelemetry</artifactId>
 </dependency>
 ```
 
-No span exporter is required at this stage — spans are generated, their
-IDs land in the MDC, then the spans are dropped at the end of the
-request. Block 9 will add an OTLP exporter to ship spans to a tracing
-backend.
+The starter also bundles the OTLP exporters for traces, metrics, and
+logs. At Block 1 all three exporters are disabled by configuration:
+
+```yaml
+management:
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          enabled: false
+    logging:
+      export:
+        otlp:
+          enabled: false
+  otlp:
+    metrics:
+      export:
+        enabled: false
+```
+
+The Spring Boot 4 property namespace is asymmetric on purpose:
+`management.opentelemetry.*.export.otlp.*` for traces and logs,
+`management.otlp.metrics.export.*` for metrics. Spans are generated,
+their IDs land in the MDC, then are dropped at the end of the request
+— nothing is shipped over the wire. Block 9 will flip the tracing
+flag and configure an endpoint to ship spans to a tracing backend.
+
+A known Spring Boot bug
+([#49304](https://github.com/spring-projects/spring-boot/issues/49304))
+may keep some exporters publishing despite these flags; the fallback
+is the `OTEL_SDK_DISABLED=true` environment variable. Harmless at
+Block 1 since no collector is reachable; revisit if collector
+configuration arrives before #49304 is fixed.
 
 If a separate per-request identifier echoed to the client (e.g. via an
 `X-Request-Id` response header) is later needed for support workflows,
