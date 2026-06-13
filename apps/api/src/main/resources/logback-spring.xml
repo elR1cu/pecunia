@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  When a logback-spring.xml is present, Spring Boot stops auto-wiring the
+  CONSOLE appender programmatically (it expects the file to take ownership).
+  We therefore replicate Boot's defaults via <include> and select between the
+  text and structured-JSON appenders by profile:
+
+  - dev profile  -> plain text appender (pattern from application-dev.yml,
+                    using our %maskedKvp conversion rule)
+  - other        -> structured logstash JSON appender (driven by
+                    logging.structured.format.console + the
+                    SensitiveDataLoggingCustomizer SPI from application.yml)
+
+  Our sole project-specific addition is the %maskedKvp conversion rule backed
+  by MaskedKvpConverter. See ADR-0018 (Sanitization section).
+-->
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <conversionRule conversionWord="maskedKvp"
+                    class="com.pecunia.shared.observability.MaskedKvpConverter"/>
+
+    <springProfile name="dev">
+        <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+    </springProfile>
+    <springProfile name="!dev">
+        <include resource="org/springframework/boot/logging/logback/structured-console-appender.xml"/>
+    </springProfile>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
