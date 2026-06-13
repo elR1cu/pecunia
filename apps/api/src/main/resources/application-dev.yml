@@ -6,21 +6,37 @@ logging:
       console:
   pattern:
     # Override the default Spring Boot console pattern with two project additions:
-    #   1. inline [app,traceId,spanId] correlation triplet (Spring Boot's
-    #      logging.pattern.correlation indirection through LOG_CORRELATION_PATTERN
-    #      does not survive the custom logback-spring.xml path —
-    #      LogbackLoggingSystem.loadConfiguration pushes the value via System
-    #      properties only and the substitution rebut empty);
+    #   1. inline [app,traceId,spanId] correlation triplet — Spring Boot's
+    #      ${LOG_CORRELATION_PATTERN:-} indirection cannot be reused here (see
+    #      placeholder pitfall below);
     #   2. %maskedKvp after the message to render SLF4J 2.x fluent addKeyValue
     #      pairs in dev with values masked by the same blacklist as prod JSON
     #      (see ADR-0018 Sanitization; converter registered in logback-spring.xml).
     # Spring Boot rejected adding %kvp to the default pattern for security reasons
     # (PR spring-projects/spring-boot#47162). Re-paste from Spring Boot defaults
     # if the upstream pattern evolves.
-    console: "%clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd'T'HH:mm:ss.SSSXXX}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr([${spring.application.name:},%X{traceId:-},%X{spanId:-}]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m %maskedKvp%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
+    #
+    # Placeholder pitfall: do NOT use ${LOG_DATEFORMAT_PATTERN:-...},
+    # ${LOG_LEVEL_PATTERN:-%5p}, ${LOG_EXCEPTION_CONVERSION_WORD:-%wEx} or
+    # ${LOG_CORRELATION_PATTERN:-...} inside this YAML value. Spring resolves
+    # placeholders before pushing the pattern to Logback, and Spring's grammar
+    # uses ":" as the default separator (not Logback's ":-", cf.
+    # SystemPropertyUtils.VALUE_SEPARATOR). For variables not set in the Spring
+    # environment (the LOG_* family above is only set when the matching
+    # logging.pattern.* application property exists), Spring's parser reads the
+    # default as starting with "-" and substitutes literal dashes into the
+    # pattern before Logback ever sees the original syntax. Inline literal
+    # values instead. ${PID:-} and ${spring.application.name:} are safe:
+    # PID is set as a sysprop by Spring Boot, and the second uses Spring's
+    # own ":" syntax with an empty default.
+    console: "%clr(%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}){faint} %clr(%5p){} %clr(${PID:-}){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr([${spring.application.name:},%X{traceId:-},%X{spanId:-}]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m %maskedKvp%n%wEx"
   include-application-name: false
   level:
     com.pecunia: DEBUG
+
+spring:
+  main:
+    banner-mode: console
 
 springdoc:
   api-docs:

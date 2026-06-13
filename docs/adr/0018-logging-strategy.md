@@ -8,7 +8,13 @@ third-party library) and Micrometer Tracing (instead of a custom
 `OncePerRequestFilter`) for correlation IDs. Revised 2026-06-13 to
 document the C-min sanitization implementation (field-name based
 masking shared between JSON output and the dev console pattern, with
-regex-based message-body patterns deferred to Block 2/3).
+regex-based message-body patterns deferred to Block 2/3). Further
+revised 2026-06-13 to inline literal values in the dev console pattern
+(`%5p`, `%wEx`, the correlation triplet) after the Spring vs Logback
+placeholder syntax conflict was diagnosed — see "Console pattern
+caveat" below. This supersedes the in-session hypothesis attributing
+the same symptom to an `LogbackLoggingSystem.loadConfiguration` vs
+`loadDefaults` asymmetry.
 
 ## Context
 
@@ -214,6 +220,34 @@ exposure of configuration values rendered through Logback's own
 substitution machinery; it is unrelated to runtime KVP/MDC masking
 and is mentioned here only to avoid confusion. Logback 1.5.32 ships
 with Spring Boot 4.0.6 so the feature is active by default.
+
+### Console pattern caveat: YAML placeholder syntax
+
+The dev profile overrides `logging.pattern.console` in
+`application-dev.yml`. Inside that YAML value the Logback substitution
+syntax `${VAR:-DEFAULT}` is **unsafe**: Spring resolves placeholders in
+the YAML value before it reaches Logback, and Spring's
+`PropertyResolver` grammar uses `:` (not `:-`) as the default separator
+(`SystemPropertyUtils.VALUE_SEPARATOR = ":"`). For the `LOG_*` family
+(`LOG_LEVEL_PATTERN`, `LOG_DATEFORMAT_PATTERN`,
+`LOG_EXCEPTION_CONVERSION_WORD`, `LOG_CORRELATION_PATTERN`) — which
+Spring Boot sets only when the matching `logging.pattern.*` property
+exists, and we do not set them — Spring's parser reads the default as
+starting with `-` and substitutes literal dashes into the pattern
+before Logback sees the original syntax. Visible symptom: leading
+literal `-` characters at every level / date / wEx position,
+multiplied per offending substitution.
+
+The dev pattern therefore inlines literal values: `yyyy-MM-dd'T'HH:mm:ss.SSSXXX`,
+`%5p`, `%wEx`, and the correlation triplet
+`[${spring.application.name:},%X{traceId:-},%X{spanId:-}]`. Only
+`${PID:-}` and `${spring.application.name:}` remain as placeholders:
+the first is set as a sysprop by `LoggingSystemProperties`, the second
+uses Spring's own `${VAR:DEFAULT}` syntax with empty default. The
+production / `!dev` profile is unaffected because it does not override
+the pattern — the JSON path consumes `defaults.xml` directly, where
+Logback's `${VAR:-DEFAULT}` syntax works as designed because no Spring
+placeholder resolution happens.
 
 ### Log levels
 
