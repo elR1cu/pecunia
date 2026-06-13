@@ -5,7 +5,10 @@
 Accepted (2026-05-24). Revised 2026-06-10 to use Spring Boot 4's native
 structured logging support (instead of the `logstash-logback-encoder`
 third-party library) and Micrometer Tracing (instead of a custom
-`OncePerRequestFilter`) for correlation IDs.
+`OncePerRequestFilter`) for correlation IDs. Revised 2026-06-13 to
+document the C-min sanitization implementation (field-name based
+masking shared between JSON output and the dev console pattern, with
+regex-based message-body patterns deferred to Block 2/3).
 
 ## Context
 
@@ -148,21 +151,69 @@ that copies `traceId` from the MDC into a response header.
 
 ### Sanitization
 
-Sensitive patterns are masked before reaching the appender. Two
-extension points cover the two output modes:
+Sensitive data is masked before reaching the appender. The Block 1
+implementation (C-min scope) covers **field-name based masking** for
+both output modes, sharing a single source of truth for the blacklist.
+Regex-based scanning of the message body is deferred to the blocks
+where the corresponding data actually appears (IBAN in Block 2,
+amounts in Block 3).
 
-- For JSON output: a `StructuredLoggingJsonMembersCustomizer` (Spring
-  Boot 4 SPI) rewrites the `message` member and any custom fields
-  prone to leak.
-- For the dev pattern: a custom Logback `ClassicConverter` registered
-  in `logback-spring.xml`, applied only if developer-side logs are
-  judged sensitive enough to warrant masking locally.
+**Shared blacklist** — `com.pecunia.shared.observability.SensitiveFieldNames`
+holds a single immutable `Set<String>` of forbidden field names
+(secrets like `password`, `secret`, `token`, `authorization`,
+`credential`, `apikey`, `cookie`; PII / finance fields anticipated
+for Block 2/3 like `iban`, `account`, `card`, `cvv`, `ssn`, `email`,
+`phone`, `address`, `amount`). Matching is **exact and
+case-insensitive** (via `Locale.ROOT` to avoid the Turkish locale
+trap on `I`); `accountId` and `accountStatus` deliberately do **not**
+match `account`.
 
-Patterns masked:
-- IBANs are partially redacted (`CH** **** **** **** ****1`)
-- Amounts above a threshold are redacted in INFO and above
-- Bearer tokens are never logged
-- Email addresses are partially redacted in INFO and above
+**JSON output (production-like)** — `SensitiveDataLoggingCustomizer`
+implements `StructuredLoggingJsonMembersCustomizer<ILoggingEvent>`
+(Spring Boot 4 SPI) and registers a single `ValueProcessor` on
+`JsonWriter.Members` that replaces sensitive values with `"***"`.
+Registration is one line in `application.yml`:
+
+```yaml
+logging:
+  structured:
+    json:
+      customizer: com.pecunia.shared.observability.SensitiveDataLoggingCustomizer
+```
+
+The processor traverses every member emitted by the `logstash`
+formatter — including the flattened MDC entries and SLF4J 2.x fluent
+KVPs (`log.atInfo().addKeyValue(...).log(...)`) — and inspects the
+last segment of the `MemberPath`. Top-level structural fields
+(`@timestamp`, `message`, `logger_name`, `level`, …) never match the
+blacklist by construction.
+
+**Dev console (text)** — `MaskedKvpConverter` extends Logback's
+`ClassicConverter` and produces `key="value"` pairs (parity with the
+native `%kvp`), replacing the value with `"***"` whenever
+`SensitiveFieldNames.isSensitive(key)` matches. It is registered in
+`logback-spring.xml` as a `<conversionRule>` aliased to `%maskedKvp`,
+and the dev profile's `logging.pattern.console` injects `%maskedKvp`
+in place of the native `%kvp`. The same blacklist drives both modes,
+so parity is enforced — adding a new sensitive field is a one-line
+change in `SensitiveFieldNames`.
+
+**Regex on message body — deferred** — scanning the formatted message
+for IBAN / amount / email / token patterns will land when the data
+flows through the application (IBAN: Block 2 import pipeline; amounts
+above a sensitivity threshold: Block 3 categorization). The SPI hook
+is `applyingValueProcessor` on the `message` member specifically (via
+`whenHasPath("message")`), so this extension is additive and does not
+disturb the C-min field-name path.
+
+**Orthogonal — Logback variable auto-masking** — since Logback 1.5.22,
+the framework automatically masks the value of any Logback variable
+(`${...}` substitution in `logback-spring.xml`) whose name contains
+`password`, `secret`, or `confidential`. This protects accidental
+exposure of configuration values rendered through Logback's own
+substitution machinery; it is unrelated to runtime KVP/MDC masking
+and is mentioned here only to avoid confusion. Logback 1.5.32 ships
+with Spring Boot 4.0.6 so the feature is active by default.
 
 ### Log levels
 
@@ -285,6 +336,26 @@ Rejected because:
 - No correlation IDs by default.
 - No sanitization of sensitive data.
 
+### Native Logback `%maskedKvp` (`MaskedKeyValuePairConverter`)
+
+Logback ships its own `MaskedKeyValuePairConverter` since 1.5.7, with
+the alias `%maskedKvp{key1, key2, ...}`. The list of keys to mask is
+passed as pattern options inside the `logback-spring.xml` file.
+
+Rejected because:
+- The blacklist would live in `logback-spring.xml` (XML) while the
+  JSON-side blacklist lives in `SensitiveFieldNames` (Java). Two
+  sources of truth invite silent drift.
+- The matcher is **case-sensitive** (`List.contains(kvp.key)`); a
+  developer writing `addKeyValue("Password", x)` would bypass it.
+  The JSON customizer is case-insensitive via `Locale.ROOT`; using
+  the native converter on the dev side would create an asymmetric
+  contract.
+- The custom `MaskedKvpConverter` is ~30 lines of stateless Java that
+  delegates to the shared `SensitiveFieldNames.isSensitive(...)`,
+  enforcing prod / dev parity by construction. The maintenance cost
+  is negligible.
+
 ### Custom `RequestIdFilter` (`OncePerRequestFilter` + MDC)
 
 Before Micrometer Tracing became the idiomatic Spring Boot path, the
@@ -386,9 +457,13 @@ Rejected because:
   https://docs.spring.io/spring-boot/reference/actuator/tracing.html
 - "Structured logging in Spring Boot 3.4" (Spring blog, 2024-08-23):
   https://spring.io/blog/2024/08/23/structured-logging-in-spring-boot-3-4/
+- `StructuredLoggingJsonMembersCustomizer` Javadoc:
+  https://docs.spring.io/spring-boot/api/java/org/springframework/boot/logging/structured/StructuredLoggingJsonMembersCustomizer.html
 - Micrometer Tracing documentation:
   https://docs.micrometer.io/tracing/reference/
 - `logstash-logback-encoder`:
   https://github.com/logfellow/logstash-logback-encoder
+- Logback `MaskedKeyValuePairConverter` (`%maskedKvp`):
+  https://logback.qos.ch/manual/layouts.html#maskedKvp
 - "Logging Best Practices" by OWASP:
   https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
