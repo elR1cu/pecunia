@@ -40,6 +40,44 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-13 — Session 09
+
+**Block / Task**: Block 1 — Secured Skeleton, logging sub-session C (sanitization, C-min scope)
+
+**Done**:
+- Full sanitization stack: `SensitiveFieldNames` (shared blacklist, exact-match case-insensitive via `Locale.ROOT`), `SensitiveDataLoggingCustomizer` (SB4 SPI on             
+  `JsonWriter.Members`), `MaskedKvpConverter` (Logback `ClassicConverter`), and a minimal `logback-spring.xml` (Spring Boot defaults include + profile-switched console appender
++ root logger).
+- Wiring in `application.yml` (customizer) and `application-dev.yml` (`%kvp` → `%maskedKvp`).
+- End-to-end validation across six scenarios (dev text + prod JSON): non-sensitive KVPs pass through, `password` / `iban` masked, case-insensitive on `PASSWORD`, exact-match
+  preserves `accountId`, structural fields untouched, `traceId` / `spanId` propagated.
+- `${LOG_CORRELATION_PATTERN:-}` regression introduced by the custom `logback-spring.xml` (SB4 `loadConfiguration` vs `loadDefaults` asymmetry) neutralized by inlining the   
+  `[app,traceId,spanId]` triplet in the dev pattern. New memory `project-sb4-logback-correlation-quirk`.
+- ADR-0018 updated (Sanitization section flipped to "implemented C-min", native `%maskedKvp` added to Alternatives Considered and rejected, Logback 1.5.22+ variable          
+  auto-masking added as orthogonal context). Three commits pushed.
+
+**Learned**:
+- `StructuredLoggingJsonMembersCustomizer` SPI: `applyingValueProcessor((path, value) -> ...)` traverses every member (top-level + flattened KVPs); `path.name()` returns the
+  last segment.
+- Logback ships `MaskedKeyValuePairConverter` (`%maskedKvp`) since 1.5.7 — rejected for our case (blacklist drift + case-sensitive vs. our `Locale.ROOT`).
+- Logback 1.5.22+ auto-masks `${...}` variables whose name contains `password` / `secret` / `confidential` — does **not** cover runtime KVPs (false friend).
+- A custom `logback-spring.xml` requires self-declaring the `defaults.xml` include, the console appender, and the root logger: Spring Boot stops auto-wiring the CONSOLE      
+  appender. SB Issue #38687 (property-based conversion rule registration) is open with no implementation.
+- `LogbackLoggingSystem.loadConfiguration()` (custom-XML path) pushes `LOG_*` via `System.setProperty`, while `loadDefaults()` (no-XML path) uses `LoggerContext.putProperty`.
+  The `${LOG_CORRELATION_PATTERN:-}` indirection survives one path, not the other. `<springProperty scope="context">` does not fix it either.
+
+**Next**:
+- Angular skeleton (Block 1 exit-criterion gating item) consuming `GET /me`.
+- GitHub Actions CI + commitlint + SonarCloud (parallelizable with the Angular work).
+- Prepare Block 2 (hexagonal scaffolding around the first aggregate).
+
+**Notes**:
+- Three commits on the branch, pushed: `build(api): set spring-boot-maven-plugin working directory to repo root` / `feat(api): mask sensitive log fields via shared blacklist`
+  / `docs: document the C-min sanitization implementation in ADR-0018`.
+- Spring Boot bug #49304 (OTLP export disable possibly incomplete) still to re-verify at Block 9.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-13-session-09.md).
+
 ### 2026-06-10 — Session 08
 
 **Block / Task**: Block 1 — Secured Skeleton, logging substep (sub-sessions A + B)
