@@ -181,6 +181,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <workingDirectory>${project.basedir}/../..</workingDirectory>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.openapitools</groupId>
