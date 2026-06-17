@@ -40,6 +40,37 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-17 — Session 11
+
+**Block / Task**: Block 1 — Secured Skeleton, Angular frontend (closing the exit criterion)
+
+**Done**:
+- Added Angular Material 22 (prebuilt M3 Azure/Blue palette, Roboto, density
+  0) via `ng add`; new `mat.theme()` API emits `--mat-sys-*` variables, no                                                                                                    
+     animations provider in the zoneless build.
+- Created the `ng serve` dev proxy (`/api`, `/oauth2`, `/login`, `/logout` →                                                                                                  
+  `:8080`) with `changeOrigin: false` for the BFF redirect-uri; verified                                                                                                      
+  routing by curl (proxied paths 500, SPA `/` 200).
+- Namespaced the API under `/api` (contract `/me` → `/api/me`); regenerated                                                                                                   
+  the backend (route moves with no controller change), updated two slice                                                                                                      
+  tests (5/5 green).
+- Wired the OpenAPI TS client pipeline: `@openapitools/openapi-generator-cli`                                                                                                 
+  (engine pinned 7.22.0), `typescript-angular` → `src/generated/api`                                                                                                          
+  (gitignored, regenerated via `prestart`/`prebuild`); full `npm run build`                                                                                                   
+  type-checks the client.
+- Four commits on the branch (not pushed): Material, proxy + /api, Spotless                                                                                                   
+  formatting, client pipeline.
+
+**Next**:
+- Point 4 — auth flow shell (applicative): `provideApi('')` +                                                                                                                 
+  `provideHttpClient()`, public landing + protected `/me` route consuming                                                                                                     
+  `IdentityService`. Closes the Block 1 exit criterion.
+- Verify Keycloak Valid Redirect URIs include                                                                                                                                 
+  `http://localhost:4200/login/oauth2/code/pecunia` before testing the flow.
+- Point 5 — CSRF (`withXsrfConfiguration`); push the four local commits.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-17-session-11.md)
+
 ### 2026-06-16 — Session 10
 
 **Block / Task**: Block 1 — Secured Skeleton, Angular scaffolding (gating
