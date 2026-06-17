@@ -1,13 +1,12 @@
 package com.pecunia.shared.observability;
 
+import static com.pecunia.shared.observability.SensitiveFieldNames.MASK;
+
 import ch.qos.logback.classic.pattern.ClassicConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.CoreConstants;
-import org.slf4j.event.KeyValuePair;
-
 import java.util.List;
-
-import static com.pecunia.shared.observability.SensitiveFieldNames.MASK;
+import org.slf4j.event.KeyValuePair;
 
 public final class MaskedKvpConverter extends ClassicConverter {
     @Override
