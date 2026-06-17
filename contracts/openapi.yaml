@@ -13,7 +13,7 @@ tags:
     description: Authenticated user identity.
 
 paths:
-  /me:
+  /api/me:
     get:
       tags: [Identity]
       operationId: getCurrentUser

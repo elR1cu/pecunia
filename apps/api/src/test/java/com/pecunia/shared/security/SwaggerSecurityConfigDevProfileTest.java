@@ -45,6 +45,6 @@ class SwaggerSecurityConfigDevProfileTest {
     @Test
     @DisplayName("non-swagger paths still require auth in dev profile")
     void nonSwaggerPathStillProtected() throws Exception {
-        mockMvc.perform(get("/me").accept(MediaType.APPLICATION_JSON)).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/me").accept(MediaType.APPLICATION_JSON)).andExpect(status().isUnauthorized());
     }
 }

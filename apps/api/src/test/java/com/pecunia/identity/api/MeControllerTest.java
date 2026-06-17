@@ -39,7 +39,7 @@ class MeControllerTest {
     @Test
     @DisplayName("returns the current user profile when authenticated")
     void returnsCurrentUserProfileWhenAuthenticated() throws Exception {
-        mockMvc.perform(get("/me")
+        mockMvc.perform(get("/api/me")
                         .with(oidcLogin()
                                 .idToken(token -> token.subject(SUBJECT_UUID)
                                         .claim(PREFERRED_USERNAME, "testuser")
@@ -57,7 +57,7 @@ class MeControllerTest {
     @Test
     @DisplayName("falls back to preferred username for display name when the name claim is absent")
     void fallsBackToPreferredUsernameForDisplayNameWhenNameClaimAbsent() throws Exception {
-        mockMvc.perform(get("/me")
+        mockMvc.perform(get("/api/me")
                         .with(oidcLogin()
                                 .idToken(token -> token.subject(SUBJECT_UUID)
                                         .claim(PREFERRED_USERNAME, "fallbackuser")
@@ -70,7 +70,7 @@ class MeControllerTest {
     @Test
     @DisplayName("returns false for emailVerified when the claim is absent")
     void returnsFalseForEmailVerifiedWhenClaimAbsent() throws Exception {
-        mockMvc.perform(get("/me")
+        mockMvc.perform(get("/api/me")
                         .with(oidcLogin()
                                 .idToken(token -> token.subject(SUBJECT_UUID)
                                         .claim(PREFERRED_USERNAME, "unverifieduser")
@@ -83,7 +83,7 @@ class MeControllerTest {
     @Test
     @DisplayName("redirects browser to login when unauthenticated")
     void redirectsBrowserToLogin() throws Exception {
-        mockMvc.perform(get("/me").accept(MediaType.TEXT_HTML))
+        mockMvc.perform(get("/api/me").accept(MediaType.TEXT_HTML))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/oauth2/authorization/pecunia"));
     }
@@ -91,6 +91,6 @@ class MeControllerTest {
     @Test
     @DisplayName("returns 401 for json request when unauthenticated")
     void returnsUnauthorizedForJsonRequest() throws Exception {
-        mockMvc.perform(get("/me").accept(MediaType.APPLICATION_JSON)).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/me").accept(MediaType.APPLICATION_JSON)).andExpect(status().isUnauthorized());
     }
 }
