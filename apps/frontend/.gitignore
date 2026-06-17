@@ -6,6 +6,9 @@
 /out-tsc
 /bazel-out
 
+# Generated OpenAPI client (regenerated from contracts/openapi.yaml via `npm run generate:api`)
+/src/generated
+
 # Node
 /node_modules
 npm-debug.log

@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "7.22.0",
+    "generators": {
+      "pecunia-api-client": {
+        "generatorName": "typescript-angular",
+        "inputSpec": "../../contracts/openapi.yaml",
+        "output": "src/generated/api",
+        "additionalProperties": {
+          "ngVersion": "22.0.0",
+          "useTags": true,
+          "providedInRoot": true,
+          "useSingleRequestParameter": true,
+          "fileNaming": "kebab-case",
+          "stringEnums": true
+        }
+      }
+    }
+  }
+}
