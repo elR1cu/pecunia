@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
@@ -43,7 +42,7 @@ public class SecurityConfig {
                 // See ADR-0022 for what spa() bundles
                 .csrf(CsrfConfigurer::spa)
                 .exceptionHandling(eh -> eh.authenticationEntryPoint(authenticationEntryPoint))
-                .oauth2Login(Customizer.withDefaults())
+                .oauth2Login(oauth2LoginConfigurer -> oauth2LoginConfigurer.defaultSuccessUrl("/dashboard", true))
                 .logout(logoutConfigurer ->
                         logoutConfigurer.logoutSuccessHandler(oidcClientInitiatedLogoutSuccessHandler))
                 .sessionManagement(sessionManagementConfigurer ->
