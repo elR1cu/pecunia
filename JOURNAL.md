@@ -40,6 +40,32 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-18 — Session 12
+
+**Block / Task**: Block 1 — Secured Skeleton, Angular auth flow shell (Block 1 exit criterion met)
+
+**Done**:
+- Built the auth flow shell (A + C): `authErrorInterceptor` (401 → full-page                                                                                                  
+  redirect to `/oauth2/authorization/pecunia`, relays the error), `authGuard`                                                                                                 
+  (`getCurrentUser()` → true/false, no redirect — the interceptor owns it),                                                                                                   
+  `Landing` (native login anchor), `Dashboard` (`toSignal` of `/api/me`), routes                                                                                              
+  with `canActivate`, and `app.html` reduced to `<router-outlet />`.
+- Backend `defaultSuccessUrl("/dashboard", true)` (chosen over a frontend check,                                                                                              
+  which would collide with the global 401 interceptor on the public landing).
+- Keycloak: added the exact `:4200` callback redirect URI (no wildcard). Hit and                                                                                              
+  fixed the realm-persisted-in-Postgres gotcha (`--import-realm` won't overwrite                                                                                              
+  → `down -v && up`). Saved as memory `project-keycloak-realm-reimport`.
+- Meaningful unit tests for the guard (DI fake) and interceptor                                                                                                               
+  (`HttpTestingController`); dropped the valueless shell stubs. Suite green (5).
+- Validated end to end in the browser; committed in 4 local commits.
+
+**Next**:
+- Push the branch (4 commits).
+- Point 5 — CSRF (`withXsrfConfiguration`) + logout button as first mutating call.
+- GitHub Actions CI + commitlint + SonarCloud.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-18-session-12.md)
+
 ### 2026-06-17 — Session 11
 
 **Block / Task**: Block 1 — Secured Skeleton, Angular frontend (closing the exit criterion)
