@@ -24,7 +24,8 @@
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
       "redirectUris": [
-        "http://localhost:8080/login/oauth2/code/pecunia"
+        "http://localhost:8080/login/oauth2/code/pecunia",
+        "http://localhost:4200/login/oauth2/code/pecunia"
       ],
       "webOrigins": [
         "http://localhost:4200"
