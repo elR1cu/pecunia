@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.DelegatingAuthenticationE
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import tools.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableWebSecurity
@@ -52,10 +53,11 @@ public class SecurityConfig {
 
     @Bean
     OidcClientInitiatedLogoutSuccessHandler logoutSuccessHandler(
-            ClientRegistrationRepository clientRegistrationRepository) {
+            ClientRegistrationRepository clientRegistrationRepository, ObjectMapper objectMapper) {
         OidcClientInitiatedLogoutSuccessHandler handler =
                 new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository);
         handler.setPostLogoutRedirectUri("{baseUrl}");
+        handler.setRedirectStrategy(new JsonLogoutRedirectStrategy(objectMapper));
         return handler;
     }
 
