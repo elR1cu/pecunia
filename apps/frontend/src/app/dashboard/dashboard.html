@@ -1,3 +1,4 @@
 @if (user(); as currentUser) {
   <p>Bonjour {{ currentUser.displayName }}</p>
+  <button matButton="outlined" (click)="logout()">Se déconnecter</button>
 }
