@@ -40,6 +40,32 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-19 — Session 13
+
+**Block / Task**: Block 1 — Secured Skeleton, Point 5 (CSRF + logout) complete; i18n strategy decided
+
+**Done**:
+- Confirmed CSRF was already wired (backend `csrf().spa()` + Angular default XSRF,                                                                                            
+  matching names) — no `withXsrfConfiguration` needed (corrected Session 12).
+- Logout via Option B (BFF canonical): backend `JsonLogoutRedirectStrategy` returns                                                                                           
+  `200 + {logoutUrl}` (custom `RedirectStrategy` on the OIDC handler); frontend                                                                                               
+  `AuthService` POSTs `/logout` then `window.location.href`; Material button on the                                                                                           
+  dashboard. Rewrote `auth-service.spec.ts` with `HttpTestingController` (green).
+- Validated end to end in the browser — POST `/logout` carries `X-XSRF-TOKEN` → 200 →                                                                                         
+  Keycloak end-session → back to `/`. Realm already allowed the post-logout URI.
+- ADR-0025: chose **ngx-translate v18** for frontend i18n (EN/FR/DE/IT, runtime                                                                                               
+  switching) after researching the 2026 landscape; rationale = app behind auth +                                                                                              
+  zoneless/signals-first.
+- Wrongly flagged `@Service()` as non-existent, self-corrected via web search, saved                                                                                          
+  memory `project-angular-22-service-decorator`. Three commits pushed.
+
+**Next**:
+- Record i18n in scope (roadmap + CLAUDE.md), then implement ngx-translate v18.
+- GitHub Actions CI + commitlint + SonarCloud, then tag `block-1-complete`.
+- Prepare Block 2 (hexagonal scaffolding + ArchUnit).
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-19-session-13.md)
+
 ### 2026-06-18 — Session 12
 
 **Block / Task**: Block 1 — Secured Skeleton, Angular auth flow shell (Block 1 exit criterion met)
