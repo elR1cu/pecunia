@@ -1,0 +1,42 @@
+name: PR Title
+
+# Feature branches are squash-merged, so the PR title becomes the single
+# Conventional Commit on main's linear history. Linting the PR title is
+# therefore the right (and sufficient) place to enforce the convention —
+# individual feature-branch commits are discarded on merge.
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+    branches: [main]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  lint-pr-title:
+    name: Lint PR title (Conventional Commits)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate the PR title
+        uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Allowed types, kept in sync with CLAUDE.md's Conventional Commits list.
+          types: |
+            feat
+            fix
+            docs
+            refactor
+            test
+            chore
+            ci
+            perf
+            style
+            build
+          # A scope is optional, but when present it must be lower-case.
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject "{subject}" must start with a lower-case letter, e.g.
+            "feat(api): add the logout endpoint".
