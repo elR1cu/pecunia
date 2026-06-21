@@ -40,6 +40,31 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-21 — Session 14
+
+**Block / Task**: Block 1 — Secured Skeleton (CI + PR-title lint complete; SonarCloud + i18n pending)
+
+**Done**:
+- Added GitHub Actions CI (`ci.yml`): backend `mvn verify` + frontend                                                                                                         
+  `npm ci`/build/test, both jobs always run. Frontend job needs a JDK too —                                                                                                   
+  the OpenAPI client is generated via `java -jar 7.22.0.jar`.
+- Added `pr-title.yml` (`amannn/action-semantic-pull-request@v6`) to lint PR                                                                                                  
+  titles against Conventional Commits — the right unit given linear `main`.
+- Local pre-flight green, then installed `gh` (2.95.0), pushed the branch and                                                                                                 
+  opened **PR #1**; all three checks passed first run (backend 1m11s,                                                                                                         
+  frontend 39s, lint 6s).
+- Decided **rebase-merge (not squash)** for the 57-commit block branch to keep                                                                                                
+  a portfolio-worthy history; saved memory `feedback-merge-strategy-by-branch-size`.
+- Scoped a dedicated **SonarCloud** session (~2h backend-first; risks: Java 25                                                                                                
+  scanner + multi-language monorepo + generated-code exclusions).
+
+**Next**:
+- Dedicated SonarCloud session (account + `SONAR_TOKEN` + JaCoCo + Quality Gate + badge).
+- Record i18n in scope, then implement ngx-translate v18.
+- Curate the branch (rebase -i) and rebase-merge PR #1, then tag `block-1-complete`.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-21-session-14.md).
+
 ### 2026-06-19 — Session 13
 
 **Block / Task**: Block 1 — Secured Skeleton, Point 5 (CSRF + logout) complete; i18n strategy decided
