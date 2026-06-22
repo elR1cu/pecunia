@@ -40,6 +40,30 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-22 — Session 15
+
+**Block / Task**: Block 1 — Secured Skeleton (SonarCloud done; i18n pending before `block-1-complete`)
+
+**Done**:
+- Wired JaCoCo 0.8.14 on Java 25 (`@{argLine}` so the agent coexists with Mockito)                                                                                            
+  and SonarCloud CI analysis (`sonar-maven-plugin` 5.7.0.6970 pinned in the pom,                                                                                              
+  short `sonar:sonar` prefix, `sonar.*` config + exclusions in the pom).
+- CI: `fetch-depth: 0`, `~/.sonar/cache`, combined `mvn verify sonar:sonar`, and                                                                                              
+  `-Dsonar.qualitygate.wait=true` so the build fails on a red gate.
+- Unit-tested the security-relevant masking (SensitiveFieldNames, MaskedKvpConverter,                                                                                         
+  SensitiveDataLoggingCustomizer → 100% line+branch) + JsonLogoutRedirectStrategy;                                                                                            
+  suite 12 → 45. Fixed two Sonar smells in code (S1125 mapper, AssertJ `hasToString`).
+- Quality Gate reached green (CSRF finding resolved as False Positive in the UI:                                                                                              
+  dev-only + stateless + read-only chain). Learned hotspots are now merged into Issues.
+- ADR-0017 updated (real implementation, Karma→Vitest), README badges added.
+
+**Next**:
+- Implement i18n (ngx-translate v18) — last item before `block-1-complete`.
+- Curate the branch (`rebase -i --autosquash`, 4 fixups) and rebase-merge PR #1, then tag.
+- Wire frontend SonarCloud (Vitest LCOV) in a follow-up session.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-22-session-15.md).
+
 ### 2026-06-21 — Session 14
 
 **Block / Task**: Block 1 — Secured Skeleton (CI + PR-title lint complete; SonarCloud + i18n pending)
