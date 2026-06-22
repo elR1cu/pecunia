@@ -48,9 +48,34 @@ introduced at **Block 1** with GitHub Actions CI.
 
 ### Coverage measurement
 
-JaCoCo generates coverage reports during the Maven build. SonarCloud
-ingests these reports for backend coverage. Frontend coverage is
-provided by Angular's built-in test coverage (Karma + Istanbul).
+JaCoCo generates coverage reports during the Maven `verify` phase.
+SonarCloud ingests these reports for backend coverage. Frontend coverage
+will be provided by an LCOV report from Vitest (the Angular CLI 22 default
+test runner, which replaced Karma/Istanbul — see Session 10) when the
+frontend is wired in a later session.
+
+### Implementation (introduced Block 1)
+
+- **CI-based analysis**, not SonarCloud's Automatic Analysis: only the
+  CI-based path can ingest an external coverage report (JaCoCo). Automatic
+  Analysis is disabled on the SonarCloud project to avoid a conflicting
+  double analysis.
+- **Backend scanner**: `sonar-maven-plugin` 5.7.0.6970, declared (version
+  pinned) in `apps/api/pom.xml` so `mvn sonar:sonar` resolves the short
+  prefix in CI and locally. Java 25 is fully supported by the analyzer.
+- **Coverage tool**: `jacoco-maven-plugin` 0.8.14 (first release with
+  official Java 25 support). Surefire's `argLine` uses `@{argLine}` so the
+  JaCoCo agent coexists with the existing Mockito agent.
+- **Analysis identifiers** live in the pom: `sonar.organization`,
+  `sonar.projectKey`, `sonar.host.url`. The token is supplied via the
+  `SONAR_TOKEN` env var (GitHub Actions secret), never committed.
+- **Checkout** uses `fetch-depth: 0` so SonarCloud can compute blame and
+  the "new code" period.
+- **Exclusions**:
+  - `sonar.exclusions=**/generated-sources/**` — generated code is excluded
+    from all analysis (OpenAPI client and MapStruct `*Impl`).
+  - `sonar.coverage.exclusions=**/PecuniaApplication.java` — the bootstrap
+    class is excluded from the coverage metric only.
 
 ## Consequences
 

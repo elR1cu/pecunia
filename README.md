@@ -1,6 +1,8 @@
 # Pecunia
 
 [![Build Status](https://github.com/elR1cu/pecunia/actions/workflows/ci.yml/badge.svg)](https://github.com/elR1cu/pecunia/actions/workflows/ci.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=elR1cu_pecunia&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=elR1cu_pecunia)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=elR1cu_pecunia&metric=coverage)](https://sonarcloud.io/summary/new_code?id=elR1cu_pecunia)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java](https://img.shields.io/badge/Java-25-orange.svg)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4-green.svg)](https://spring.io/projects/spring-boot)
