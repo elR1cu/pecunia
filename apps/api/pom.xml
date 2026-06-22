@@ -25,6 +25,7 @@
         <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok.version>1.18.38</lombok.version>
+        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -246,8 +247,34 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
-                    <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    <!-- @{argLine} is Surefire's late property substitution: it expands to the
+                         value jacoco:prepare-agent puts in the `argLine` property (the JaCoCo
+                         agent), to which we append the Mockito agent. Both agents coexist;
+                         hard-coding argLine here would silently discard JaCoCo's, yielding 0% coverage. -->
+                    <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-maven-plugin.version}</version>
+                <executions>
+                    <!-- Sets the `argLine` property to the JaCoCo agent (picked up by Surefire via @{argLine}). -->
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <!-- Produces target/site/jacoco/jacoco.xml after tests; SonarCloud ingests this report. -->
+                    <execution>
+                        <id>report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <phase>verify</phase>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
