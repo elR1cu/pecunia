@@ -27,6 +27,9 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v5
+        with:
+          # Full history so SonarCloud can compute blame and the "new code" period.
+          fetch-depth: 0
 
       - name: Set up JDK 25
         uses: actions/setup-java@v5
@@ -36,13 +39,32 @@ jobs:
           # Caches ~/.m2/repository keyed on the pom files.
           cache: maven
 
+      # The scanner downloads its analyzers and a provisioned JRE into
+      # ~/.sonar/cache; caching it speeds up subsequent runs. (Maven deps are
+      # already cached by setup-java above.)
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
       # `verify` compiles, runs the OpenAPI codegen + MapStruct/Lombok
-      # annotation processors, executes the Spotless `check` goal (bound to
-      # the verify phase) and runs the test suite. One command, full gate.
-      # -B = batch mode (no interactive prompts), -ntp = no transfer progress
-      # (quieter logs). No root pom in this repo, so we point at the module.
-      - name: Build, check formatting, and test
-        run: mvn -B -ntp -f apps/api/pom.xml verify
+      # annotation processors, executes the Spotless `check` goal and the test
+      # suite, and produces the JaCoCo report. `sonar:sonar` then runs in the
+      # same reactor (only if verify passed) and uploads to SonarCloud: the
+      # scanner version is pinned in the pom, the short prefix resolves to it,
+      # the PR/branch context is auto-detected, and the token is read from
+      # SONAR_TOKEN. -B = batch mode, -ntp = no transfer progress. No root pom
+      # in this repo, so we point at the module.
+      # sonar.qualitygate.wait makes the scanner poll SonarCloud and fail the
+      # build if the Quality Gate fails — enforcing it on PRs (ADR-0017). Kept as
+      # a CLI flag (not a pom property) since gate enforcement is a CI concern; a
+      # local `mvn sonar:sonar` should not block on gate polling.
+      - name: Build, test, and SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn -B -ntp -f apps/api/pom.xml verify sonar:sonar -Dsonar.qualitygate.wait=true
 
   frontend:
     name: Frontend (codegen, build, test)

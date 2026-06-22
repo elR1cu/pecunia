@@ -26,6 +26,22 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok.version>1.18.38</lombok.version>
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
+        <sonar-maven-plugin.version>5.7.0.6970</sonar-maven-plugin.version>
+
+        <!-- SonarCloud analysis (see ADR-0017). The token is supplied via the SONAR_TOKEN env var in CI. -->
+        <sonar.organization>elr1cu</sonar.organization>
+        <sonar.projectKey>elR1cu_pecunia</sonar.projectKey>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <!-- Backend coverage: the report JaCoCo writes during `verify`. -->
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <!-- Generated code excluded from all analysis (OpenAPI client + MapStruct *Impl under target/generated-sources). -->
+        <sonar.exclusions>**/generated-sources/**</sonar.exclusions>
+        <!-- Excluded from the coverage metric only: the bootstrap class and the Spring
+             Security filter-chain wiring beans (declarative config, exercised by slice/
+             integration tests rather than unit coverage; see the testing policy in CLAUDE.md).
+             Security/behavioural logic (log masking, logout strategy) is deliberately NOT
+             excluded and is expected to be unit-tested. -->
+        <sonar.coverage.exclusions>**/PecuniaApplication.java,**/SecurityConfig.java,**/SwaggerSecurityConfig.java</sonar.coverage.exclusions>
     </properties>
 
     <dependencyManagement>
@@ -275,6 +291,13 @@
                         <phase>verify</phase>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- Declared (not bound to a phase) so `mvn sonar:sonar` resolves the short prefix
+                 to this pinned version, in CI and locally. See ADR-0017. -->
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>${sonar-maven-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
