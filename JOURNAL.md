@@ -40,6 +40,28 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-24 — Session 16
+
+**Block / Task**: Block 1 — Secured Skeleton (i18n + frontend SonarCloud done; branch curation + merge pending)
+
+**Done**:
+- Implemented i18n (ngx-translate v18): JSON resources EN/FR/DE/IT, `LanguageService`                                                                                         
+  (thin boundary + localStorage), language switcher, migrated templates, unit test (13 green).
+- Fixed the duplicate `GET /api/me` via an `IdentityState` signal service (guard                                                                                              
+  populates, dashboard reads) + `globalThis`-over-`window` smell fix.
+- Wired frontend SonarCloud as a second monorepo project: Vitest LCOV, `sonarqube-scan-action@v8`,                                                                            
+  per-project tokens, `projectName`s. Backend key → `elR1cu_pecunia_api`.
+- Survived a long SonarCloud saga (free-plan main-only → repo made public/OSS, project                                                                                        
+  visibility, case-sensitive keys creating duplicates, CSRF S4502 False Positive). CI now fully green on PR #1.
+- Recorded i18n as in-scope (CLAUDE.md, roadmap) and updated ADR-0017.
+
+**Next**:
+- Create the branch protection rule on `main` (required CI checks, linear history, 0 approvals solo).
+- Second ADR-0017 pass (public/OSS plan, per-project tokens, CSRF FP vs pom suppression note).
+- Curate the branch (`rebase -i --autosquash`), rebase-merge PR #1, tag `block-1-complete`.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-24-session-16.md).
+
 ### 2026-06-22 — Session 15
 
 **Block / Task**: Block 1 — Secured Skeleton (SonarCloud done; i18n pending before `block-1-complete`)
