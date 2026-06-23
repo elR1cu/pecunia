@@ -76,6 +76,9 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v5
+        with:
+          # Full history so SonarCloud can compute blame and the "new code" period.
+          fetch-depth: 0
 
       - name: Set up Node
         uses: actions/setup-node@v5
@@ -103,5 +106,21 @@ jobs:
       - name: Build (generates the OpenAPI client)
         run: npm run build
 
-      - name: Test
-        run: npm test
+      # `test:ci` runs Vitest with coverage (configuration=ci) and writes the
+      # LCOV report the scanner reads. `--no-watch` is implicit in CI but kept
+      # explicit in the script.
+      - name: Test with coverage
+        run: npm run test:ci
+
+      # Separate SonarCloud project for the frontend (monorepo support, ADR-0017).
+      # Reads apps/frontend/sonar-project.properties; the scanner runs from
+      # projectBaseDir so the LCOV path resolves. qualitygate.wait fails the
+      # build on a red gate, mirroring the backend job.
+      - name: SonarCloud analysis
+        uses: SonarSource/sonarqube-scan-action@v8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+        with:
+          projectBaseDir: apps/frontend
+          args: -Dsonar.qualitygate.wait=true

@@ -71,7 +71,14 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "configurations": {
+            "ci": {
+              "coverage": true,
+              "coverageReporters": ["lcovonly", "text-summary"],
+              "coverageExclude": ["src/generated/**"]
+            }
+          }
         }
       }
     }
