@@ -173,6 +173,9 @@ When the user asks for advice on a choice with multiple options:
 - **TypeScript** (strict mode)
 - **PWA** support for mobile
 - **OpenAPI Generator** (CLI, generates typed TypeScript Angular client)
+- **ngx-translate v18** for runtime internationalization (EN/FR/DE/IT,
+  in-app language switching, English fallback). Covers the application
+  chrome only, not user data. See ADR-0025.
 
 ### Persistence and Infrastructure
 

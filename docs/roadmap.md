@@ -74,6 +74,9 @@ to receive features.
   (`logging.structured.format.console=logstash`) with MDC correlation IDs
   via Micrometer Tracing (OpenTelemetry bridge, no exporter yet) and
   sanitization patterns for financial data. See ADR-0018.
+- **Frontend internationalization**: ngx-translate v18 wired with runtime
+  language switching (EN/FR/DE/IT, English fallback) and a persisted
+  language choice. Application chrome only, not user data. See ADR-0025.
 
 **Exit criteria**: the user can log in via Keycloak, the session cookie
 works end to end, and a protected endpoint returns the user's identity.
