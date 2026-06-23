@@ -8,7 +8,7 @@ export class AuthService {
 
   logout(): void {
     this.httpClient.post<LogoutResponse>('/logout', null).subscribe({
-      next: (res) => (window.location.href = res.logoutUrl),
+      next: (res) => (globalThis.location.href = res.logoutUrl),
       // TODO: replace with user-facing feedback (MatSnackBar)
       error: (err: HttpErrorResponse) => console.error(err),
     });
