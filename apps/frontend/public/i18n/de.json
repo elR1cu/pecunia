@@ -1,0 +1,12 @@
+{
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden"
+  },
+  "landing": {
+    "tagline": "Verwalten Sie Ihr persönliches Budget."
+  },
+  "dashboard": {
+    "greeting": "Hallo {{name}}"
+  }
+}

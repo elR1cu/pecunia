@@ -1,0 +1,11 @@
+@for (lang of languageService.supported; track lang) {
+  @let active = languageService.current() === lang;
+  <button
+    matButton
+    (click)="languageService.switch(lang)"
+    [disabled]="active"
+    [attr.aria-current]="active ? 'true' : null"
+  >
+    {{ lang.toUpperCase() }}
+  </button>
+}

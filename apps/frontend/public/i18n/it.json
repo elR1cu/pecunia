@@ -1,0 +1,12 @@
+{
+  "auth": {
+    "login": "Accedi",
+    "logout": "Disconnetti"
+  },
+  "landing": {
+    "tagline": "Gestisci il tuo budget personale."
+  },
+  "dashboard": {
+    "greeting": "Ciao {{name}}"
+  }
+}
