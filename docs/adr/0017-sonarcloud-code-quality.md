@@ -48,14 +48,20 @@ introduced at **Block 1** with GitHub Actions CI.
 
 ### Coverage measurement
 
-JaCoCo generates coverage reports during the Maven `verify` phase.
-SonarCloud ingests these reports for backend coverage. Frontend coverage
-will be provided by an LCOV report from Vitest (the Angular CLI 22 default
-test runner, which replaced Karma/Istanbul — see Session 10) when the
-frontend is wired in a later session.
+JaCoCo generates coverage reports during the Maven `verify` phase for the
+backend. Frontend coverage comes from an LCOV report produced by Vitest
+(the Angular CLI 22 default test runner, which replaced Karma/Istanbul —
+see Session 10) via the `@angular/build:unit-test` `coverage` option.
+SonarCloud ingests each report into its respective project.
 
 ### Implementation (introduced Block 1)
 
+- **Monorepo, two projects**: following SonarCloud's monorepo guidance, the
+  repository is bound to two projects — `elR1cu_pecunia_api` (backend) and
+  `elR1cu_pecunia_frontend` (frontend) — each analysed by its own CI job. A
+  SonarCloud analysis is a full snapshot that replaces the previous, so one
+  project per build tool is the supported pattern; a single shared project
+  would require a unified scan over the whole repository.
 - **CI-based analysis**, not SonarCloud's Automatic Analysis: only the
   CI-based path can ingest an external coverage report (JaCoCo). Automatic
   Analysis is disabled on the SonarCloud project to avoid a conflicting
@@ -76,6 +82,18 @@ frontend is wired in a later session.
     from all analysis (OpenAPI client and MapStruct `*Impl`).
   - `sonar.coverage.exclusions=**/PecuniaApplication.java` — the bootstrap
     class is excluded from the coverage metric only.
+- **Frontend scanner**: `SonarSource/sonarqube-scan-action@v8` (Scanner CLI
+  v8, non-Docker) in the frontend CI job, reading
+  `apps/frontend/sonar-project.properties`. Coverage is an LCOV report from
+  Vitest, enabled by the `ci` configuration of the `@angular/build:unit-test`
+  target (`coverage` + `coverageReporters: [lcovonly]`) and run via
+  `npm run test:ci`; the `@vitest/coverage-v8` provider is required.
+- **Frontend exclusions**: `src/generated/**` from all analysis (OpenAPI
+  client); bootstrap, DI wiring and thin presentational components
+  (`main.ts`, `app.config.ts`, `app.ts`, `components/**`, `landing.ts`,
+  `dashboard.ts`) from the coverage metric only — mirroring the backend
+  policy of excluding declarative wiring while keeping business logic
+  (services, guard, interceptor) covered.
 
 ## Consequences
 
