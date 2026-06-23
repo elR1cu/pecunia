@@ -1,13 +1,7 @@
 import { CanActivateFn } from '@angular/router';
 import { inject } from '@angular/core';
-import { IdentityService } from '../../generated/api';
-import { catchError, map, of } from 'rxjs';
+import { IdentityState } from '../services/identity-state';
 
-export const authGuard: CanActivateFn = (route, state) => {
-  const identityService = inject(IdentityService);
-
-  return identityService.getCurrentUser().pipe(
-    map(() => true),
-    catchError(() => of(false)),
-  );
+export const authGuard: CanActivateFn = () => {
+  return inject(IdentityState).load();
 };

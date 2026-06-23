@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { IdentityService } from '../../generated/api';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../services/auth-service';
+import { IdentityState } from '../services/identity-state';
 import { MatButton } from '@angular/material/button';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -12,9 +11,10 @@ import { TranslatePipe } from '@ngx-translate/core';
   styleUrl: './dashboard.scss',
 })
 export class Dashboard {
-  private readonly identityService = inject(IdentityService);
   private readonly authService = inject(AuthService);
-  protected readonly user = toSignal(this.identityService.getCurrentUser());
+  private readonly identityState = inject(IdentityState);
+  // The guard has already loaded the user; we just read the shared signal.
+  protected readonly user = this.identityState.user;
 
   protected logout(): void {
     this.authService.logout();
