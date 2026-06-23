@@ -63,7 +63,7 @@ jobs:
       # local `mvn sonar:sonar` should not block on gate polling.
       - name: Build, test, and SonarCloud analysis
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_API }}
         run: mvn -B -ntp -f apps/api/pom.xml verify sonar:sonar -Dsonar.qualitygate.wait=true
 
   frontend:
@@ -119,7 +119,7 @@ jobs:
       - name: SonarCloud analysis
         uses: SonarSource/sonarqube-scan-action@v8
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_FRONTEND }}
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           projectBaseDir: apps/frontend
