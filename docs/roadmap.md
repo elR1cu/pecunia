@@ -85,9 +85,15 @@ to receive features.
 - **Frontend internationalization**: ngx-translate v18 wired with runtime
   language switching (EN/FR/DE/IT, English fallback) and a persisted
   language choice. Application chrome only, not user data. See ADR-0025.
+- **End-to-end test**: a Playwright happy-path automating the block's exit
+  criteria (anonymous `/dashboard` bounces to Keycloak, login sets the
+  HttpOnly session cookie, `/api/me` returns the identity rendered on the
+  dashboard). Lives in the root `e2e/` project; runs locally on demand,
+  CI wiring deferred.
 
 **Exit criteria**: the user can log in via Keycloak, the session cookie
 works end to end, and a protected endpoint returns the user's identity.
+This flow is verified by the Playwright happy-path test in `e2e/`.
 
 ### Block 2 — Domain Model
 
