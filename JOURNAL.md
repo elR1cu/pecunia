@@ -40,6 +40,25 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-25 — Session 17
+
+**Block / Task**: Block 1 — Secured Skeleton (closure)
+
+**Done**:
+- Upgraded backend to Spring Boot 4.1.0; full test suite green.
+- Added supply-chain security baseline: Trivy `fs` scan CI job + Dependabot (maven/npm/actions). Deferred SBOM and image scanning to Block 8.
+- Fixed 3 HIGH frontend advisories (vite, piscina) by aligning the whole `@angular/*` set on Angular 22.x patches; surgical lockfile diff.
+- Ran a Block 1 closure audit, closed its one gap by wiring an ESLint + Prettier CI lint gate, and reconciled the roadmap wording with reality.
+- Scaffolded a root-level Playwright `e2e/` project with a happy-path test proving the Block 1 exit criteria end to end (passes); added Block 11 (Performance & Resilience) to
+  the roadmap.
+
+**Next**:
+- Curate the branch (autosquash `fixup!` commits, group related commits) before integration.
+- Push, open a PR to `main` (activates Trivy + the new lint gate), then integrate Block 1 into `main` via curated rebase-merge.
+- Start Block 2 — Domain Model.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-25-session-17.md).
+
 ### 2026-06-24 — Session 16
 
 **Block / Task**: Block 1 — Secured Skeleton (i18n + frontend SonarCloud done; branch curation + merge pending)
