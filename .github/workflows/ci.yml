@@ -100,6 +100,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Style gates run before the build to fail fast. Neither needs the
+      # generated client: ESLint ignores src/generated and is not type-aware,
+      # and Prettier only checks source files.
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Format check (Prettier)
+        run: npm run format:check
+
       # `prebuild` runs `generate:api`, producing src/generated/api (gitignored)
       # from contracts/openapi.yaml. Tests import that client, so the build
       # must run before the tests.
