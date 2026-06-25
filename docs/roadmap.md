@@ -281,6 +281,33 @@ month?".
 - Observability stack deployed in the cluster (Prometheus, Grafana).
 - Documentation: "5-minute demo" runbook for interview presentations.
 
+### Block 11 — Performance and Resilience Engineering
+
+**Goal**: learn and demonstrate load testing, soak testing, and chaos
+engineering — a coherent, CV-grade story for a Senior Backend role in
+financial services.
+
+**Dependencies**: builds on Block 9 (Observability). Load and chaos results
+are only meaningful when metrics and dashboards are in place to interpret
+them. Infrastructure-level chaos additionally depends on Block 10 (k3d).
+
+**Deliverables**:
+- Load tests with **Gatling** (JVM-native, widely used in Swiss banking):
+  scenarios for the heavy endpoints (camt.053 import, paginated/filtered
+  transaction listing). Run on demand and/or nightly in CI.
+- **Soak / long-running tests**: the same scenarios sustained over hours to
+  surface memory leaks and connection-pool exhaustion, observed through the
+  Block 9 metrics.
+- **Application-level chaos** with **Chaos Monkey for Spring Boot**: inject
+  latency, exceptions, and bean kills to validate graceful degradation.
+- **Dependency/network fault injection** with **Toxiproxy**: simulate
+  PostgreSQL/Redis latency and outages. Ties into the Resilience4j adoption
+  planned at Block 6.
+- **Infrastructure chaos** on the k3d cluster (**Chaos Mesh** or
+  **LitmusChaos**): pod kills validating probes, HPA, and self-healing.
+- Documented performance baseline and target SLOs (latency percentiles,
+  throughput). A short ADR records the tooling choice.
+
 ### Future considerations
 
 The following are noted but not formally planned:
