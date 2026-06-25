@@ -66,8 +66,16 @@ to receive features.
 - OpenAPI specification skeleton in `contracts/openapi.yaml`.
 - OpenAPI generation wired into both backend (Maven plugin) and frontend
   (npm script).
-- GitHub Actions CI: build, test, lint on every push.
-- Conventional Commits enforced (commitlint).
+- GitHub Actions CI on pull requests to `main` and on pushes to `main`:
+  build, test, and lint (Spotless for the backend; ESLint + Prettier for
+  the frontend). Feature-branch pushes are intentionally not triggered, to
+  avoid duplicate runs alongside the open PR.
+- Conventional Commits enforced via a PR-title lint
+  (`action-semantic-pull-request`): the PR title becomes the squash/rebase
+  commit that lands on `main`'s linear history.
+- Supply-chain security baseline: a Trivy filesystem scan (vulnerabilities +
+  secrets) as a CI gate, and Dependabot for the maven, npm and
+  github-actions ecosystems.
 - **SonarCloud integration**: project setup with Quality Gates enforced
   on Pull Requests. Badge displayed in README.
 - **Structured JSON logging**: Spring Boot 4 native structured logging
