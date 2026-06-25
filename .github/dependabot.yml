@@ -1,0 +1,65 @@
+# Dependabot keeps dependencies patched by opening PRs when newer versions
+# (especially security fixes) are published. It complements the Trivy CI gate:
+# Trivy *detects* known CVEs and fails the build; Dependabot *proposes the fix*.
+#
+# Conventions:
+# - PR titles follow Conventional Commits (enforced by pr-title.yml). The
+#   commit-message prefix + "deps" scope yields titles like
+#   "chore(deps): bump ..." / "ci(deps): bump ..." that pass the lint.
+# - Minor and patch bumps are grouped per ecosystem to limit PR noise (the
+#   author works ~8h/week). Major bumps stay individual: they may carry
+#   breaking changes and deserve a dedicated review.
+version: 2
+updates:
+  # Backend Maven dependencies (Spring Boot, etc.). The version of the build
+  # itself (spring-boot.version) is a property, so those bumps land here too.
+  - package-ecosystem: maven
+    directory: /apps/api
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Europe/Zurich
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      maven-minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # Frontend npm dependencies (Angular, build tooling).
+  - package-ecosystem: npm
+    directory: /apps/frontend
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Europe/Zurich
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      prefix-development: chore
+      include: scope
+    groups:
+      npm-minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # The GitHub Actions pinned in .github/workflows (checkout, setup-java, trivy, ...).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Europe/Zurich
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions-minor-and-patch:
+        update-types:
+          - minor
+          - patch

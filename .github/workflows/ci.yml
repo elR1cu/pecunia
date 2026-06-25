@@ -124,3 +124,29 @@ jobs:
         with:
           projectBaseDir: apps/frontend
           args: -Dsonar.qualitygate.wait=true
+
+  security:
+    name: Security (Trivy vulnerability & secret scan)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v5
+
+      # Filesystem scan of the working tree. Two scanners:
+      #   - vuln:   known CVEs in dependency manifests (pom.xml, package-lock.json).
+      #   - secret: credentials/keys accidentally committed.
+      # Fails the build on CRITICAL/HIGH findings. ignore-unfixed=true keeps the
+      # gate actionable: it only flags vulnerabilities that have a fix available,
+      # so a red build always corresponds to a bump Dependabot can land.
+      # Dockerfile/IaC misconfiguration scanning and `trivy image` are deferred
+      # to Block 8 (Production Deployment), where the production image exists.
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+          format: table

@@ -145,6 +145,21 @@ quickly.
 - Encrypted off-site backup of PostgreSQL (Backblaze B2 or equivalent).
 - GitHub Actions deployment job: on merge to `main`, build images, push,
   deploy over SSH.
+- Supply-chain security, extending the Trivy/Dependabot baseline added in
+  Block 1:
+  - Container image scanning (`trivy image`) of the built application image,
+    plus Dockerfile/IaC misconfiguration scanning (`trivy` `misconfig`).
+  - SBOM generation (CycloneDX) for both backend and frontend: backend via
+    the `cyclonedx-maven-plugin` (declared explicitly with a pinned version,
+    since the imported BOM does not contribute its `pluginManagement`),
+    frontend via `@cyclonedx/cyclonedx-npm`. Distributed through controlled
+    channels (CI artifact, attached to the GitHub release), **not** exposed
+    over `/actuator/sbom`, to avoid disclosing exact dependency versions to
+    the network. Enables incident response and continuous monitoring of
+    released artifacts against future CVEs (e.g. via Dependency-Track). May
+    warrant a short ADR.
+  - Add Dependabot's `docker` ecosystem for the production compose/Dockerfile
+    image tags (postgres, keycloak, redis).
 - Basic Ansible playbook for VPS provisioning (Docker installation,
   firewall, fail2ban, automatic security updates).
 - Updated README with the live URL and a short demo description.
