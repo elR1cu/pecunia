@@ -40,6 +40,46 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-28 — Session 19
+
+**Block / Task**: Transition into Block 2 — Domain Model (account bounded context design; no code)
+
+**Done**:
+- Clarified the functional role of the `account` context (registry of tracked                                                                                                 
+  accounts, anchor for transactions, owner of the balance) and two domain rules:                                                                                              
+  a credit card has no IBAN (it has a PAN and is repaid from the current                                                                                                      
+  account), and the balance is **computed** (`initialBalance + Σ transactions`),                                                                                              
+  not stored, to avoid drift.
+- Settled the balance read path to avoid an `account ⇄ transaction` dependency                                                                                                
+  cycle: `account` owns an `AccountMovements` driven port; the domain method                                                                                                  
+  becomes `balanceFrom(Money)` so the domain never imports `Transaction`; the                                                                                                 
+  production path aggregates via SQL `SUM` rather than hydrating entities.
+- Decided: **defer `GetAccountBalance` to Block 3**; **Option B** (Open Host                                                                                                  
+  Service on `transaction` + Anti-Corruption Layer on `account`) over a direct                                                                                                
+  DB read; a **shared kernel** for typed IDs (`AccountId`, `Money`, …) to break                                                                                               
+  the module cycle.
+- Captured two Mermaid diagrams (module dependencies + `GetAccountBalance`                                                                                                    
+  sequence) and a deep-dive on OHS/ACL in the recap.
+
+**Learned**:
+- The real risk in cross-context balance computation is a **dependency cycle**,                                                                                               
+  not performance; hexagonal inversion of dependency (port owned by the                                                                                                       
+  consumer) keeps the `account` domain pure.
+- **OHS** (upstream) publishes a stable public API decoupled from the internal                                                                                                
+  model; **ACL** (downstream) is a defensive translation layer implementing a                                                                                                 
+  consumer-defined port. Between two in-house contexts sharing a kernel the ACL                                                                                               
+  is light — its value here is the inversion of dependency and being the single                                                                                               
+  isolation point, not model translation.
+
+**Next**:
+- Design the Block 2 package structure of the `account` context (domain /                                                                                                     
+  application / web / infrastructure).
+- Decide the shared-kernel module layout before writing the first `*Id`.
+- Slice Block 2 into small thematic PRs, starting with the author-written                                                                                                     
+  `account` domain + ArchUnit baseline.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-28-session-19.md).
+
 ### 2026-06-28 — Session 18
 
 **Block / Task**: Block 1 — Secured Skeleton (integrated into `main`; tag `block-1-complete`)
