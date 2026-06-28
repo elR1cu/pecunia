@@ -304,16 +304,38 @@ backend and frontend, simpler OpenAPI contract synchronization. See
 
 ### Git
 
-- **Branch model**: feature branches off `main`, merged via squash-and-
-  merge Pull Requests.
+- **Branch model**: small, thematic feature branches off `main`, each
+  merged via a **squash-and-merge** Pull Request. Keep PRs focused (one
+  concern per PR) rather than accumulating a whole roadmap block on one
+  long-lived branch.
+- **Squash everywhere**: squash-and-merge is the single merge method for
+  every branch. The "Rebase and merge" button is **not** used — see the
+  signed-commits constraint below.
 - **History on main**: linear. No merge commits.
-- **Rebase**: feature branches are rebased onto `main` before merge.
-- **Commit messages**: Conventional Commits format on the final squash
-  commit (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, `ci:`,
-  `perf:`, `style:`, `build:`).
-- **PR titles**: same Conventional Commits convention (becomes the squash
-  commit message).
-- **Tags**: semantic versioning for releases (`v0.1.0`, etc.).
+- **Signed commits are mandatory**: `main` enforces *required signed
+  commits*. The rule validates the **commits on the PR branch**, not just
+  the merge result, so an unsigned branch commit blocks the merge
+  ("Commits must have verified signatures") **even when squashing**. Always
+  commit with a GPG signature (`commit.gpgsign = true`); never disable it.
+  If a commit lands unsigned, fix it with
+  `git commit --amend --no-edit -S` then `git push --force-with-lease`.
+- **Why squash, not rebase-merge**: GitHub signs the single commit produced
+  by a squash with its own key (→ `verified`), but it **cannot sign the
+  commits replayed by "Rebase and merge"** ("Rebase merges cannot be
+  automatically signed by GitHub"), so rebase-merge is incompatible with
+  the signed-commits rule.
+- **Preserving a multi-commit signed history** (rare — e.g. a founding
+  block): the only way is a **local fast-forward push** of already-signed
+  commits (`git checkout main && git merge --ff-only <branch> &&
+  git push`), with a one-time relax of branch protection (disable
+  `enforce_admins` for the push, re-enable immediately). Done once for
+  Block 1; not the default path.
+- **Commit messages**: Conventional Commits format (`feat:`, `fix:`,
+  `docs:`, `refactor:`, `test:`, `chore:`, `ci:`, `perf:`, `style:`,
+  `build:`). The PR title (which becomes the squash commit message) follows
+  the same convention.
+- **Tags**: semantic versioning for releases (`v0.1.0`, etc.); milestone
+  markers (e.g. `block-1-complete`) for roadmap blocks.
 
 ### Code style
 

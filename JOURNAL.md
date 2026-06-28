@@ -40,6 +40,40 @@ Each entry follows this structure:
 
 ---
 
+### 2026-06-28 — Session 18
+
+**Block / Task**: Block 1 — Secured Skeleton (integrated into `main`; tag `block-1-complete`)
+
+**Done**:
+- Merged Block 1 into `main` preserving its 77 signed commits (local fast-forward
+  + a momentary `enforce_admins` toggle, because GitHub's "Rebase and merge" cannot                                                                                           
+    sign the commits it replays). Pushed the `block-1-complete` tag.
+- Settled and **documented in CLAUDE.md** the new merge policy: small thematic PRs +                                                                                          
+  squash everywhere, mandatory signed commits (the rule checks the branch commits,                                                                                            
+  even when squashing), with a local ff-push exception for a multi-commit signed                                                                                              
+  history. The "rebase structural branches" idea is retired.
+- Fixed the Dependabot SonarCloud failures (PR #8): skip the Sonar analysis when the                                                                                          
+  actor is `dependabot[bot]`, rather than duplicating the tokens into the Dependabot                                                                                          
+  secret store. All Dependabot PRs merged (#7 auto-rebased by the bot).
+- Validated the running stack on `main` and **the Playwright e2e (Block 1 happy-path)                                                                                         
+  passes**.
+
+**Learned**:
+- "Require signed commits" validates the PR's branch commits, not just the merge                                                                                              
+  result — an unsigned branch commit blocks the squash. GitHub signs the squash                                                                                               
+  commit but never the commits replayed by a rebase-merge.
+- Dependabot-triggered runs use a separate secret store (Actions secrets are not                                                                                              
+  exposed to them); `@dependabot rebase` is a PR-comment command run by the bot, not                                                                                          
+  a local git rebase.
+
+**Next**:
+- Start **Block 2 — Domain Model** (hexagonal, `Account`/`Category`, ArchUnit,                                                                                                
+  cross-user isolation test), sliced into small PRs.
+- Merge the CLAUDE.md merge-policy PR.
+- Delete the `backup/block-1-pre-curation` branch once comfortable.
+
+See [detailed recap](docs/session-recaps/2026-06/2026-06-28-session-18.md).
+
 ### 2026-06-25 — Session 17
 
 **Block / Task**: Block 1 — Secured Skeleton (closure)
