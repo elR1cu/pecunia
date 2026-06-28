@@ -61,10 +61,22 @@ jobs:
       # build if the Quality Gate fails — enforcing it on PRs (ADR-0017). Kept as
       # a CLI flag (not a pom property) since gate enforcement is a CI concern; a
       # local `mvn sonar:sonar` should not block on gate polling.
+      # SonarCloud secrets are not exposed to Dependabot-triggered runs (GitHub
+      # keeps a separate Dependabot secret store), so the analysis is skipped
+      # there and the token stays defined only under Actions. `verify` (build,
+      # Spotless, tests, JaCoCo) still gates every Dependabot PR; Trivy covers
+      # the dependency-vulnerability angle. RUN_SONAR drives the conditional so
+      # the reactor runs once (no double Maven invocation).
       - name: Build, test, and SonarCloud analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_API }}
-        run: mvn -B -ntp -f apps/api/pom.xml verify sonar:sonar -Dsonar.qualitygate.wait=true
+          RUN_SONAR: ${{ github.actor != 'dependabot[bot]' }}
+        run: |
+          if [ "$RUN_SONAR" = "true" ]; then
+            mvn -B -ntp -f apps/api/pom.xml verify sonar:sonar -Dsonar.qualitygate.wait=true
+          else
+            mvn -B -ntp -f apps/api/pom.xml verify
+          fi
 
   frontend:
     name: Frontend (codegen, build, test)
@@ -125,7 +137,10 @@ jobs:
       # Reads apps/frontend/sonar-project.properties; the scanner runs from
       # projectBaseDir so the LCOV path resolves. qualitygate.wait fails the
       # build on a red gate, mirroring the backend job.
+      # Skipped on Dependabot-triggered runs: SonarCloud secrets are not exposed
+      # to them (separate secret store). Lint, build and tests above still run.
       - name: SonarCloud analysis
+        if: github.actor != 'dependabot[bot]'
         uses: SonarSource/sonarqube-scan-action@v8
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_FRONTEND }}
