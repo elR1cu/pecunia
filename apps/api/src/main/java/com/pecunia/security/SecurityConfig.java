@@ -1,4 +1,4 @@
-package com.pecunia.shared.security;
+package com.pecunia.security;
 
 import java.util.Set;
 import org.springframework.boot.actuate.info.InfoEndpoint;

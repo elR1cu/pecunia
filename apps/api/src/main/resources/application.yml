@@ -106,7 +106,7 @@ logging:
     json:
       # Field-name based masking applied via the SB4 SPI. Shared blacklist
       # with the dev-side %maskedKvp converter (see ADR-0018 Sanitization).
-      customizer: com.pecunia.shared.observability.SensitiveDataLoggingCustomizer
+      customizer: com.pecunia.observability.SensitiveDataLoggingCustomizer
       add:
         service: pecunia-api
 

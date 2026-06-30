@@ -1,4 +1,4 @@
-package com.pecunia.shared.security;
+package com.pecunia.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;

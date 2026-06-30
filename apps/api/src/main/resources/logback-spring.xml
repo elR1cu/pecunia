@@ -18,7 +18,7 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
     <conversionRule conversionWord="maskedKvp"
-                    class="com.pecunia.shared.observability.MaskedKvpConverter"/>
+                    class="com.pecunia.observability.MaskedKvpConverter"/>
 
     <springProfile name="dev">
         <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
