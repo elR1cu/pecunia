@@ -39,12 +39,15 @@
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <!-- Generated code excluded from all analysis (OpenAPI client + MapStruct *Impl under target/generated-sources). -->
         <sonar.exclusions>**/generated-sources/**</sonar.exclusions>
-        <!-- Excluded from the coverage metric only: the bootstrap class and the Spring
-             Security filter-chain wiring beans (declarative config, exercised by slice/
-             integration tests rather than unit coverage; see the testing policy in CLAUDE.md).
-             Security/behavioural logic (log masking, logout strategy) is deliberately NOT
-             excluded and is expected to be unit-tested. -->
-        <sonar.coverage.exclusions>**/PecuniaApplication.java,**/SecurityConfig.java,**/SwaggerSecurityConfig.java</sonar.coverage.exclusions>
+        <!-- Excluded from the coverage metric only: the bootstrap class, the Spring
+             Security filter-chain wiring beans (declarative config), and thin
+             infrastructure adapters that only delegate to a library (the UUID v7
+             generator) — exercised by slice/integration tests rather than unit
+             coverage; see the testing policy in CLAUDE.md ("no target on
+             infrastructure adapters"). Security/behavioural logic (log masking,
+             logout strategy) and domain/kernel value objects are deliberately NOT
+             excluded and are expected to be unit-tested. -->
+        <sonar.coverage.exclusions>**/PecuniaApplication.java,**/SecurityConfig.java,**/SwaggerSecurityConfig.java,**/Uuidv7IdGenerator.java</sonar.coverage.exclusions>
     </properties>
 
     <dependencyManagement>
