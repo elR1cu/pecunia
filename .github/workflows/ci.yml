@@ -51,32 +51,29 @@ jobs:
 
       # `verify` compiles, runs the OpenAPI codegen + MapStruct/Lombok
       # annotation processors, executes the Spotless `check` goal and the test
-      # suite, and produces the JaCoCo report. `sonar:sonar` then runs in the
-      # same reactor (only if verify passed) and uploads to SonarCloud: the
-      # scanner version is pinned in the pom, the short prefix resolves to it,
-      # the PR/branch context is auto-detected, and the token is read from
-      # SONAR_TOKEN. -B = batch mode, -ntp = no transfer progress. No root pom
-      # in this repo, so we point at the module.
+      # suite, and produces the JaCoCo report. -B = batch mode, -ntp = no
+      # transfer progress. No root pom in this repo, so we point at the module.
+      # This step always runs and gates every PR — including Dependabot's.
+      - name: Build, format, and test
+        run: mvn -B -ntp -f apps/api/pom.xml verify
+
+      # `sonar:sonar` is a direct plugin goal (not bound to a phase): it does
+      # not recompile, it reads the compiled classes and the JaCoCo report left
+      # in target/ by the step above. The scanner version is pinned in the pom,
+      # the short prefix resolves to it, the PR/branch context is auto-detected,
+      # and the token is read from SONAR_TOKEN.
       # sonar.qualitygate.wait makes the scanner poll SonarCloud and fail the
       # build if the Quality Gate fails — enforcing it on PRs (ADR-0017). Kept as
       # a CLI flag (not a pom property) since gate enforcement is a CI concern; a
       # local `mvn sonar:sonar` should not block on gate polling.
-      # SonarCloud secrets are not exposed to Dependabot-triggered runs (GitHub
-      # keeps a separate Dependabot secret store), so the analysis is skipped
-      # there and the token stays defined only under Actions. `verify` (build,
-      # Spotless, tests, JaCoCo) still gates every Dependabot PR; Trivy covers
-      # the dependency-vulnerability angle. RUN_SONAR drives the conditional so
-      # the reactor runs once (no double Maven invocation).
-      - name: Build, test, and SonarCloud analysis
+      # Skipped on Dependabot-triggered runs: SonarCloud secrets are not exposed
+      # to them (GitHub keeps a separate Dependabot secret store). The build and
+      # tests above still gate those PRs; Trivy covers the vulnerability angle.
+      - name: SonarCloud analysis
+        if: github.actor != 'dependabot[bot]'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_API }}
-          RUN_SONAR: ${{ github.actor != 'dependabot[bot]' }}
-        run: |
-          if [ "$RUN_SONAR" = "true" ]; then
-            mvn -B -ntp -f apps/api/pom.xml verify sonar:sonar -Dsonar.qualitygate.wait=true
-          else
-            mvn -B -ntp -f apps/api/pom.xml verify
-          fi
+        run: mvn -B -ntp -f apps/api/pom.xml sonar:sonar -Dsonar.qualitygate.wait=true
 
   frontend:
     name: Frontend (codegen, build, test)
