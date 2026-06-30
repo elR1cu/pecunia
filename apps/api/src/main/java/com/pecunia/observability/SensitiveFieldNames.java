@@ -1,4 +1,4 @@
-package com.pecunia.shared.observability;
+package com.pecunia.observability;
 
 import java.util.Locale;
 import java.util.Set;

@@ -1,6 +1,6 @@
-package com.pecunia.shared.observability;
+package com.pecunia.observability;
 
-import static com.pecunia.shared.observability.SensitiveFieldNames.MASK;
+import static com.pecunia.observability.SensitiveFieldNames.MASK;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import org.springframework.boot.json.JsonWriter;
