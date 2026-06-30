@@ -59,6 +59,20 @@ the model and is free of any outward-facing interface.
 - **The domain** keeps entities, value objects, aggregates, domain services
   and domain events. No port interfaces.
 
+### One deliberate exception — cross-cutting kernel SPIs
+
+A pure, framework-free interface that *every* context needs — not a use-case
+port of any single context — lives in the shared kernel (`com.pecunia.shared`),
+not in some context's `application.port.out`. The first instance is
+`IdGenerator` (abstracting UUID v7 generation), implemented by an adapter
+outside the kernel (`com.pecunia.id.Uuidv7IdGenerator`). Placing such an SPI in
+one context's application layer would force either duplication across contexts
+or a cross-context dependency on that context's internals. It is a *kernel-level
+SPI*, categorically different from a context's driving/driven ports, so it does
+not contradict the rule above. The kernel stays pure (the ArchUnit
+"shared kernel is framework-free" rule still holds, since an interface carries no
+framework dependency), so the boundary is not weakened.
+
 ### Worked example — `account` context (Block 2)
 
 ```

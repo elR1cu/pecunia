@@ -28,6 +28,7 @@
         <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
         <sonar-maven-plugin.version>5.7.0.6970</sonar-maven-plugin.version>
         <archunit.version>1.4.1</archunit.version>
+        <uuid-creator.version>6.1.1</uuid-creator.version>
 
         <!-- SonarCloud analysis (see ADR-0017). The token is supplied via the SONAR_TOKEN env var in CI. -->
         <sonar.organization>elr1cu</sonar.organization>
@@ -134,6 +135,13 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <optional>true</optional>
+        </dependency>
+
+        <!-- UUID creator -->
+        <dependency>
+            <groupId>com.github.f4b6a3</groupId>
+            <artifactId>uuid-creator</artifactId>
+            <version>${uuid-creator.version}</version>
         </dependency>
 
         <!-- Dev-only: starts docker-compose services and wires service connections -->
