@@ -143,7 +143,10 @@ class MoneyTest {
         @Test
         @DisplayName("rejects adding a different currency")
         void rejects_currency_mismatch() {
-            assertThatThrownBy(() -> Money.chf(BigDecimal.TEN).add(Money.of(BigDecimal.TEN, EUR)))
+            Money tenChf = Money.chf(BigDecimal.TEN);
+            Money tenEur = Money.of(BigDecimal.TEN, EUR);
+
+            assertThatThrownBy(() -> tenChf.add(tenEur))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("CHF")
                     .hasMessageContaining("EUR");
