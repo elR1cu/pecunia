@@ -56,8 +56,8 @@ flowchart TB
     subgraph BFF[Backend-for-Frontend - Spring Boot]
         direction TB
         Web[Web Layer<br/>Controllers, DTOs]
-        App[Application Layer<br/>Use Cases]
-        Domain[Domain Layer<br/>Entities, Value Objects, Ports]
+        App[Application Layer<br/>Use Cases, Ports]
+        Domain[Domain Layer<br/>Entities, Value Objects]
         Infra[Infrastructure Adapters<br/>JPA, Events, External APIs]
     end
 
@@ -97,23 +97,27 @@ The center of the application. Contains:
   `IbanNumber`, `CategoryPath`).
 - **Aggregates**: consistency boundaries (e.g., `Account` is the aggregate
   root for its `Transactions`).
-- **Ports**: interfaces describing what the domain needs from the outside
-  (e.g., `TransactionRepository`, `DomainEventPublisher`).
 - **Domain events**: facts about something that happened
   (e.g., `TransactionCategorized`, `BudgetThresholdReached`).
 
-The domain layer has **no dependency on Spring, JPA, or any infrastructure
-concern**. It is pure Java.
+The domain layer holds **no port interfaces** — ports live in the application
+layer (see [ADR-0026](adr/0026-ports-in-application-layer.md)). It has **no
+dependency on Spring, JPA, or any infrastructure concern**. It is pure Java.
 
 ### Application layer
 
-Orchestrates use cases by coordinating domain objects and ports. Use cases are
-the application's API surface for the outside world (called by controllers
+Orchestrates use cases by coordinating domain objects and ports, and **owns
+all ports** (see [ADR-0026](adr/0026-ports-in-application-layer.md)). Use cases
+are the application's API surface for the outside world (called by controllers
 or background workers).
 
-- **Use case services**: one class per use case, named after the action
-  (e.g., `ImportCamt053Statement`, `CategorizeTransaction`,
-  `ComputeMonthlyDashboard`).
+- **Driving ports** (`port.in`): one interface per use case, named after the
+  action (e.g., `ImportCamt053Statement`, `CategorizeTransaction`,
+  `ComputeMonthlyDashboard`), implemented by a service in `application.service`.
+  Controllers depend on the interface, not the service.
+- **Driven ports** (`port.out`): the SPI the application needs from the
+  outside (e.g., `AccountRepository`, `DomainEventPublisher`), implemented by
+  adapters in the infrastructure layer.
 - **Transaction boundaries**: typically defined at this layer
   (`@Transactional`).
 - **Mapping**: between domain types and DTOs happens at this boundary.
@@ -131,10 +135,10 @@ Translates HTTP requests into use case calls.
 
 ### Infrastructure layer (driven adapters)
 
-Implements the ports defined by the domain.
+Implements the driven ports (`port.out`) defined by the application layer.
 
-- **Persistence adapters**: JPA repositories implementing domain repository
-  ports.
+- **Persistence adapters**: JPA repositories implementing the application's
+  `port.out` repository interfaces.
 - **Event publishing adapter**: a Spring `ApplicationEventPublisher`
   implementation of `DomainEventPublisher`.
 - **External API adapters**: clients to third-party services
@@ -146,8 +150,12 @@ Implements the ports defined by the domain.
 ```
 com.pecunia
 ├── account               # Bounded context: accounts
-│   ├── domain            # Entities, value objects, ports
-│   ├── application       # Use cases
+│   ├── domain            # Entities, value objects (no ports)
+│   ├── application       # Use cases + ports
+│   │   ├── port
+│   │   │   ├── in        # Driving ports: use-case interfaces
+│   │   │   └── out       # Driven ports: repositories, SPI
+│   │   └── service       # Use-case implementations
 │   ├── web               # Controllers, DTOs
 │   └── infrastructure    # JPA adapters, event adapter
 ├── transaction           # Bounded context: transactions
@@ -159,9 +167,12 @@ com.pecunia
 │   ├── ...
 ├── budget                # Bounded context: budgets (post-MVP)
 │   ├── ...
-├── shared                # Shared kernel: value objects, common types
+├── shared                # Shared kernel: typed IDs, value objects, common types
 └── PecuniaApplication.java
 ```
+
+Ports live in the application layer, split into `port.in` (driving) and
+`port.out` (driven) — see [ADR-0026](adr/0026-ports-in-application-layer.md).
 
 Each bounded context is independent. Cross-context interactions happen
 through domain events or explicit application-level contracts — never by
@@ -278,8 +289,9 @@ regressions.
 ## Eventing
 
 Domain events are published through a `DomainEventPublisher` port defined in
-the domain layer. The port has a single implementation: a Spring
-`ApplicationEventPublisher` adapter.
+the application layer (`port.out`, see
+[ADR-0026](adr/0026-ports-in-application-layer.md)). The port has a single
+implementation: a Spring `ApplicationEventPublisher` adapter.
 
 ```mermaid
 flowchart LR
@@ -349,8 +361,8 @@ PostgreSQL 18 is the single primary datastore for Pecunia.
 
 - **Entity model** lives in the infrastructure layer, mapped from domain
   entities.
-- **Repository ports** in the domain layer have JPA implementations in the
-  infrastructure layer.
+- **Repository ports** in the application layer (`port.out`) have JPA
+  implementations in the infrastructure layer.
 - **N+1 prevention**: explicit fetch joins or `@EntityGraph`. No `LAZY`
   surprises across transaction boundaries.
 - **Optimistic locking** on entities subject to concurrent modification.

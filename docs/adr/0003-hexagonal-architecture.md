@@ -4,6 +4,10 @@
 
 Accepted
 
+Note: port placement is refined by
+[ADR-0026](0026-ports-in-application-layer.md) — ports live in the application
+layer, not the domain. The rest of this ADR stands.
+
 ## Context
 
 Pecunia must be testable, evolvable, and resistant to framework or

@@ -4,6 +4,11 @@
 
 Accepted
 
+Note: the `DomainEventPublisher` port lives in the application layer
+(`port.out`), not the domain — see
+[ADR-0026](0026-ports-in-application-layer.md). The eventing design below is
+otherwise unchanged.
+
 ## Context
 
 Pecunia is designed to be event-driven internally: when a transaction is
