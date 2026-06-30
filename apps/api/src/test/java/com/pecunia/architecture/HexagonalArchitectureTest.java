@@ -14,13 +14,14 @@ import com.tngtech.archunit.lang.ArchRule;
  *
  * <p>The rules are convention-driven: they key off the package suffixes every bounded context
  * follows ({@code ..domain..}, {@code ..application..}, {@code ..web..}, {@code ..infrastructure..})
- * and off {@code com.pecunia.kernel..}, so a new context is policed the moment it is created without
+ * and off {@code com.pecunia.shared..}, so a new context is policed the moment it is created without
  * touching this file.
  *
- * <p>Several rules legitimately match no classes today — the first hexagonal context ({@code
- * account}) and the shared kernel are written in the following slices. Those rules carry {@code
- * allowEmptyShould(true)} so the baseline is green now and grows teeth as the code lands. The slices
- * cycle rule already has classes to check.
+ * <p>The shared-kernel rules and the slices cycle rule are strict: {@code com.pecunia.shared} and the
+ * top-level packages already hold classes. The layer rules ({@code ..domain..}, {@code
+ * ..application..}, {@code ..web..}) still match no classes until the first hexagonal context ({@code
+ * account}) lands, so they carry {@code allowEmptyShould(true)} to keep the baseline green now; drop
+ * it on each rule as its layer gains classes.
  */
 @AnalyzeClasses(packages = "com.pecunia", importOptions = ImportOption.DoNotIncludeTests.class)
 class HexagonalArchitectureTest {
@@ -84,21 +85,19 @@ class HexagonalArchitectureTest {
     @ArchTest
     static final ArchRule shared_kernel_is_free_of_frameworks = noClasses()
             .that()
-            .resideInAPackage("com.pecunia.kernel..")
+            .resideInAPackage("com.pecunia.shared..")
             .should()
             .dependOnClassesThat()
             .resideInAnyPackage("org.springframework..", "jakarta.persistence..", "org.hibernate..", "lombok..")
-            .allowEmptyShould(true)
             .as("the shared kernel must be pure Java — it is depended on by every domain");
 
     @ArchTest
     static final ArchRule shared_kernel_does_not_depend_on_contexts = noClasses()
             .that()
-            .resideInAPackage("com.pecunia.kernel..")
+            .resideInAPackage("com.pecunia.shared..")
             .should()
             .dependOnClassesThat()
             .resideInAnyPackage("..account..", "..transaction..", "..category..", "..budget..")
-            .allowEmptyShould(true)
             .as("the shared kernel is a sink: contexts depend on it, never the reverse");
 
     // ---------------------------------------------------------------------------

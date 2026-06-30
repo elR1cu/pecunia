@@ -28,6 +28,7 @@
         <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
         <sonar-maven-plugin.version>5.7.0.6970</sonar-maven-plugin.version>
         <archunit.version>1.4.1</archunit.version>
+        <uuid-creator.version>6.1.1</uuid-creator.version>
 
         <!-- SonarCloud analysis (see ADR-0017). The token is supplied via the SONAR_TOKEN env var in CI. -->
         <sonar.organization>elr1cu</sonar.organization>
@@ -38,12 +39,15 @@
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <!-- Generated code excluded from all analysis (OpenAPI client + MapStruct *Impl under target/generated-sources). -->
         <sonar.exclusions>**/generated-sources/**</sonar.exclusions>
-        <!-- Excluded from the coverage metric only: the bootstrap class and the Spring
-             Security filter-chain wiring beans (declarative config, exercised by slice/
-             integration tests rather than unit coverage; see the testing policy in CLAUDE.md).
-             Security/behavioural logic (log masking, logout strategy) is deliberately NOT
-             excluded and is expected to be unit-tested. -->
-        <sonar.coverage.exclusions>**/PecuniaApplication.java,**/SecurityConfig.java,**/SwaggerSecurityConfig.java</sonar.coverage.exclusions>
+        <!-- Excluded from the coverage metric only: the bootstrap class, the Spring
+             Security filter-chain wiring beans (declarative config), and thin
+             infrastructure adapters that only delegate to a library (the UUID v7
+             generator) — exercised by slice/integration tests rather than unit
+             coverage; see the testing policy in CLAUDE.md ("no target on
+             infrastructure adapters"). Security/behavioural logic (log masking,
+             logout strategy) and domain/kernel value objects are deliberately NOT
+             excluded and are expected to be unit-tested. -->
+        <sonar.coverage.exclusions>**/PecuniaApplication.java,**/SecurityConfig.java,**/SwaggerSecurityConfig.java,**/Uuidv7IdGenerator.java</sonar.coverage.exclusions>
     </properties>
 
     <dependencyManagement>
@@ -134,6 +138,13 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <optional>true</optional>
+        </dependency>
+
+        <!-- UUID creator -->
+        <dependency>
+            <groupId>com.github.f4b6a3</groupId>
+            <artifactId>uuid-creator</artifactId>
+            <version>${uuid-creator.version}</version>
         </dependency>
 
         <!-- Dev-only: starts docker-compose services and wires service connections -->
