@@ -141,6 +141,24 @@ cross-context ports (`AccountMovements`) in the application. Rejected because
 two port locations require a subtler rule to teach and to police, for no
 tangible gain at Pecunia's scale.
 
+### Enforcing layer and context boundaries with the Java Platform Module System (JPMS)
+
+`module-info.java` could turn the layer and bounded-context boundaries this ADR
+relies on into compile-time and runtime guarantees (`exports` / `requires`).
+Rejected as overkill — and counterproductive with this stack — for three
+reasons. JPMS only encapsulates *between* modules, so segmenting the contexts
+would force one JPMS module per context, hence one Maven module per context —
+the multi-module structure already declined for the shared kernel (single
+Maven module, no root pom). Spring Boot on the module path is poorly supported:
+reflective DI, CGLIB proxies, Spring Data and Hibernate enhancement, and the
+test slices would each require `opens` directives that dissolve the very
+encapsulation sought. And the need is already met more expressively by ArchUnit
+(ADR-0016), which can assert rules JPMS cannot — "the domain carries no `@Entity`
+or Spring import", "no cycle between contexts", the cross-user isolation
+discipline. The pragmatic next step beyond ArchUnit, if its boundary checks ever
+become cumbersome, is Spring Modulith (a documented adoption trigger in the
+roadmap), not JPMS.
+
 ## References
 
 - [ADR-0003: Hexagonal Architecture](0003-hexagonal-architecture.md)
