@@ -32,13 +32,58 @@ each other's internals.
 
 ## Core Concepts
 
+### Entities and value objects
+
+The domain distinguishes two kinds of building blocks, and the distinction
+drives their mutability, their equality, and how they are implemented.
+
+**Value objects** describe *something* — an amount, an account number, an
+identifier. They have no identity of their own; two value objects with the
+same attributes are interchangeable.
+
+- **Immutable**: any "change" produces a new instance.
+- **Value-based equality**: equal when all attributes are equal.
+- **Implemented as Java records**, which give both properties for free.
+- Examples: `Money`, `Iban`, `AccountId`, `UserId`, `CategoryPath`.
+
+**Entities** (and the aggregate roots that lead them) describe *something
+that exists over time* — an account, a category. They have a stable identity
+that survives changes to their state.
+
+- **Mutable**: state evolves in place through intention-revealing methods
+  (e.g. `account.archive()`), never through public setters.
+- **Identity-based equality**: equal when their identifier is equal, whatever
+  their current state. Two in-memory copies of the same account — one active,
+  one archived — are still the same account.
+- **Implemented as plain Java classes** with a private canonical constructor,
+  named factory methods (`open` for birth, `reconstitute` for rehydration),
+  and `equals`/`hashCode` computed on the identifier alone.
+- Examples: `Account`, `Category`.
+
+**Why mutable entities, immutable value objects.** An entity models an
+identity whose state changes over its lifetime; persistence stores the
+*current state* of that identity, which aligns naturally with in-place
+mutation of a managed record. A value object models a value, for which
+"changing" makes no more sense than changing the number 3 — immutability
+makes it safe to share and compare. Modelling an entity as immutable is
+possible (event sourcing does it) but adds re-attachment friction with
+classic JPA, for no gain here.
+
+This convention is enforced, not merely documented: the domain layer is kept
+framework-free (no Spring, JPA, Hibernate or Lombok — see
+[ADR-0013](adr/0013-selective-use-of-lombok.md)) by the ArchUnit fitness
+tests ([ADR-0016](adr/0016-archunit-architectural-fitness-tests.md)).
+
 ### Money
 
 All monetary values are represented as a `Money` value object:
 
 - **Amount**: `BigDecimal`, never `double` or `float`.
 - **Currency**: ISO 4217 currency code (`CHF` for the MVP).
-- **Scale**: aligned with the currency's default fraction digits (2 for CHF).
+- **Scale**: fixed at 4 with `HALF_EVEN` (banker's) rounding, decoupled from
+  display precision. Computations keep 4 fraction digits to avoid rounding
+  drift in derived values; amounts are rounded to the currency's minor units
+  (2 for CHF) only at the presentation/settlement boundary.
 - **Invariants**:
   - Operations between different currencies are not allowed (throw at the
     domain level).
@@ -74,27 +119,34 @@ An `Account` represents a bank account or credit card tracked by Pecunia.
 - `accountId`: UUID.
 - `owner`: `UserId` of the user owning the account.
 - `name`: user-defined display name (e.g., "UBS Current", "UBS Visa").
-- `type`: enum (`CURRENT`, `CREDIT_CARD`, `SAVINGS` reserved for future).
-- `iban`: optional, present for bank accounts, absent for credit cards.
+- `type`: enum (`CURRENT`, `SAVINGS`, `CREDIT_CARD`).
+- `iban`: present for bank accounts (`CURRENT`, `SAVINGS`), absent for credit
+  cards.
 - `currency`: ISO 4217 code.
 - `initialBalance`: `Money`. The opening balance at the moment of account
   registration in Pecunia.
-- `archived`: boolean flag; archived accounts remain visible historically
-  but no new transactions are recorded.
+- `status`: `AccountStatus` enum (`ACTIVE`, `ARCHIVED`). Archived accounts
+  remain visible historically but no new transactions are recorded.
 
 **Computed**:
-- `currentBalance`: derived from `initialBalance` and the sum of all
-  transactions linked to the account. Not stored.
+- `currentBalance`: derived from `initialBalance` and the sum of the account's
+  transactions. Not stored. The domain never imports `Transaction`: the
+  movements sum is supplied by the transaction context (see Session 19's
+  anti-cycle design).
 
 **Invariants**:
 - An account always has an owner.
-- A credit card account does not have an IBAN.
+- A credit card has no IBAN; a current or savings account requires one.
 - An archived account cannot receive new transactions.
 
 **Business operations**:
-- `Account.open(...)`: factory method to create a new account.
-- `account.archive()`: archives the account.
-- `account.computeBalance(transactions)`: returns the current balance.
+- `Account.open(...)`: factory method to open a new account (always `ACTIVE`).
+- `Account.reconstitute(...)`: factory method to rehydrate a persisted account
+  (used by the infrastructure mapper), preserving its stored `status`.
+- `account.archive()`: archives the account; archiving an already archived
+  account is rejected.
+- `account.balanceFrom(movementsSum)`: returns the current balance as
+  `initialBalance + movementsSum`.
 
 ### Transaction
 

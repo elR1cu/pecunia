@@ -17,11 +17,11 @@ import com.tngtech.archunit.lang.ArchRule;
  * and off {@code com.pecunia.shared..}, so a new context is policed the moment it is created without
  * touching this file.
  *
- * <p>The shared-kernel rules and the slices cycle rule are strict: {@code com.pecunia.shared} and the
- * top-level packages already hold classes. The layer rules ({@code ..domain..}, {@code
- * ..application..}, {@code ..web..}) still match no classes until the first hexagonal context ({@code
- * account}) lands, so they carry {@code allowEmptyShould(true)} to keep the baseline green now; drop
- * it on each rule as its layer gains classes.
+ * <p>The shared-kernel rules, the slices cycle rule and the {@code ..domain..} rules are strict:
+ * {@code com.pecunia.shared}, the top-level packages and {@code account.domain} already hold classes.
+ * The remaining layer rules ({@code ..application..}, {@code ..web..}) still match no classes until
+ * the {@code account} application and web layers land, so they carry {@code allowEmptyShould(true)} to
+ * keep the baseline green now; drop it on each rule as its layer gains classes.
  */
 @AnalyzeClasses(packages = "com.pecunia", importOptions = ImportOption.DoNotIncludeTests.class)
 class HexagonalArchitectureTest {
@@ -37,7 +37,6 @@ class HexagonalArchitectureTest {
             .should()
             .dependOnClassesThat()
             .resideInAnyPackage("org.springframework..", "jakarta.persistence..", "org.hibernate..", "lombok..")
-            .allowEmptyShould(true)
             .as("the domain layer must stay pure Java (no Spring, JPA, Hibernate, Lombok)");
 
     @ArchTest
@@ -47,7 +46,6 @@ class HexagonalArchitectureTest {
             .should()
             .dependOnClassesThat()
             .resideInAnyPackage("..application..", "..web..", "..infrastructure..")
-            .allowEmptyShould(true)
             .as("the domain must not depend on the application, web, or infrastructure layers");
 
     // ---------------------------------------------------------------------------
