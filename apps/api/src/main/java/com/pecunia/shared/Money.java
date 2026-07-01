@@ -10,8 +10,8 @@ public record Money(BigDecimal amount, Currency currency) {
     private static final Currency CHF = Currency.getInstance("CHF");
 
     public Money {
-        Objects.requireNonNull(amount);
-        Objects.requireNonNull(currency);
+        Objects.requireNonNull(amount, "Amount cannot be null");
+        Objects.requireNonNull(currency, "Currency cannot be null");
         amount = amount.setScale(4, RoundingMode.HALF_EVEN); // banker rounding
     }
 
