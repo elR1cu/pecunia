@@ -40,6 +40,31 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-01 — Session 20
+
+**Block / Task**: Block 2 — Domain Model (shared kernel shipped; `account` context designed)
+
+**Done**:
+- Settled ADR-0026: **ports live in the application layer** (Position 2 / Hombergs),                                                                                          
+  refining ADR-0003; reconciled architecture.md and rejected JPMS as a boundary                                                                                               
+  mechanism (ArchUnit suffices, Spring Modulith is the next rung if needed).
+- Freed `com.pecunia.shared` by moving Block 1 cross-cutting code to top-level                                                                                                
+  `observability`/`security` packages (PR #15), then shipped the **shared kernel**:                                                                                           
+  `AccountId`, `UserId`, `Money` (scale 4 / HALF_EVEN), and an injected `IdGenerator`                                                                                         
+  port with a `com.pecunia.id` UUID v7 adapter (PR #17).
+- Stood up the **ArchUnit baseline** (7 convention-driven rules, ADR-0016) and split                                                                                          
+  the backend CI Sonar analysis into its own step for diagnosis.
+- Resolved a coverage-gate failure (test the domain IDs, exclude the infra adapter)                                                                                           
+  and a SonarCloud S5778 lambda finding.
+
+**Next**:
+- Write `account.domain` (Account as a **class** with id-equality, AccountType,                                                                                               
+  AccountStatus, Iban, `CREDIT_CARD ⇒ no IBAN`, `balanceFrom`) + invariant tests.
+- Then the application layer (use cases + ports) and infrastructure (JPA, Flyway,                                                                                             
+  controllers), plus the mandatory cross-user isolation test.
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-01-session-20.md).
+
 ### 2026-06-28 — Session 19
 
 **Block / Task**: Transition into Block 2 — Domain Model (account bounded context design; no code)
