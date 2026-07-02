@@ -40,6 +40,27 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-01 — Session 21
+
+**Block / Task**: Block 2 — Domain Model (`account` context, domain layer)
+
+**Done**:
+- Wrote `account.domain` as pure Java 25: `Account` (mutable aggregate root,                                                                                                  
+  identity equality, `open`/`reconstitute` factories, `archive()`,                                                                                                            
+  `balanceFrom(Money)`), `Iban` (normalization + ISO 7064 mod-97),                                                                                                            
+  `AccountType`/`AccountStatus` enums; invariant `CREDIT_CARD ⇒ no IBAN`.
+- Author-written unit tests: `AccountTest` (17) + `IbanTest` (9).
+- Dropped `allowEmptyShould` on the two `..domain..` ArchUnit rules now that                                                                                                  
+  real domain classes exist; added messages to `Money` null checks.
+- Documented the entity/value-object convention in `domain-model.md` and                                                                                                      
+  reconciled the Account/Money descriptions with the code. Merged as PR #20.
+
+**Next**:
+- Write the `account` application layer (use cases + ports, incl. `AccountMovements`).
+- Infrastructure slice (JPA, Flyway, controller) + cross-user isolation test.
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-01-session-21.md).
+
 ### 2026-07-01 — Session 20
 
 **Block / Task**: Block 2 — Domain Model (shared kernel shipped; `account` context designed)
