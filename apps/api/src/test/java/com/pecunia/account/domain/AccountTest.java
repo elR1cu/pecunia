@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.pecunia.account.domain.exception.AccountAlreadyArchivedException;
+import com.pecunia.account.domain.exception.IbanForbiddenForTypeException;
+import com.pecunia.account.domain.exception.IbanRequiredException;
 import com.pecunia.shared.AccountId;
 import com.pecunia.shared.Money;
 import com.pecunia.shared.UserId;
@@ -95,24 +98,24 @@ class AccountTest {
         @DisplayName("requires an IBAN for a current account")
         void current_requires_iban() {
             assertThatThrownBy(() -> Account.open(ID, OWNER, AccountType.CURRENT, "Main", null, INITIAL))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("required");
+                    .isInstanceOf(IbanRequiredException.class)
+                    .hasMessageContaining("IBAN is required for account type CURRENT");
         }
 
         @Test
         @DisplayName("requires an IBAN for a savings account")
         void savings_requires_iban() {
             assertThatThrownBy(() -> Account.open(ID, OWNER, AccountType.SAVINGS, "Savings", null, INITIAL))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("required");
+                    .isInstanceOf(IbanRequiredException.class)
+                    .hasMessageContaining("IBAN is required for account type SAVINGS");
         }
 
         @Test
         @DisplayName("forbids an IBAN on a credit card")
         void credit_card_forbids_iban() {
             assertThatThrownBy(() -> Account.open(ID, OWNER, AccountType.CREDIT_CARD, "Visa", IBAN, INITIAL))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("must be null");
+                    .isInstanceOf(IbanForbiddenForTypeException.class)
+                    .hasMessageContaining("IBAN is forbidden for account type CREDIT_CARD");
         }
     }
 
@@ -137,8 +140,8 @@ class AccountTest {
             account.archive();
 
             assertThatThrownBy(account::archive)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("Account is already archived");
+                    .isInstanceOf(AccountAlreadyArchivedException.class)
+                    .hasMessage("Account already archived: " + ID);
         }
     }
 

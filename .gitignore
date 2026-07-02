@@ -10,7 +10,7 @@
 target/
 dist/
 build/
-out/
+/out/
 node_modules/
 
 # OS
