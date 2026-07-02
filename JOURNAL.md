@@ -40,6 +40,34 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-02 — Session 22
+
+**Block / Task**: Block 2 — Domain Model (`account` context, application layer)
+
+**Done**:
+- Settled the project-wide error-modeling strategy — **C + parsimonious 2**
+  (sealed `Result` for rich, use-case-specific outcomes; fine-grained domain
+  exceptions otherwise) — and wrote **ADR-0027**.
+- Generated the application-layer contracts (driving/driven ports,
+  commands/queries, exception hierarchy); the author implemented the three
+  services and refactored `Account`/`Iban` to throw the new exceptions.
+- Decided: one port + one service per use case (Option A); `@Transactional` at
+  method level at each method's true mode (avoids the readOnly-default
+  silent-write trap on writers); `InvalidIbanException` stays no-arg (structural
+  guard against leaking an IBAN); `@TenantId` deferred (leaning RLS).
+- Reorganized packages: exceptions live in an `exception/` subpackage at every
+  level (domain, application, shared); `port/in` kept flat. 97 tests + ArchUnit
+  + Spotless all green.
+
+**Next**:
+- Commit the `feat/account-application-ports` slice (signed) and open its PR.
+- Merge PR #21 (Session 21 recap) and the new PR.
+- Add service-level unit tests, then the web slice (controller +
+  `@RestControllerAdvice`) and the infrastructure slice (JPA/Flyway +
+  cross-user isolation test).
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-02-session-22.md).
+
 ### 2026-07-01 — Session 21
 
 **Block / Task**: Block 2 — Domain Model (`account` context, domain layer)
