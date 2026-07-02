@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.pecunia.account.domain.exception.InvalidIbanException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,8 +43,8 @@ class IbanTest {
                 })
         void rejects_bad_structure(String malformed) {
             assertThatThrownBy(() -> new Iban(malformed))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Invalid IBAN structure");
+                    .isInstanceOf(InvalidIbanException.class)
+                    .hasMessage("IBAN is invalid");
         }
 
         @Test
@@ -53,8 +54,8 @@ class IbanTest {
             String transposed = "CH9300762011623852958";
 
             assertThatThrownBy(() -> new Iban(transposed))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Invalid IBAN checksum");
+                    .isInstanceOf(InvalidIbanException.class)
+                    .hasMessage("IBAN is invalid");
         }
     }
 

@@ -1,5 +1,6 @@
 package com.pecunia.account.domain;
 
+import com.pecunia.account.domain.exception.InvalidIbanException;
 import java.math.BigInteger;
 import java.util.Locale;
 import java.util.Objects;
@@ -14,11 +15,8 @@ public record Iban(String value) {
     public Iban {
         Objects.requireNonNull(value, "Iban value cannot be null");
         value = normalize(value);
-        if (!hasValidStructure(value)) {
-            throw new IllegalArgumentException("Invalid IBAN structure");
-        }
-        if (!hasValidChecksum(value)) {
-            throw new IllegalArgumentException("Invalid IBAN checksum");
+        if (!hasValidStructure(value) || !hasValidChecksum(value)) {
+            throw new InvalidIbanException();
         }
     }
 

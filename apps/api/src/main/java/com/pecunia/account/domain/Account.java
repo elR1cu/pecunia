@@ -1,5 +1,8 @@
 package com.pecunia.account.domain;
 
+import com.pecunia.account.domain.exception.AccountAlreadyArchivedException;
+import com.pecunia.account.domain.exception.IbanForbiddenForTypeException;
+import com.pecunia.account.domain.exception.IbanRequiredException;
 import com.pecunia.shared.AccountId;
 import com.pecunia.shared.Money;
 import com.pecunia.shared.UserId;
@@ -33,10 +36,10 @@ public final class Account {
             throw new IllegalArgumentException("Name cannot be blank");
         }
         if (type.requiresIban() && iban == null) {
-            throw new IllegalArgumentException("Iban is required for account type " + type);
+            throw new IbanRequiredException(type);
         }
         if (!type.requiresIban() && iban != null) {
-            throw new IllegalArgumentException("Iban must be null for account type " + type);
+            throw new IbanForbiddenForTypeException(type);
         }
         this.id = id;
         this.owner = owner;
@@ -65,7 +68,7 @@ public final class Account {
 
     public void archive() {
         if (this.status == AccountStatus.ARCHIVED) {
-            throw new IllegalStateException("Account is already archived");
+            throw new AccountAlreadyArchivedException(id);
         }
         this.status = AccountStatus.ARCHIVED;
     }
