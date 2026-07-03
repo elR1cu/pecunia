@@ -11,6 +11,8 @@ info:
 tags:
   - name: Identity
     description: Authenticated user identity.
+  - name: Account
+    description: Registry of the current user's tracked bank accounts.
 
 paths:
   /api/me:
@@ -30,6 +32,92 @@ paths:
         '401':
           description: No active session; client must authenticate via /oauth2/authorization/pecunia.
 
+  /api/accounts:
+    post:
+      tags: [Account]
+      operationId: openAccount
+      summary: Register a new account for the current user.
+      description: |
+        Registers an account owned by the authenticated user. The owner is
+        resolved server-side from the session and is never part of the
+        payload. Domain invariants (IBAN mod-97, and the IBAN-required /
+        IBAN-forbidden rule per account type) are enforced by the domain and
+        surface as 400.
+      security:
+        - bffSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenAccountRequest'
+      responses:
+        '201':
+          description: Account registered.
+          headers:
+            Location:
+              description: URI of the newly created account.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    get:
+      tags: [Account]
+      operationId: listAccounts
+      summary: List the accounts owned by the current user.
+      security:
+        - bffSession: []
+      responses:
+        '200':
+          description: The user's accounts (may be empty).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/accounts/{accountId}:
+    delete:
+      tags: [Account]
+      operationId: archiveAccount
+      summary: Archive an account (soft delete).
+      description: |
+        Marks the account as ARCHIVED. The account and its transactions are
+        retained and remain retrievable; the account is simply excluded from
+        active views. This is a soft delete (see AIP-164): archiving an
+        already-archived account is a state conflict and returns 409. An
+        account owned by another user is reported as 404, never 403, to avoid
+        leaking its existence.
+      security:
+        - bffSession: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          description: Identifier of the account to archive.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Account archived. No content.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
 components:
   securitySchemes:
     bffSession:
@@ -40,6 +128,28 @@ components:
         HttpOnly session cookie set by the BFF after a successful OIDC
         login against Keycloak. Sent automatically by the browser on
         same-origin requests.
+
+  responses:
+    BadRequest:
+      description: The request is malformed or violates a domain invariant.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Unauthorized:
+      description: No active session; authenticate via /oauth2/authorization/pecunia.
+    NotFound:
+      description: No such resource owned by the current user.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Conflict:
+      description: The request conflicts with the resource's current state.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
 
   schemas:
     CurrentUser:
@@ -78,3 +188,113 @@ components:
             Whether the user's email address has been verified at the
             identity provider.
           example: true
+
+    Money:
+      type: object
+      description: A monetary amount with an explicit ISO 4217 currency.
+      required: [amount, currency]
+      properties:
+        amount:
+          type: string
+          description: |
+            Decimal amount serialized as a string to preserve precision
+            (never a JSON number/float). Up to 4 fractional digits, banker's
+            rounding applied by the domain.
+          pattern: '^-?\d+(\.\d{1,4})?$'
+          example: "1500.00"
+        currency:
+          type: string
+          description: ISO 4217 alphabetic currency code. Only CHF in the MVP.
+          pattern: '^[A-Z]{3}$'
+          example: CHF
+
+    AccountType:
+      type: string
+      description: |
+        Kind of account. CURRENT and SAVINGS require an IBAN;
+        CREDIT_CARD must not have one.
+      enum: [CURRENT, SAVINGS, CREDIT_CARD]
+
+    AccountStatus:
+      type: string
+      description: Lifecycle status of an account.
+      enum: [ACTIVE, ARCHIVED]
+
+    OpenAccountRequest:
+      type: object
+      description: |
+        Request to register a new account. The owner is resolved server-side
+        from the session and is never part of the payload.
+      required: [type, name, initialBalance]
+      properties:
+        type:
+          $ref: '#/components/schemas/AccountType'
+        name:
+          type: string
+          description: Human-readable account label.
+          minLength: 1
+          maxLength: 100
+          example: UBS Current
+        iban:
+          type: string
+          description: |
+            Required for CURRENT and SAVINGS, forbidden for CREDIT_CARD. The
+            cross-field rule and the ISO 7064 mod-97 check are enforced by the
+            domain; a violation maps to 400.
+          maxLength: 34
+          example: CH9300762011623852957
+        initialBalance:
+          $ref: '#/components/schemas/Money'
+
+    AccountResponse:
+      type: object
+      description: |
+        A registered account. The computed balance is intentionally absent in
+        Block 2: it depends on transactions, which arrive in Block 3
+        (GetAccountBalance is deferred accordingly).
+      required: [id, type, name, status, initialBalance]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Internal account identifier (UUID v7).
+        type:
+          $ref: '#/components/schemas/AccountType'
+        name:
+          type: string
+          example: UBS Current
+        iban:
+          type: string
+          description: Present only for account types that carry one.
+          example: CH9300762011623852957
+        status:
+          $ref: '#/components/schemas/AccountStatus'
+        initialBalance:
+          $ref: '#/components/schemas/Money'
+
+    ProblemDetail:
+      type: object
+      description: |
+        RFC 9457 problem details, produced by the backend's error-handling
+        @RestControllerAdvice (media type application/problem+json). The
+        backend serializes Spring's own ProblemDetail; this schema exists so
+        the generated TypeScript client is typed against the error shape.
+      properties:
+        type:
+          type: string
+          format: uri
+          example: about:blank
+        title:
+          type: string
+          example: Bad Request
+        status:
+          type: integer
+          format: int32
+          example: 400
+        detail:
+          type: string
+          example: An IBAN is required for account type CURRENT.
+        instance:
+          type: string
+          format: uri
+          example: /api/accounts

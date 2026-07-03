@@ -282,6 +282,45 @@
                             <generateModelDocumentation>false</generateModelDocumentation>
                             <globalProperties>
                                 <apis>Identity</apis>
+                                <!-- Filter models per bounded context: `apis` filters interfaces by tag, but
+                                     models are not tagged, so without this every dto package would get every schema. -->
+                                <models>CurrentUser</models>
+                            </globalProperties>
+                            <configOptions>
+                                <useSpringBoot4>true</useSpringBoot4>
+                                <useJackson3>true</useJackson3>
+                                <useJakartaEe>true</useJakartaEe>
+                                <interfaceOnly>true</interfaceOnly>
+                                <!-- Drop the default mock method bodies (they reference ApiUtil, which we suppress). -->
+                                <skipDefaultInterface>true</skipDefaultInterface>
+                                <useTags>true</useTags>
+                                <useBeanValidation>true</useBeanValidation>
+                                <dateLibrary>java8</dateLibrary>
+                                <openApiNullable>false</openApiNullable>
+                                <documentationProvider>none</documentationProvider>
+                                <serializableModel>false</serializableModel>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-account-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/../../contracts/openapi.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>com.pecunia.account.web.generated</apiPackage>
+                            <modelPackage>com.pecunia.account.web.dto</modelPackage>
+                            <generateSupportingFiles>false</generateSupportingFiles>
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+                            <generateApiDocumentation>false</generateApiDocumentation>
+                            <generateModelDocumentation>false</generateModelDocumentation>
+                            <globalProperties>
+                                <apis>Account</apis>
+                                <!-- See the note on the Identity execution: models are filtered per context. -->
+                                <models>Money,AccountType,AccountStatus,OpenAccountRequest,AccountResponse,ProblemDetail</models>
                             </globalProperties>
                             <configOptions>
                                 <useSpringBoot4>true</useSpringBoot4>
