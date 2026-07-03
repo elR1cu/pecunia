@@ -1,4 +1,4 @@
-package com.pecunia.identity.api;
+package com.pecunia.identity.web;
 
 import static org.springframework.security.oauth2.core.oidc.StandardClaimNames.EMAIL;
 import static org.springframework.security.oauth2.core.oidc.StandardClaimNames.EMAIL_VERIFIED;
@@ -8,7 +8,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.pecunia.identity.api.mapper.CurrentUserMapperImpl;
+import com.pecunia.identity.web.mapper.CurrentUserMapperImpl;
 import com.pecunia.security.SecurityConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
