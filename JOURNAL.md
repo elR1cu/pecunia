@@ -40,6 +40,33 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-04 — Session 23
+
+**Block / Task**: Block 2 — Domain Model (`identity`/`User` bounded context)
+
+**Done**:
+- Built the full `identity`/`User` context: domain (`User`/`IdpIdentity`),                                                                                                    
+  application (`ProvisionUser`, idempotent find-or-create), infrastructure                                                                                                    
+  (JPA adapter with `ON CONFLICT DO NOTHING` + the project's first Testcontainers                                                                                             
+  IT), and security (custom `OidcUserService` provisioning at login,                                                                                                          
+  `PecuniaOidcUser`, `CurrentUserProvider` as a shared-kernel port). `/me` now                                                                                                
+  returns the internal `UserId`.
+- Decided A2 (internal identity decoupled from the IdP) and upsert-based                                                                                                      
+  provisioning — captured in **ADR-0028** and **ADR-0029**; reconciled                                                                                                        
+  `domain-model.md`.
+- Renamed `identity.api` → `identity.web` (PR 1) and broke the `identity ⇄ security`                                                                                          
+  cycle by inverting `CurrentUserProvider` into `shared`.
+- Fixed a Block 1 debt: BFF sessions ran in memory, not Redis                                                                                                                 
+  (`starter-session-data-redis` + `UserId` `Serializable` + namespace customizer);                                                                                            
+  validated end-to-end with a real Keycloak login.
+
+**Next**:
+- Push/open PR 1 (`refactor/identity-web`) then PR 2 (`feat/identity-user-context`).
+- PR 3: real `AccountRepositoryAdapter` replacing the temporary stub, the account                                                                                             
+  controller, and the mandatory cross-user isolation test.
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-04-session-23.md).
+
 ### 2026-07-02 — Session 22
 
 **Block / Task**: Block 2 — Domain Model (`account` context, application layer)
