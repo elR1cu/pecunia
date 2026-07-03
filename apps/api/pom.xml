@@ -29,6 +29,7 @@
         <sonar-maven-plugin.version>5.7.0.6970</sonar-maven-plugin.version>
         <archunit.version>1.4.1</archunit.version>
         <uuid-creator.version>6.1.1</uuid-creator.version>
+        <testcontainers.version>2.0.5</testcontainers.version>
 
         <!-- SonarCloud analysis (see ADR-0017). The token is supplied via the SONAR_TOKEN env var in CI. -->
         <sonar.organization>elr1cu</sonar.organization>
@@ -56,6 +57,16 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Testcontainers module versions (junit-jupiter, postgresql) are not managed
+                 by the Spring Boot BOM in 4.x; import the testcontainers BOM, aligned on the
+                 version Spring Boot declares. -->
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -174,6 +185,30 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Testcontainers: real-Postgres integration tests. Versions are managed by the
+             Spring Boot BOM (which imports the testcontainers BOM). spring-boot-testcontainers
+             provides @ServiceConnection wiring. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-postgresql</artifactId>
             <scope>test</scope>
         </dependency>
 
