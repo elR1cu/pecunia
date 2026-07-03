@@ -4,6 +4,7 @@ import com.pecunia.shared.UserId;
 import java.io.Serial;
 import java.util.Collection;
 import java.util.Objects;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,6 +14,7 @@ import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 
 @Accessors(fluent = true)
 @Getter
+@EqualsAndHashCode(callSuper = true)
 public class PecuniaOidcUser extends DefaultOidcUser {
 
     @Serial

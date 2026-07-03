@@ -101,8 +101,7 @@ class ProvisionUserServiceTest {
         UserId id = service.provision(command);
 
         // then
-        assertThat(id).isEqualTo(UserId.of(WINNER));
-        assertThat(id).isNotEqualTo(UserId.of(GENERATED));
+        assertThat(id).isEqualTo(UserId.of(WINNER)).isNotEqualTo(UserId.of(GENERATED));
     }
 
     @Test
