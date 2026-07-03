@@ -32,7 +32,8 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             OidcClientInitiatedLogoutSuccessHandler oidcClientInitiatedLogoutSuccessHandler,
-            AuthenticationEntryPoint authenticationEntryPoint) {
+            AuthenticationEntryPoint authenticationEntryPoint,
+            PecuniaOidcUserService oidcUserService) {
         return http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(EndpointRequest.to(HealthEndpoint.class, InfoEndpoint.class))
                         .permitAll()
@@ -43,7 +44,10 @@ public class SecurityConfig {
                 // See ADR-0022 for what spa() bundles
                 .csrf(CsrfConfigurer::spa)
                 .exceptionHandling(eh -> eh.authenticationEntryPoint(authenticationEntryPoint))
-                .oauth2Login(oauth2LoginConfigurer -> oauth2LoginConfigurer.defaultSuccessUrl("/dashboard", true))
+                .oauth2Login(oauth2LoginConfigurer -> oauth2LoginConfigurer
+                        .defaultSuccessUrl("/dashboard", true)
+                        .userInfoEndpoint(
+                                userInfoEndpointConfig -> userInfoEndpointConfig.oidcUserService(oidcUserService)))
                 .logout(logoutConfigurer ->
                         logoutConfigurer.logoutSuccessHandler(oidcClientInitiatedLogoutSuccessHandler))
                 .sessionManagement(sessionManagementConfigurer ->

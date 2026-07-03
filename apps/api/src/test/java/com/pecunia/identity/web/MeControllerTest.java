@@ -1,5 +1,6 @@
 package com.pecunia.identity.web;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.security.oauth2.core.oidc.StandardClaimNames.EMAIL;
 import static org.springframework.security.oauth2.core.oidc.StandardClaimNames.EMAIL_VERIFIED;
 import static org.springframework.security.oauth2.core.oidc.StandardClaimNames.NAME;
@@ -9,7 +10,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.pecunia.identity.web.mapper.CurrentUserMapperImpl;
+import com.pecunia.security.PecuniaOidcUserService;
 import com.pecunia.security.SecurityConfig;
+import com.pecunia.shared.CurrentUserProvider;
+import com.pecunia.shared.UserId;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +30,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class MeControllerTest {
 
     private static final String SUBJECT_UUID = "11111111-2222-3333-4444-555555555555";
+    private static final UUID INTERNAL_USER_ID = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
 
     @Autowired
     private MockMvc mockMvc;
@@ -36,9 +42,18 @@ class MeControllerTest {
     @MockitoBean
     private ClientRegistrationRepository clientRegistrationRepository;
 
+    /** Referenced by SecurityConfig's OAuth2 login wiring; not exercised by this slice. */
+    @MockitoBean
+    private PecuniaOidcUserService pecuniaOidcUserService;
+
+    @MockitoBean
+    private CurrentUserProvider currentUserProvider;
+
     @Test
-    @DisplayName("returns the current user profile when authenticated")
+    @DisplayName("returns the current user profile with the internal id when authenticated")
     void returnsCurrentUserProfileWhenAuthenticated() throws Exception {
+        when(currentUserProvider.currentUserId()).thenReturn(UserId.of(INTERNAL_USER_ID));
+
         mockMvc.perform(get("/api/me")
                         .with(oidcLogin()
                                 .idToken(token -> token.subject(SUBJECT_UUID)
@@ -47,7 +62,7 @@ class MeControllerTest {
                                         .claim(EMAIL, "test@pecunia.local")
                                         .claim(EMAIL_VERIFIED, true))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(SUBJECT_UUID))
+                .andExpect(jsonPath("$.id").value(INTERNAL_USER_ID.toString()))
                 .andExpect(jsonPath("$.username").value("testuser"))
                 .andExpect(jsonPath("$.displayName").value("Test User"))
                 .andExpect(jsonPath("$.email").value("test@pecunia.local"))
@@ -57,6 +72,8 @@ class MeControllerTest {
     @Test
     @DisplayName("falls back to preferred username for display name when the name claim is absent")
     void fallsBackToPreferredUsernameForDisplayNameWhenNameClaimAbsent() throws Exception {
+        when(currentUserProvider.currentUserId()).thenReturn(UserId.of(INTERNAL_USER_ID));
+
         mockMvc.perform(get("/api/me")
                         .with(oidcLogin()
                                 .idToken(token -> token.subject(SUBJECT_UUID)
@@ -70,6 +87,8 @@ class MeControllerTest {
     @Test
     @DisplayName("returns false for emailVerified when the claim is absent")
     void returnsFalseForEmailVerifiedWhenClaimAbsent() throws Exception {
+        when(currentUserProvider.currentUserId()).thenReturn(UserId.of(INTERNAL_USER_ID));
+
         mockMvc.perform(get("/api/me")
                         .with(oidcLogin()
                                 .idToken(token -> token.subject(SUBJECT_UUID)

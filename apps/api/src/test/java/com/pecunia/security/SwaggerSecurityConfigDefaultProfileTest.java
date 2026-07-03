@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.pecunia.identity.web.mapper.CurrentUserMapperImpl;
+import com.pecunia.shared.CurrentUserProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,12 @@ class SwaggerSecurityConfigDefaultProfileTest {
      */
     @MockitoBean
     private ClientRegistrationRepository clientRegistrationRepository;
+
+    @MockitoBean
+    private PecuniaOidcUserService pecuniaOidcUserService;
+
+    @MockitoBean
+    private CurrentUserProvider currentUserProvider;
 
     @Test
     @DisplayName("swagger-ui returns 401 for json request outside dev profile")
