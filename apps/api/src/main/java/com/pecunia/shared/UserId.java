@@ -1,9 +1,14 @@
 package com.pecunia.shared;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
-public record UserId(UUID value) {
+public record UserId(UUID value) implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     public UserId {
         Objects.requireNonNull(value, "UserId value must not be null");

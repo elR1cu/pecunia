@@ -96,15 +96,24 @@ The `Money` type is a Java record in the shared kernel.
 ### User
 
 A `User` represents the authenticated person using the application. In the
-MVP, there is a single user. The `User` aggregate is intentionally minimal:
+MVP, there is a single user. The `User` aggregate is intentionally minimal and
+**decouples Pecunia's internal identity from the identity provider**:
 
-- `UserId`: UUID generated application-side, sourced from the Keycloak
-  `sub` claim.
-- `displayName`: human-readable name (from Keycloak).
-- `email`: from Keycloak.
+- `UserId`: internal identifier, generated application-side as a UUID v7,
+  distinct from any IdP identifier.
+- `IdpIdentity`: the federated identity at the OIDC provider — the
+  `(issuer, subject)` pair from the ID token. Per OpenID Connect Core, only
+  this pair is a stable, unique identifier for an end-user; `subject` alone is
+  unique only within a given issuer.
 
-User authentication and identity management are delegated to Keycloak. The
-domain only knows the user's identifier and basic profile.
+The `User` is provisioned just-in-time on the first login and matched on its
+`IdpIdentity`. Profile attributes (display name, email) are deliberately **not**
+copied into the domain: they live in the token and are exposed by
+`GET /api/me`. Authentication is delegated to Keycloak; the domain knows only
+the internal identifier and the federated-identity mapping. See
+[ADR-0028](adr/0028-internal-user-identity-mapping.md) (identity mapping) and
+[ADR-0029](adr/0029-idempotent-user-provisioning.md) (concurrency-safe
+provisioning).
 
 **Multi-user note**: every aggregate root in Pecunia references a `UserId`.
 The application is designed to host multiple isolated users from day one,
