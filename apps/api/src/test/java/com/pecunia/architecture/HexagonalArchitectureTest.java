@@ -17,11 +17,13 @@ import com.tngtech.archunit.lang.ArchRule;
  * and off {@code com.pecunia.shared..}, so a new context is policed the moment it is created without
  * touching this file.
  *
- * <p>The shared-kernel rules, the slices cycle rule and the {@code ..domain..} rules are strict:
- * {@code com.pecunia.shared}, the top-level packages and {@code account.domain} already hold classes.
- * The remaining layer rules ({@code ..application..}, {@code ..web..}) still match no classes until
- * the {@code account} application and web layers land, so they carry {@code allowEmptyShould(true)} to
- * keep the baseline green now; drop it on each rule as its layer gains classes.
+ * <p>The shared-kernel rules, the slices cycle rule, the {@code ..domain..} rules and now the
+ * {@code ..web..} rule are strict: {@code com.pecunia.shared}, the top-level packages,
+ * {@code account.domain} and {@code identity.web} all hold classes. The
+ * {@code application_does_not_depend_on_adapters} rule still carries {@code allowEmptyShould(true)}
+ * even though {@code account.application} now holds classes — a lingering allowance to drop when that
+ * rule is next revisited. The convention stands: drop {@code allowEmptyShould(true)} on each rule as
+ * its layer gains classes.
  */
 @AnalyzeClasses(packages = "com.pecunia", importOptions = ImportOption.DoNotIncludeTests.class)
 class HexagonalArchitectureTest {
@@ -72,7 +74,6 @@ class HexagonalArchitectureTest {
             .should()
             .dependOnClassesThat()
             .resideInAPackage("..infrastructure..")
-            .allowEmptyShould(true)
             .as("the web layer must go through the application layer, never straight to infrastructure");
 
     // ---------------------------------------------------------------------------

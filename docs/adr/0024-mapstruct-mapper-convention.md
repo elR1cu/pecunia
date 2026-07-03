@@ -301,7 +301,7 @@ Rejected because:
 ## References
 
 - `apps/api/pom.xml` — MapStruct dependency and annotation processor wiring
-- `apps/api/src/main/java/com/pecunia/identity/api/mapper/CurrentUserMapper.java`
+- `apps/api/src/main/java/com/pecunia/identity/web/mapper/CurrentUserMapper.java`
   — first mapper, illustrates the conventions
 - [MapStruct reference documentation](https://mapstruct.org/documentation/reference-guide/)
 - [MapStruct + Lombok integration](https://mapstruct.org/documentation/stable/reference/html/#lombok)

@@ -1,8 +1,8 @@
-package com.pecunia.identity.api;
+package com.pecunia.identity.web;
 
-import com.pecunia.identity.api.dto.CurrentUser;
-import com.pecunia.identity.api.generated.IdentityApi;
-import com.pecunia.identity.api.mapper.CurrentUserMapper;
+import com.pecunia.identity.web.dto.CurrentUser;
+import com.pecunia.identity.web.generated.IdentityApi;
+import com.pecunia.identity.web.mapper.CurrentUserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,6 @@
-package com.pecunia.identity.api.mapper;
+package com.pecunia.identity.web.mapper;
 
-import com.pecunia.identity.api.dto.CurrentUser;
+import com.pecunia.identity.web.dto.CurrentUser;
 import java.util.UUID;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
