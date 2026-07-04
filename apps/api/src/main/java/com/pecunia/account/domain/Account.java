@@ -7,6 +7,7 @@ import com.pecunia.shared.AccountId;
 import com.pecunia.shared.Money;
 import com.pecunia.shared.UserId;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class Account {
 
@@ -17,7 +18,11 @@ public final class Account {
     private final String name;
     private final Iban iban;
     private final Money initialBalance;
+    private final Long version;
 
+    // S107: an aggregate root legitimately carries its full state; a parameter object would
+    // fragment the model without cohesion.
+    @SuppressWarnings("java:S107")
     private Account(
             AccountId id,
             UserId owner,
@@ -25,7 +30,8 @@ public final class Account {
             AccountStatus status,
             String name,
             Iban iban,
-            Money initialBalance) {
+            Money initialBalance,
+            Long version) {
         Objects.requireNonNull(id, "AccountId cannot be null");
         Objects.requireNonNull(owner, "UserId cannot be null");
         Objects.requireNonNull(type, "AccountType cannot be null");
@@ -48,13 +54,15 @@ public final class Account {
         this.name = name.strip();
         this.iban = iban;
         this.initialBalance = initialBalance;
+        this.version = version;
     }
 
     public static Account open(
             AccountId id, UserId owner, AccountType type, String name, Iban iban, Money initialBalance) {
-        return new Account(id, owner, type, AccountStatus.ACTIVE, name, iban, initialBalance);
+        return new Account(id, owner, type, AccountStatus.ACTIVE, name, iban, initialBalance, null);
     }
 
+    @SuppressWarnings("java:S107") // rehydrates the full aggregate state from persistence
     public static Account reconstitute(
             AccountId id,
             UserId owner,
@@ -62,8 +70,9 @@ public final class Account {
             AccountStatus status,
             String name,
             Iban iban,
-            Money initialBalance) {
-        return new Account(id, owner, type, status, name, iban, initialBalance);
+            Money initialBalance,
+            Long version) {
+        return new Account(id, owner, type, status, name, iban, initialBalance, version);
     }
 
     public void archive() {
@@ -95,7 +104,8 @@ public final class Account {
                 + owner + ", type="
                 + type + ", status="
                 + status + ", name='"
-                + name + '\'' + '}';
+                + name + '\'' + ", version="
+                + version + '}';
     }
 
     public AccountId id() {
@@ -124,5 +134,9 @@ public final class Account {
 
     public Money initialBalance() {
         return initialBalance;
+    }
+
+    public Optional<Long> version() {
+        return Optional.ofNullable(version);
     }
 }

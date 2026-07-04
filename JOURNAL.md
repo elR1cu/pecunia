@@ -40,6 +40,30 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-04 — Session 24
+
+**Block / Task**: Block 2 — Domain Model (`account` context, infrastructure/persistence slice)
+
+**Done**:
+- Shipped the `account` JPA persistence adapter, replacing `StubAccountRepository`:                                                                                           
+  `MoneyEmbeddable` (`@Embeddable`), `AccountEntity`, `AccountJpaRepository`,                                                                                                 
+  `AccountRepositoryAdapter`, and the Flyway `V3__accounts.sql` table.
+- Chose `@Version`-on-the-aggregate (not `Persistable`) to drive persist-vs-merge on                                                                                          
+  application-assigned ids and get optimistic locking — self-corrected after research                                                                                         
+  (the transient flag doesn't survive a rebuild-on-map adapter; Vlad prefers `@Version`).
+- Decided: `Money` as an embeddable (promoted to shared-infra at the 2nd consumer, rule                                                                                       
+  of three); no cross-context FK on `owner_id`; tenancy enforced by the explicit `owner`                                                                                      
+  port parameter (RLS post-MVP). Documented in ADR-0030 / ADR-0031.
+- Added the mandatory cross-user isolation Testcontainers IT (3 cases); `mvn verify`                                                                                          
+  green (120 tests, Spotless clean). Committed the slice signed (`a42d519`).
+
+**Next**:
+- Push `feat/account-persistence-adapter` and open its PR.
+- Account web slice: controller + `@RestControllerAdvice` (400/404/409), enriched OpenAPI (PR #26 draft).
+- Then the Angular accounts page toward the Block 2 exit criterion.
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-04-session-24.md).
+
 ### 2026-07-04 — Session 23
 
 **Block / Task**: Block 2 — Domain Model (`identity`/`User` bounded context)
