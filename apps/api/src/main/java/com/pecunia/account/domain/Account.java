@@ -20,6 +20,9 @@ public final class Account {
     private final Money initialBalance;
     private final Long version;
 
+    // S107: an aggregate root legitimately carries its full state; a parameter object would
+    // fragment the model without cohesion.
+    @SuppressWarnings("java:S107")
     private Account(
             AccountId id,
             UserId owner,
@@ -59,6 +62,7 @@ public final class Account {
         return new Account(id, owner, type, AccountStatus.ACTIVE, name, iban, initialBalance, null);
     }
 
+    @SuppressWarnings("java:S107") // rehydrates the full aggregate state from persistence
     public static Account reconstitute(
             AccountId id,
             UserId owner,

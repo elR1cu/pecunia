@@ -7,7 +7,6 @@ import com.pecunia.account.domain.Iban;
 import com.pecunia.shared.AccountId;
 import com.pecunia.shared.UserId;
 import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -50,14 +49,12 @@ public class AccountEntity {
     private String iban;
 
     @Embedded
-    @AttributeOverrides({
-        @AttributeOverride(
-                name = "amount",
-                column = @Column(name = "initial_balance_amount", nullable = false, precision = 19, scale = 4)),
-        @AttributeOverride(
-                name = "currency",
-                column = @Column(name = "initial_balance_currency", nullable = false, length = 3)),
-    })
+    @AttributeOverride(
+            name = "amount",
+            column = @Column(name = "initial_balance_amount", nullable = false, precision = 19, scale = 4))
+    @AttributeOverride(
+            name = "currency",
+            column = @Column(name = "initial_balance_currency", nullable = false, length = 3))
     private MoneyEmbeddable initialBalance;
 
     @Version
@@ -67,6 +64,7 @@ public class AccountEntity {
     @Column(insertable = false, updatable = false)
     private Instant createdAt;
 
+    @SuppressWarnings("java:S107") // the entity mirrors the aggregate's full state
     private AccountEntity(
             UUID id,
             UUID ownerId,
