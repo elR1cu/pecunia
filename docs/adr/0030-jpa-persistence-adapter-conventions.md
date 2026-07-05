@@ -4,6 +4,12 @@
 
 Accepted
 
+> **Follow-up.** The "shared infrastructure location distinct from the pure
+> kernel" this ADR anticipated for a reused `MoneyEmbeddable` is now settled by
+> [ADR-0032](0032-shared-kernel-and-shared-infrastructure-packages.md): its home
+> is `com.pecunia.sharedinfra.persistence` (not `com.pecunia.shared.persistence`),
+> and the kernel is renamed to `com.pecunia.sharedkernel`.
+
 ## Context
 
 The `account` context is the second bounded context to get a persistence

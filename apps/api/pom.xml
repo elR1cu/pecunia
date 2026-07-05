@@ -365,6 +365,14 @@
                          agent), to which we append the Mockito agent. Both agents coexist;
                          hard-coding argLine here would silently discard JaCoCo's, yielding 0% coverage. -->
                     <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    <!-- Fork a fresh JVM per test class. Spring Boot initialises its LoggingSystem
+                         once per JVM and pushes CONSOLE_LOG_STRUCTURED_FORMAT as a System property;
+                         a `dev`-profile slice (structured format disabled -> empty) otherwise leaks
+                         that empty value into a later default-profile context in the same fork,
+                         which then fails with "Unknown format ''". The failure is execution-order
+                         dependent (Surefire's filesystem order differs across OSes), so isolating
+                         forks is the order-independent fix. -->
+                    <reuseForks>false</reuseForks>
                 </configuration>
             </plugin>
             <plugin>

@@ -2,8 +2,8 @@ package com.pecunia.account.application.port.in;
 
 import com.pecunia.account.domain.AccountType;
 import com.pecunia.account.domain.Iban;
-import com.pecunia.shared.Money;
-import com.pecunia.shared.UserId;
+import com.pecunia.sharedkernel.Money;
+import com.pecunia.sharedkernel.UserId;
 import java.util.Optional;
 
 /**

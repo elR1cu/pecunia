@@ -2,14 +2,14 @@ package com.pecunia.identity.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pecunia.id.Uuidv7IdGenerator;
 import com.pecunia.identity.application.port.in.ProvisionUser;
 import com.pecunia.identity.application.port.in.ProvisionUserCommand;
 import com.pecunia.identity.application.port.out.UserRepository;
 import com.pecunia.identity.application.service.ProvisionUserService;
 import com.pecunia.identity.domain.IdpIdentity;
 import com.pecunia.identity.domain.User;
-import com.pecunia.shared.UserId;
+import com.pecunia.sharedinfra.id.Uuidv7IdGenerator;
+import com.pecunia.sharedkernel.UserId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

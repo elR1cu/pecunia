@@ -14,11 +14,11 @@ import com.tngtech.archunit.lang.ArchRule;
  *
  * <p>The rules are convention-driven: they key off the package suffixes every bounded context
  * follows ({@code ..domain..}, {@code ..application..}, {@code ..web..}, {@code ..infrastructure..})
- * and off {@code com.pecunia.shared..}, so a new context is policed the moment it is created without
- * touching this file.
+ * and off {@code com.pecunia.sharedkernel..}, so a new context is policed the moment it is created
+ * without touching this file.
  *
  * <p>The shared-kernel rules, the slices cycle rule, the {@code ..domain..} rules and now the
- * {@code ..web..} rule are strict: {@code com.pecunia.shared}, the top-level packages,
+ * {@code ..web..} rule are strict: {@code com.pecunia.sharedkernel}, the top-level packages,
  * {@code account.domain} and {@code identity.web} all hold classes. The
  * {@code application_does_not_depend_on_adapters} rule still carries {@code allowEmptyShould(true)}
  * even though {@code account.application} now holds classes — a lingering allowance to drop when that
@@ -77,14 +77,17 @@ class HexagonalArchitectureTest {
             .as("the web layer must go through the application layer, never straight to infrastructure");
 
     // ---------------------------------------------------------------------------
-    // Shared kernel (Session 19, ADR-0026): a pure, framework-free sink that every
-    // bounded context may depend on, and which depends on no context in return.
+    // Shared kernel (Session 19, ADR-0026, ADR-0032): a pure, framework-free sink
+    // that every bounded context may depend on, and which depends on no context in
+    // return. Framework-bearing cross-cutting concerns live in the sibling
+    // `com.pecunia.sharedinfra`, deliberately outside `com.pecunia.sharedkernel..`
+    // so the framework-free rule below needs no carve-out.
     // ---------------------------------------------------------------------------
 
     @ArchTest
     static final ArchRule shared_kernel_is_free_of_frameworks = noClasses()
             .that()
-            .resideInAPackage("com.pecunia.shared..")
+            .resideInAPackage("com.pecunia.sharedkernel..")
             .should()
             .dependOnClassesThat()
             .resideInAnyPackage("org.springframework..", "jakarta.persistence..", "org.hibernate..", "lombok..")
@@ -93,18 +96,36 @@ class HexagonalArchitectureTest {
     @ArchTest
     static final ArchRule shared_kernel_does_not_depend_on_contexts = noClasses()
             .that()
-            .resideInAPackage("com.pecunia.shared..")
+            .resideInAPackage("com.pecunia.sharedkernel..")
             .should()
             .dependOnClassesThat()
             .resideInAnyPackage("..account..", "..transaction..", "..category..", "..budget..")
             .as("the shared kernel is a sink: contexts depend on it, never the reverse");
 
+    // The inner layers see only the pure kernel (its ports and value objects),
+    // never the framework-bearing shared adapters: an `IdGenerator` is injected as
+    // the `com.pecunia.sharedkernel` port, not as `sharedinfra.id.Uuidv7IdGenerator`
+    // (ADR-0032).
+    @ArchTest
+    static final ArchRule domain_and_application_do_not_depend_on_shared_infra = noClasses()
+            .that()
+            .resideInAnyPackage("..domain..", "..application..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAPackage("com.pecunia.sharedinfra..")
+            .as(
+                    "domain and application must depend on the shared kernel ports only, never on shared infrastructure adapters");
+
     // ---------------------------------------------------------------------------
     // Modular monolith (ADR-0004, ADR-0016): no cyclic dependencies between the
-    // top-level packages. Per-context independence (a context reaching another
-    // context only via its public application API) is tightened at Block 3, when
-    // `transaction` introduces the first deliberate cross-context arc through the
-    // Open Host Service / Anti-Corruption Layer (Session 19).
+    // top-level packages. The slices are the first segment under com.pecunia
+    // (account, identity, sharedkernel, sharedinfra), so `sharedinfra` collapses
+    // its id/security/observability concerns into one slice (ADR-0032) — a cycle
+    // between those three would be intra-slice and invisible here, an accepted
+    // trade-off for leaf technical concerns. Per-context independence (a context
+    // reaching another context only via its public application API) is tightened
+    // at Block 3, when `transaction` introduces the first deliberate cross-context
+    // arc through the Open Host Service / Anti-Corruption Layer (Session 19).
     // ---------------------------------------------------------------------------
 
     @ArchTest

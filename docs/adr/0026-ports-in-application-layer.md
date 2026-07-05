@@ -9,6 +9,12 @@ ports in the domain layer. ADR-0003 remains the canonical statement of the
 hexagonal style; this ADR settles the single open question of *where ports
 live* and supersedes ADR-0003 on that one point.
 
+> **Note (later renaming).** The kernel package referenced below as
+> `com.pecunia.shared` was renamed to `com.pecunia.sharedkernel`, and the
+> `com.pecunia.id` adapter moved under `com.pecunia.sharedinfra.id`, by
+> [ADR-0032](0032-shared-kernel-and-shared-infrastructure-packages.md). The
+> reasoning here is unchanged; only the package names moved.
+
 ## Context
 
 Pecunia adopts Hexagonal Architecture (ADR-0003): domain at the center,

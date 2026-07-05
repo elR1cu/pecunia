@@ -10,10 +10,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.pecunia.identity.web.mapper.CurrentUserMapperImpl;
-import com.pecunia.security.PecuniaOidcUserService;
-import com.pecunia.security.SecurityConfig;
-import com.pecunia.shared.CurrentUserProvider;
-import com.pecunia.shared.UserId;
+import com.pecunia.sharedinfra.security.PecuniaOidcUserService;
+import com.pecunia.sharedinfra.security.SecurityConfig;
+import com.pecunia.sharedkernel.CurrentUserProvider;
+import com.pecunia.sharedkernel.UserId;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

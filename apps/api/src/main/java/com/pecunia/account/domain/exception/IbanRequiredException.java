@@ -1,7 +1,7 @@
 package com.pecunia.account.domain.exception;
 
 import com.pecunia.account.domain.AccountType;
-import com.pecunia.shared.exception.DomainException;
+import com.pecunia.sharedkernel.exception.DomainException;
 
 /** Thrown when an account type requires an IBAN but none was provided. */
 public final class IbanRequiredException extends DomainException {

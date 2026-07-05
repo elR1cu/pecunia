@@ -1,7 +1,7 @@
 package com.pecunia.identity.web.mapper;
 
 import com.pecunia.identity.web.dto.CurrentUser;
-import com.pecunia.shared.UserId;
+import com.pecunia.sharedkernel.UserId;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;

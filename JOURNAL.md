@@ -40,6 +40,38 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-05 — Session 26
+
+**Block / Task**: Block 2 — Domain Model (top-level package taxonomy)
+
+**Done**:
+- Resolved a package-organisation inconsistency: renamed `shared` → `sharedkernel`                                                                                            
+  (the pure, framework-free kernel) and grouped the cross-cutting framework-bearing                                                                                           
+  concerns (`id`, `security`, `observability`) under a new sibling `sharedinfra`.                                                                                             
+  Documented in **ADR-0032** (+ forward pointers from ADR-0026/0030 and the                                                                                                   
+  `architecture.md` package diagram).
+- Updated the ArchUnit rules (kernel rules re-keyed to `sharedkernel`) and added a                                                                                            
+  fitness rule `domain`/`application` must not depend on `sharedinfra..` — now                                                                                                
+  **8 rules**.
+- Fixed two fallout issues from the IntelliJ move (the `security`/`observability`                                                                                             
+  test packages left behind, breaking package-private access; a doubled                                                                                                       
+  `observability.observability` import) by `git mv`-ing 8 test files to mirror the                                                                                            
+  main tree.
+- `mvn clean verify` green (**137 tests**, Spotless clean); single signed commit                                                                                              
+  `cd5cacf` on branch `refactor/sharedkernel-sharedinfra-packages` (not yet pushed).
+- Decided: `MoneyEmbeddable` stays in `account.infrastructure` (rule of three);                                                                                               
+  `web`/`infrastructure` stay siblings (option A); Kafka will live in                                                                                                         
+  `sharedinfra.messaging` — the counter-example that invalidated the                                                                                                          
+  `infrastructure` → `persistence` rename.
+
+**Next**:
+- Push the branch and open the PR (squash-merge).
+- Resume the Block 2 exit criterion: Angular accounts page **or** the `category`                                                                                              
+  bounded context.
+- Reconcile ADR-0026 (`DomainEventPublisher` port placement) when domain events land.
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-05-session-26.md).
+
 ### 2026-07-05 — Session 25
 
 **Block / Task**: Block 2 — Domain Model (`account` context, web slice)

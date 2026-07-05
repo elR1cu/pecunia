@@ -3,7 +3,7 @@ package com.pecunia.identity.infrastructure;
 import com.pecunia.identity.application.port.out.UserRepository;
 import com.pecunia.identity.domain.IdpIdentity;
 import com.pecunia.identity.domain.User;
-import com.pecunia.shared.UserId;
+import com.pecunia.sharedkernel.UserId;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
