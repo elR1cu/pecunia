@@ -1,6 +1,6 @@
 package com.pecunia.account.application.exception;
 
-import com.pecunia.shared.AccountId;
+import com.pecunia.sharedkernel.AccountId;
 
 /**
  * Thrown when an account does not exist <em>or</em> is not owned by the

@@ -167,10 +167,18 @@ com.pecunia
 │   ├── ...
 ├── budget                # Bounded context: budgets (post-MVP)
 │   ├── ...
-├── shared                # Shared kernel: typed IDs, value objects, common types
+├── sharedkernel          # Shared kernel: typed IDs, value objects, kernel ports (framework-free)
+├── sharedinfra           # Shared technical concerns (framework-bearing)
+│   ├── id                # UUID v7 generator adapter
+│   ├── security          # BFF/OIDC configuration and login-time glue
+│   ├── observability     # Structured-logging configuration and sanitization
+│   └── persistence       # Shared JPA embeddables (e.g. Money) — Block 3
 └── PecuniaApplication.java
 ```
 
+The top level separates bounded contexts (vertical slices) from the shared
+kernel (`sharedkernel`, pure) and the shared technical concerns (`sharedinfra`,
+framework-bearing) — see [ADR-0032](adr/0032-shared-kernel-and-shared-infrastructure-packages.md).
 Ports live in the application layer, split into `port.in` (driving) and
 `port.out` (driven) — see [ADR-0026](adr/0026-ports-in-application-layer.md).
 

@@ -2,7 +2,7 @@ package com.pecunia.account.web;
 
 import com.pecunia.account.application.exception.AccountNotFoundException;
 import com.pecunia.account.domain.exception.AccountAlreadyArchivedException;
-import com.pecunia.shared.exception.DomainException;
+import com.pecunia.sharedkernel.exception.DomainException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;

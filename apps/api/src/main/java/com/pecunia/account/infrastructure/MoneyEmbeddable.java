@@ -1,6 +1,6 @@
 package com.pecunia.account.infrastructure;
 
-import com.pecunia.shared.Money;
+import com.pecunia.sharedkernel.Money;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.math.BigDecimal;

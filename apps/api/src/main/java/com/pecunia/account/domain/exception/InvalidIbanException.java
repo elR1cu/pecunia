@@ -1,6 +1,6 @@
 package com.pecunia.account.domain.exception;
 
-import com.pecunia.shared.exception.DomainException;
+import com.pecunia.sharedkernel.exception.DomainException;
 
 /**
  * Thrown when an IBAN fails structural or ISO 7064 mod-97 validation.

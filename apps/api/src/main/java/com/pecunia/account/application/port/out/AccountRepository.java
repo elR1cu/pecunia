@@ -1,8 +1,8 @@
 package com.pecunia.account.application.port.out;
 
 import com.pecunia.account.domain.Account;
-import com.pecunia.shared.AccountId;
-import com.pecunia.shared.UserId;
+import com.pecunia.sharedkernel.AccountId;
+import com.pecunia.sharedkernel.UserId;
 import java.util.List;
 import java.util.Optional;
 

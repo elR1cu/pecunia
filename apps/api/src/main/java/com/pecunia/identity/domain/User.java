@@ -1,6 +1,6 @@
 package com.pecunia.identity.domain;
 
-import com.pecunia.shared.UserId;
+import com.pecunia.sharedkernel.UserId;
 import java.util.Objects;
 
 public final class User {

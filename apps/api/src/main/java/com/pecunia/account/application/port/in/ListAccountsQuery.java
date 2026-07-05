@@ -1,6 +1,6 @@
 package com.pecunia.account.application.port.in;
 
-import com.pecunia.shared.UserId;
+import com.pecunia.sharedkernel.UserId;
 
 /**
  * Input for {@link ListAccounts}. A {@code boolean includeArchived} field can

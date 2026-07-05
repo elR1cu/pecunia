@@ -3,9 +3,9 @@ package com.pecunia.account.domain;
 import com.pecunia.account.domain.exception.AccountAlreadyArchivedException;
 import com.pecunia.account.domain.exception.IbanForbiddenForTypeException;
 import com.pecunia.account.domain.exception.IbanRequiredException;
-import com.pecunia.shared.AccountId;
-import com.pecunia.shared.Money;
-import com.pecunia.shared.UserId;
+import com.pecunia.sharedkernel.AccountId;
+import com.pecunia.sharedkernel.Money;
+import com.pecunia.sharedkernel.UserId;
 import java.util.Objects;
 import java.util.Optional;
 
