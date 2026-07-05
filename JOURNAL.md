@@ -40,6 +40,32 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-05 — Session 25
+
+**Block / Task**: Block 2 — Domain Model (`account` context, web slice)
+
+**Done**:
+- Shipped the `account` **web slice** (merged PR #26): `AccountController`                                                                                                    
+  (201/200/204, `ServletUriComponentsBuilder` Location), `AccountMapper`                                                                                                      
+  (MapStruct inbound + hand-written `toDto`), and `AccountRestControllerAdvice`                                                                                               
+  (400/409/404 as RFC 9457 `ProblemDetail`).
+- Chose **option 3** for the fluent-accessor/MapStruct clash (hand-write the                                                                                                  
+  outbound mapping; defer the custom `AccessorNamingStrategy` SPI module to the                                                                                               
+  2nd domain→DTO consumer — the canonical fix needs a separate module, verified                                                                                               
+  against `mapstruct-examples`).
+- Changed `OpenAccount` to return the `Account` aggregate (consistent with                                                                                                    
+  `ListAccounts`/ADR-0027); flagged the mutable-aggregate leak as a debt to                                                                                                   
+  revisit with read models + an ArchUnit guard (new memory).
+- Generated `AccountControllerTest` (8 + a parameterized 8 covering DTO                                                                                                       
+  validation incl. the nested `Money` cascade); scoped the two Swagger                                                                                                        
+  `@WebMvcTest` slices to `MeController`. Full suite **136 green**, signed commit.
+
+**Next**:
+- Angular accounts management page (account half of the Block 2 exit criterion).
+- The `category` bounded context + its hierarchical Angular page.
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-05-session-25.md).
+
 ### 2026-07-04 — Session 24
 
 **Block / Task**: Block 2 — Domain Model (`account` context, infrastructure/persistence slice)
