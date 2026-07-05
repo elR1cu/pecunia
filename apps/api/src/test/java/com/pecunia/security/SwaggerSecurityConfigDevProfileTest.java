@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.pecunia.identity.web.MeController;
 import com.pecunia.identity.web.mapper.CurrentUserMapperImpl;
 import com.pecunia.shared.CurrentUserProvider;
 import org.junit.jupiter.api.DisplayName;
@@ -19,7 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest
+@WebMvcTest(MeController.class)
 @Import({SecurityConfig.class, SwaggerSecurityConfig.class, CurrentUserMapperImpl.class})
 @ActiveProfiles("dev")
 class SwaggerSecurityConfigDevProfileTest {

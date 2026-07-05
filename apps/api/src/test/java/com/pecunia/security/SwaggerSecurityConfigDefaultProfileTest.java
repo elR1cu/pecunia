@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.pecunia.identity.web.MeController;
 import com.pecunia.identity.web.mapper.CurrentUserMapperImpl;
 import com.pecunia.shared.CurrentUserProvider;
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +17,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest
+@WebMvcTest(MeController.class)
 @Import({SecurityConfig.class, SwaggerSecurityConfig.class, CurrentUserMapperImpl.class})
 class SwaggerSecurityConfigDefaultProfileTest {
 

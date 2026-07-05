@@ -47,7 +47,7 @@ class OpenAccountServiceTest {
     }
 
     @Test
-    @DisplayName("mints an id, persists an active account carrying the command fields, and returns the id")
+    @DisplayName("mints an id, persists an active account carrying the command fields, and returns the account")
     void opens_account() {
         // given
         OpenAccountCommand command =
@@ -55,10 +55,11 @@ class OpenAccountServiceTest {
         when(idGenerator.newId()).thenReturn(GENERATED);
 
         // when
-        AccountId id = service.open(command);
+        Account result = service.open(command);
 
         // then
-        assertThat(id).isEqualTo(AccountId.of(GENERATED));
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(AccountId.of(GENERATED));
 
         ArgumentCaptor<Account> captor = ArgumentCaptor.forClass(Account.class);
         verify(accountRepository).save(captor.capture());
@@ -70,6 +71,7 @@ class OpenAccountServiceTest {
         assertThat(saved.iban()).isEqualTo(IBAN);
         assertThat(saved.initialBalance()).isEqualTo(INITIAL);
         assertThat(saved.status()).isEqualTo(AccountStatus.ACTIVE);
+        assertThat(saved).isSameAs(result);
     }
 
     @Test
