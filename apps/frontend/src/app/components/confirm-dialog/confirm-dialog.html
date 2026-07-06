@@ -1,0 +1,6 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+<mat-dialog-content>{{ data.message }}</mat-dialog-content>
+<mat-dialog-actions>
+  <button matButton [mat-dialog-close]="false">{{ 'common.cancel' | translate }}</button>
+  <button matButton="filled" [mat-dialog-close]="true">{{ 'common.confirm' | translate }}</button>
+</mat-dialog-actions>

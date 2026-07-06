@@ -1,4 +1,5 @@
 @if (user(); as currentUser) {
   <p>{{ 'dashboard.greeting' | translate: { name: currentUser.displayName } }}</p>
+  <a matButton="filled" routerLink="/accounts">{{ 'dashboard.myAccounts' | translate }}</a>
   <button matButton="outlined" (click)="logout()">{{ 'auth.logout' | translate }}</button>
 }

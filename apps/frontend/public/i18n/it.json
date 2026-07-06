@@ -1,4 +1,10 @@
 {
+  "common": {
+    "cancel": "Annulla",
+    "confirm": "Conferma",
+    "close": "Chiudi",
+    "error": "Si è verificato un errore imprevisto."
+  },
   "auth": {
     "login": "Accedi",
     "logout": "Disconnetti"
@@ -7,6 +13,33 @@
     "tagline": "Gestisci il tuo budget personale."
   },
   "dashboard": {
-    "greeting": "Ciao {{name}}"
+    "greeting": "Ciao {{name}}",
+    "myAccounts": "I miei conti"
+  },
+  "accounts": {
+    "new": "Nuovo conto",
+    "empty": "Nessun conto per ora.",
+    "archive": "Archivia",
+    "archiveConfirmTitle": "Archivia il conto",
+    "archiveConfirmMessage": "Archiviare « {{name}} »?",
+    "type": {
+      "CURRENT": "Conto corrente",
+      "SAVINGS": "Risparmio",
+      "CREDIT_CARD": "Carta di credito"
+    },
+    "status": {
+      "ACTIVE": "Attivo",
+      "ARCHIVED": "Archiviato"
+    },
+    "form": {
+      "title": "Nuovo conto",
+      "type": "Tipo",
+      "name": "Nome",
+      "iban": "IBAN",
+      "initialBalance": "Saldo iniziale",
+      "create": "Crea",
+      "ibanRequired": "Per un conto corrente o di risparmio è richiesto un IBAN.",
+      "ibanForbidden": "Una carta di credito non deve avere un IBAN."
+    }
   }
 }

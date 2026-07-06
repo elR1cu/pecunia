@@ -1,4 +1,10 @@
 {
+  "common": {
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "close": "Schließen",
+    "error": "Ein unerwarteter Fehler ist aufgetreten."
+  },
   "auth": {
     "login": "Anmelden",
     "logout": "Abmelden"
@@ -7,6 +13,33 @@
     "tagline": "Verwalten Sie Ihr persönliches Budget."
   },
   "dashboard": {
-    "greeting": "Hallo {{name}}"
+    "greeting": "Hallo {{name}}",
+    "myAccounts": "Meine Konten"
+  },
+  "accounts": {
+    "new": "Neues Konto",
+    "empty": "Noch kein Konto.",
+    "archive": "Archivieren",
+    "archiveConfirmTitle": "Konto archivieren",
+    "archiveConfirmMessage": "« {{name}} » archivieren?",
+    "type": {
+      "CURRENT": "Girokonto",
+      "SAVINGS": "Sparkonto",
+      "CREDIT_CARD": "Kreditkarte"
+    },
+    "status": {
+      "ACTIVE": "Aktiv",
+      "ARCHIVED": "Archiviert"
+    },
+    "form": {
+      "title": "Neues Konto",
+      "type": "Typ",
+      "name": "Name",
+      "iban": "IBAN",
+      "initialBalance": "Anfangssaldo",
+      "create": "Erstellen",
+      "ibanRequired": "Für ein Giro- oder Sparkonto ist eine IBAN erforderlich.",
+      "ibanForbidden": "Eine Kreditkarte darf keine IBAN haben."
+    }
   }
 }
