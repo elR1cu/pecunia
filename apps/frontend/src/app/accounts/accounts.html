@@ -1,0 +1,22 @@
+<button matButton="filled" (click)="openCreate()">{{ 'accounts.new' | translate }}</button>
+
+@for (account of accounts(); track account.id) {
+  <mat-card>
+    <mat-card-title>{{ account.name }}</mat-card-title>
+    <mat-card-content>
+      <p>{{ 'accounts.type.' + account.type | translate }}</p>
+      @if (account.iban) {
+        <p>{{ account.iban }}</p>
+      }
+      <p>{{ account.initialBalance.amount }} {{ account.initialBalance.currency }}</p>
+      <p>{{ 'accounts.status.' + account.status | translate }}</p>
+    </mat-card-content>
+    @if (account.status === AccountStatus.Active) {
+      <mat-card-actions>
+        <button matButton (click)="archive(account)">{{ 'accounts.archive' | translate }}</button>
+      </mat-card-actions>
+    }
+  </mat-card>
+} @empty {
+  <p>{{ 'accounts.empty' | translate }}</p>
+}

@@ -1,4 +1,10 @@
 {
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "error": "An unexpected error occurred."
+  },
   "auth": {
     "login": "Sign in",
     "logout": "Sign out"
@@ -7,6 +13,33 @@
     "tagline": "Manage your personal budget."
   },
   "dashboard": {
-    "greeting": "Hello {{name}}"
+    "greeting": "Hello {{name}}",
+    "myAccounts": "My accounts"
+  },
+  "accounts": {
+    "new": "New account",
+    "empty": "No account yet.",
+    "archive": "Archive",
+    "archiveConfirmTitle": "Archive account",
+    "archiveConfirmMessage": "Archive « {{name}} »?",
+    "type": {
+      "CURRENT": "Current account",
+      "SAVINGS": "Savings",
+      "CREDIT_CARD": "Credit card"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "ARCHIVED": "Archived"
+    },
+    "form": {
+      "title": "New account",
+      "type": "Type",
+      "name": "Name",
+      "iban": "IBAN",
+      "initialBalance": "Initial balance",
+      "create": "Create",
+      "ibanRequired": "An IBAN is required for a current or savings account.",
+      "ibanForbidden": "A credit card must not have an IBAN."
+    }
   }
 }

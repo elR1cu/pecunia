@@ -3,10 +3,11 @@ import { AuthService } from '../services/auth-service';
 import { IdentityState } from '../services/identity-state';
 import { MatButton } from '@angular/material/button';
 import { TranslatePipe } from '@ngx-translate/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [MatButton, TranslatePipe],
+  imports: [MatButton, TranslatePipe, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })

@@ -1,0 +1,45 @@
+<h2 mat-dialog-title>{{ 'accounts.form.title' | translate }}</h2>
+<form [formGroup]="form">
+  <mat-dialog-content>
+    <mat-form-field>
+      <mat-label>{{ 'accounts.form.type' | translate }}</mat-label>
+      <mat-select formControlName="type">
+        <mat-option value="CURRENT">{{ 'accounts.type.CURRENT' | translate }}</mat-option>
+        <mat-option value="SAVINGS">{{ 'accounts.type.SAVINGS' | translate }}</mat-option>
+        <mat-option value="CREDIT_CARD">{{ 'accounts.type.CREDIT_CARD' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>{{ 'accounts.form.name' | translate }}</mat-label>
+      <input matInput formControlName="name" />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>{{ 'accounts.form.iban' | translate }}</mat-label>
+      <input matInput formControlName="iban" />
+    </mat-form-field>
+
+    @if (form.hasError('ibanRequired')) {
+      <p class="field-error">{{ 'accounts.form.ibanRequired' | translate }}</p>
+    }
+    @if (form.hasError('ibanForbidden')) {
+      <p class="field-error">{{ 'accounts.form.ibanForbidden' | translate }}</p>
+    }
+
+    <div formGroupName="initialBalance">
+      <mat-form-field>
+        <mat-label>{{ 'accounts.form.initialBalance' | translate }}</mat-label>
+        <input matInput formControlName="amount" />
+        <span matTextSuffix>CHF</span>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <button matButton mat-dialog-close>{{ 'common.cancel' | translate }}</button>
+    <button matButton="filled" [disabled]="form.invalid || submitting()" (click)="submit()">
+      {{ 'accounts.form.create' | translate }}
+    </button>
+  </mat-dialog-actions>
+</form>
