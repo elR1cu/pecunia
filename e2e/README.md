@@ -7,15 +7,19 @@ exercise the whole system rather than the Angular app in isolation.
 
 ## Scope
 
-One happy-path test closing **Block 1**: an anonymous visit to a protected
-route → Keycloak login → authenticated dashboard. It asserts the three Block 1
-exit criteria:
+- **`auth.happy-path.spec.ts`** — closes **Block 1**: an anonymous visit to a
+  protected route → Keycloak login → authenticated dashboard. It asserts the
+  three Block 1 exit criteria:
+  1. login via Keycloak,
+  2. an HttpOnly session cookie set by the BFF,
+  3. the protected `/api/me` endpoint returning the user identity.
+- **`account.use-case.spec.ts`** — **Block 2** account slice: after login,
+  opens a current account through the create dialog, verifies it appears in the
+  list (type, IBAN, `Active`), then archives it and checks the card flips to
+  `Archived`. Each run creates a uniquely named account (the local stack keeps a
+  persistent database), so runs do not collide.
 
-1. login via Keycloak,
-2. an HttpOnly session cookie set by the BFF,
-3. the protected `/api/me` endpoint returning the user identity.
-
-Wiring this into CI is intentionally deferred — reliably booting Keycloak in CI
+Wiring these into CI is intentionally deferred — reliably booting Keycloak in CI
 is the hard part. For now the suite runs locally, on demand.
 
 ## Prerequisites
