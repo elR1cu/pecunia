@@ -40,6 +40,32 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-07 — Session 27
+
+**Block / Task**: Block 2 — Domain Model (account context, Angular web/UI slice)
+
+**Done**:
+- Built the full **accounts management page** (account half of the Block 2 exit                                                                                               
+  criterion): lazy `/accounts` route, `AccountsState` signal service, `MatCard`                                                                                               
+  list, `OpenAccountDialog` (reactive form + group-level conditional IBAN                                                                                                     
+  validator), reusable `ConfirmDialog`, `NotificationService` (RFC 9457 →                                                                                                     
+  `MatSnackBar`), and EN/FR/DE/IT i18n with dynamic enum-value keys.
+- Grounded three design forks in web research: dedicated signal service vs local                                                                                              
+  state, `MatDialog` for the create form, and the group-level validator over                                                                                                  
+  dynamic `setValidators`.
+- Added Vitest tests (31 passing); the non-excluded logic files sit at 93–100%                                                                                                
+  line coverage.
+- Committed the feature as one signed commit (`7e1d991`) on a fresh                                                                                                           
+  `feat/accounts-web-page` branch cut from an updated `main` (not pushed).
+
+**Next**:
+- Push the branch and open the squash-merge PR.
+- Manual end-to-end validation on the running stack (create/archive/error/DE                                                                                                  
+  switch) — deferred to next session.
+- Start the `category` bounded context (other half of the Block 2 exit criterion).
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-07-session-27.md).
+
 ### 2026-07-05 — Session 26
 
 **Block / Task**: Block 2 — Domain Model (top-level package taxonomy)
