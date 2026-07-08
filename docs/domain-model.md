@@ -209,19 +209,27 @@ A `Category` classifies transactions by purpose.
 - `categoryId`: UUID.
 - `owner`: `UserId`.
 - `name`: display name (e.g., "Groceries", "Restaurants").
-- `type`: enum (`EXPENSE`, `INCOME`, `TRANSFER`). Determines which
-  transactions can be assigned this category.
-- `parent`: optional `CategoryId` for hierarchy (e.g., "Groceries" has
-  parent "Food").
-- `color`: hex color for UI display.
-- `icon`: icon identifier for UI display.
+- `type`: enum (`EXPENSE`, `INCOME`). Determines which transactions can be
+  assigned this category. There is no `TRANSFER` category: transfers move a
+  user's own money between their accounts and are never classified by purpose
+  (see "Category type constraints"), so a `TRANSFER` category would be dead,
+  unassignable surface.
+- `parent`: optional `CategoryId` for a hierarchy of arbitrary depth (e.g.,
+  "Groceries" has parent "Food", which may itself have a parent).
+- `color`: hex color for UI display, validated as `#RRGGBB`.
+- `icon`: optional icon identifier for UI display.
 - `displayOrder`: integer for sorting in the UI.
 - `archived`: boolean; archived categories remain in historical data but
   cannot be assigned to new transactions.
 
 **Invariants**:
-- A category cannot be its own ancestor (no cycles in the hierarchy).
-- A category and its parent must share the same `type`.
+- A category cannot be its own parent. This direct self-reference is the only
+  hierarchy rule the aggregate can enforce on its own, and it does.
+- A category cannot be its own ancestor (no cycles in the hierarchy) and must
+  share its parent's `type`. Because each `Category` is its own aggregate root
+  that references its `parent` by id only, these two rules span multiple
+  categories: they are enforced by the application service, which walks the
+  ancestor chain via the `CategoryRepository` port, not by the pure aggregate.
 - Archiving a category does not break existing transactions referencing it.
 
 **Business operations**:
