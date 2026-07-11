@@ -128,8 +128,8 @@ public final class Account {
         return name;
     }
 
-    public Iban iban() {
-        return iban;
+    public Optional<Iban> iban() {
+        return Optional.ofNullable(iban);
     }
 
     public Money initialBalance() {

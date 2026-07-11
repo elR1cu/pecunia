@@ -21,10 +21,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.pecunia.account.application.exception.AccountNotFoundException;
 import com.pecunia.account.application.port.in.ArchiveAccount;
 import com.pecunia.account.application.port.in.ArchiveAccountCommand;
+import com.pecunia.account.application.port.in.GetAccount;
+import com.pecunia.account.application.port.in.GetAccountQuery;
 import com.pecunia.account.application.port.in.ListAccounts;
 import com.pecunia.account.application.port.in.OpenAccount;
 import com.pecunia.account.application.port.in.OpenAccountCommand;
-import com.pecunia.account.domain.Account;
+import com.pecunia.account.application.readmodel.AccountView;
+import com.pecunia.account.domain.AccountStatus;
 import com.pecunia.account.domain.AccountType;
 import com.pecunia.account.domain.Iban;
 import com.pecunia.account.domain.exception.AccountAlreadyArchivedException;
@@ -37,6 +40,7 @@ import com.pecunia.sharedkernel.Money;
 import com.pecunia.sharedkernel.UserId;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
@@ -75,6 +79,9 @@ class AccountControllerTest {
     private OpenAccount openAccount;
 
     @MockitoBean
+    private GetAccount getAccount;
+
+    @MockitoBean
     private ListAccounts listAccounts;
 
     @MockitoBean
@@ -91,23 +98,23 @@ class AccountControllerTest {
     @MockitoBean
     private PecuniaOidcUserService pecuniaOidcUserService;
 
-    private static Account currentAccount() {
-        return Account.open(
+    private static AccountView currentAccountView() {
+        return new AccountView(
                 AccountId.of(ACCOUNT_ID),
-                OWNER,
                 AccountType.CURRENT,
                 "UBS Current",
-                new Iban(IBAN),
+                Optional.of(new Iban(IBAN)),
+                AccountStatus.ACTIVE,
                 Money.chf(new BigDecimal("1500.00")));
     }
 
-    private static Account creditCard() {
-        return Account.open(
+    private static AccountView creditCardView() {
+        return new AccountView(
                 AccountId.of(CREDIT_CARD_ID),
-                OWNER,
                 AccountType.CREDIT_CARD,
                 "UBS Visa",
-                null,
+                Optional.empty(),
+                AccountStatus.ACTIVE,
                 Money.chf(new BigDecimal("0.00")));
     }
 
@@ -115,7 +122,9 @@ class AccountControllerTest {
     @DisplayName("POST registers an account and returns 201 with a Location header and the created body")
     void openAccountReturnsCreated() throws Exception {
         when(currentUserProvider.currentUserId()).thenReturn(OWNER);
-        when(openAccount.open(any())).thenReturn(currentAccount());
+        when(openAccount.open(any())).thenReturn(AccountId.of(ACCOUNT_ID));
+        when(getAccount.getById(new GetAccountQuery(OWNER, AccountId.of(ACCOUNT_ID))))
+                .thenReturn(currentAccountView());
 
         String body = """
                 {"type":"CURRENT","name":"UBS Current","iban":"CH9300762011623852957",
@@ -233,7 +242,7 @@ class AccountControllerTest {
     @DisplayName("GET returns the owner's accounts, including a credit card without an IBAN")
     void listAccountsReturnsOk() throws Exception {
         when(currentUserProvider.currentUserId()).thenReturn(OWNER);
-        when(listAccounts.list(any())).thenReturn(List.of(currentAccount(), creditCard()));
+        when(listAccounts.list(any())).thenReturn(List.of(currentAccountView(), creditCardView()));
 
         mockMvc.perform(get("/api/accounts").with(oidcLogin()))
                 .andExpect(status().isOk())

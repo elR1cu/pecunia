@@ -19,7 +19,7 @@ public class OpenAccountService implements OpenAccount {
 
     @Override
     @Transactional
-    public Account open(OpenAccountCommand command) {
+    public AccountId open(OpenAccountCommand command) {
         AccountId id = new AccountId(idGenerator.newId());
         Account account = Account.open(
                 id,
@@ -29,6 +29,6 @@ public class OpenAccountService implements OpenAccount {
                 command.iban().orElse(null),
                 command.initialBalance());
         accountRepository.save(account);
-        return account;
+        return id;
     }
 }

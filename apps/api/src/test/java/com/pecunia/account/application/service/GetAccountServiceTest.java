@@ -1,9 +1,11 @@
 package com.pecunia.account.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-import com.pecunia.account.application.port.in.ListAccountsQuery;
+import com.pecunia.account.application.exception.AccountNotFoundException;
+import com.pecunia.account.application.port.in.GetAccountQuery;
 import com.pecunia.account.application.port.out.AccountRepository;
 import com.pecunia.account.application.readmodel.AccountView;
 import com.pecunia.account.domain.Account;
@@ -14,7 +16,7 @@ import com.pecunia.sharedkernel.AccountId;
 import com.pecunia.sharedkernel.Money;
 import com.pecunia.sharedkernel.UserId;
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class ListAccountsServiceTest {
+class GetAccountServiceTest {
 
     private static final UserId OWNER = UserId.of(UUID.randomUUID());
     private static final AccountId ACCOUNT_ID = AccountId.of(UUID.randomUUID());
@@ -34,27 +36,25 @@ class ListAccountsServiceTest {
     @Mock
     private AccountRepository accountRepository;
 
-    private ListAccountsService service;
+    private GetAccountService service;
 
     @BeforeEach
     void setUp() {
-        service = new ListAccountsService(accountRepository);
+        service = new GetAccountService(accountRepository);
     }
 
     @Test
-    @DisplayName("returns the owner's accounts as views carrying every aggregate field")
-    void returns_owned_accounts() {
+    @DisplayName("maps every aggregate field onto the returned AccountView")
+    void returns_account_view() {
         // given
-        ListAccountsQuery query = new ListAccountsQuery(OWNER);
+        GetAccountQuery query = new GetAccountQuery(OWNER, ACCOUNT_ID);
         Account account = Account.open(ACCOUNT_ID, OWNER, AccountType.CURRENT, "Main", IBAN, INITIAL);
-        when(accountRepository.findAllByOwner(OWNER)).thenReturn(List.of(account));
+        when(accountRepository.findByIdAndOwner(ACCOUNT_ID, OWNER)).thenReturn(Optional.of(account));
 
         // when
-        List<AccountView> result = service.list(query);
+        AccountView view = service.getById(query);
 
         // then
-        assertThat(result).hasSize(1);
-        AccountView view = result.getFirst();
         assertThat(view.id()).isEqualTo(ACCOUNT_ID);
         assertThat(view.type()).isEqualTo(AccountType.CURRENT);
         assertThat(view.name()).isEqualTo("Main");
@@ -64,16 +64,13 @@ class ListAccountsServiceTest {
     }
 
     @Test
-    @DisplayName("returns an empty list when the user has no accounts")
-    void returns_empty_when_none() {
+    @DisplayName("throws AccountNotFoundException when the account is absent or not owned")
+    void rejects_missing_account() {
         // given
-        ListAccountsQuery query = new ListAccountsQuery(OWNER);
-        when(accountRepository.findAllByOwner(OWNER)).thenReturn(List.of());
+        GetAccountQuery query = new GetAccountQuery(OWNER, ACCOUNT_ID);
+        when(accountRepository.findByIdAndOwner(ACCOUNT_ID, OWNER)).thenReturn(Optional.empty());
 
-        // when
-        List<AccountView> result = service.list(query);
-
-        // then
-        assertThat(result).isEmpty();
+        // when + then
+        assertThatThrownBy(() -> service.getById(query)).isInstanceOf(AccountNotFoundException.class);
     }
 }

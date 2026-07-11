@@ -1,25 +1,26 @@
 package com.pecunia.account.application.service;
 
-import com.pecunia.account.application.port.in.ListAccounts;
-import com.pecunia.account.application.port.in.ListAccountsQuery;
+import com.pecunia.account.application.exception.AccountNotFoundException;
+import com.pecunia.account.application.port.in.GetAccount;
+import com.pecunia.account.application.port.in.GetAccountQuery;
 import com.pecunia.account.application.port.out.AccountRepository;
 import com.pecunia.account.application.readmodel.AccountView;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class ListAccountsService implements ListAccounts {
+public class GetAccountService implements GetAccount {
 
     private final AccountRepository accountRepository;
 
     @Override
     @Transactional(readOnly = true)
-    public List<AccountView> list(ListAccountsQuery query) {
-        return accountRepository.findAllByOwner(query.owner()).stream()
+    public AccountView getById(GetAccountQuery query) {
+        return accountRepository
+                .findByIdAndOwner(query.accountId(), query.owner())
                 .map(AccountView::fromAccount)
-                .toList();
+                .orElseThrow(() -> new AccountNotFoundException(query.accountId()));
     }
 }

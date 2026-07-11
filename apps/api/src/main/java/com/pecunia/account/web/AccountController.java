@@ -2,11 +2,13 @@ package com.pecunia.account.web;
 
 import com.pecunia.account.application.port.in.ArchiveAccount;
 import com.pecunia.account.application.port.in.ArchiveAccountCommand;
+import com.pecunia.account.application.port.in.GetAccount;
+import com.pecunia.account.application.port.in.GetAccountQuery;
 import com.pecunia.account.application.port.in.ListAccounts;
 import com.pecunia.account.application.port.in.ListAccountsQuery;
 import com.pecunia.account.application.port.in.OpenAccount;
 import com.pecunia.account.application.port.in.OpenAccountCommand;
-import com.pecunia.account.domain.Account;
+import com.pecunia.account.application.readmodel.AccountView;
 import com.pecunia.account.web.dto.AccountResponse;
 import com.pecunia.account.web.dto.OpenAccountRequest;
 import com.pecunia.account.web.generated.AccountApi;
@@ -29,6 +31,7 @@ public class AccountController implements AccountApi {
     private final ArchiveAccount archiveAccount;
     private final ListAccounts listAccounts;
     private final OpenAccount openAccount;
+    private final GetAccount getAccount;
     private final AccountMapper accountMapper;
     private final CurrentUserProvider currentUserProvider;
 
@@ -52,11 +55,12 @@ public class AccountController implements AccountApi {
     public ResponseEntity<AccountResponse> openAccount(OpenAccountRequest openAccountRequest) {
         UserId owner = currentUserProvider.currentUserId();
         OpenAccountCommand command = accountMapper.toCommand(openAccountRequest, owner);
-        Account account = openAccount.open(command);
+        AccountId accountId = openAccount.open(command);
+        AccountView accountView = getAccount.getById(new GetAccountQuery(owner, accountId));
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{accountId}")
-                .buildAndExpand(account.id().value())
+                .buildAndExpand(accountId.value())
                 .toUri();
-        return ResponseEntity.created(location).body(accountMapper.toDto(account));
+        return ResponseEntity.created(location).body(accountMapper.toDto(accountView));
     }
 }

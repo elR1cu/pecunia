@@ -115,7 +115,7 @@ public class AccountEntity {
                 account.type(),
                 account.status(),
                 account.name(),
-                Optional.ofNullable(account.iban()).map(Iban::value).orElse(null),
+                account.iban().map(Iban::value).orElse(null),
                 MoneyEmbeddable.fromDomain(account.initialBalance()),
                 account.version().orElse(null));
     }

@@ -47,7 +47,7 @@ class OpenAccountServiceTest {
     }
 
     @Test
-    @DisplayName("mints an id, persists an active account carrying the command fields, and returns the account")
+    @DisplayName("mints an id, persists an active account carrying the command fields, and returns the id")
     void opens_account() {
         // given
         OpenAccountCommand command =
@@ -55,11 +55,10 @@ class OpenAccountServiceTest {
         when(idGenerator.newId()).thenReturn(GENERATED);
 
         // when
-        Account result = service.open(command);
+        AccountId result = service.open(command);
 
         // then
-        assertThat(result).isNotNull();
-        assertThat(result.id()).isEqualTo(AccountId.of(GENERATED));
+        assertThat(result).isEqualTo(AccountId.of(GENERATED));
 
         ArgumentCaptor<Account> captor = ArgumentCaptor.forClass(Account.class);
         verify(accountRepository).save(captor.capture());
@@ -68,10 +67,9 @@ class OpenAccountServiceTest {
         assertThat(saved.owner()).isEqualTo(OWNER);
         assertThat(saved.type()).isEqualTo(AccountType.CURRENT);
         assertThat(saved.name()).isEqualTo("Main");
-        assertThat(saved.iban()).isEqualTo(IBAN);
+        assertThat(saved.iban()).contains(IBAN);
         assertThat(saved.initialBalance()).isEqualTo(INITIAL);
         assertThat(saved.status()).isEqualTo(AccountStatus.ACTIVE);
-        assertThat(saved).isSameAs(result);
     }
 
     @Test
@@ -88,6 +86,6 @@ class OpenAccountServiceTest {
         // then
         ArgumentCaptor<Account> captor = ArgumentCaptor.forClass(Account.class);
         verify(accountRepository).save(captor.capture());
-        assertThat(captor.getValue().iban()).isNull();
+        assertThat(captor.getValue().iban()).isEmpty();
     }
 }

@@ -39,7 +39,7 @@ class AccountTest {
             assertThat(account.type()).isEqualTo(AccountType.CURRENT);
             assertThat(account.status()).isEqualTo(AccountStatus.ACTIVE);
             assertThat(account.name()).isEqualTo("Main");
-            assertThat(account.iban()).isEqualTo(IBAN);
+            assertThat(account.iban()).contains(IBAN);
             assertThat(account.initialBalance()).isEqualTo(INITIAL);
         }
 
@@ -48,7 +48,7 @@ class AccountTest {
         void opens_credit_card_without_iban() {
             Account account = Account.open(ID, OWNER, AccountType.CREDIT_CARD, "Visa", null, INITIAL);
 
-            assertThat(account.iban()).isNull();
+            assertThat(account.iban()).isEmpty();
             assertThat(account.status()).isEqualTo(AccountStatus.ACTIVE);
         }
 
