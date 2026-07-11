@@ -11,6 +11,7 @@ import com.pecunia.account.domain.AccountStatus;
 import com.pecunia.account.domain.AccountType;
 import com.pecunia.account.domain.Iban;
 import com.pecunia.sharedkernel.AccountId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.IdGenerator;
 import com.pecunia.sharedkernel.Money;
 import com.pecunia.sharedkernel.UserId;
@@ -39,19 +40,22 @@ class OpenAccountServiceTest {
     @Mock
     private AccountRepository accountRepository;
 
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
     private OpenAccountService service;
 
     @BeforeEach
     void setUp() {
-        service = new OpenAccountService(idGenerator, accountRepository);
+        service = new OpenAccountService(idGenerator, accountRepository, currentUserProvider);
     }
 
     @Test
     @DisplayName("mints an id, persists an active account carrying the command fields, and returns the id")
     void opens_account() {
         // given
-        OpenAccountCommand command =
-                new OpenAccountCommand(OWNER, AccountType.CURRENT, "Main", Optional.of(IBAN), INITIAL);
+        OpenAccountCommand command = new OpenAccountCommand(AccountType.CURRENT, "Main", Optional.of(IBAN), INITIAL);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(idGenerator.newId()).thenReturn(GENERATED);
 
         // when
@@ -76,8 +80,8 @@ class OpenAccountServiceTest {
     @DisplayName("maps an empty IBAN to a credit card without an IBAN")
     void opens_credit_card_without_iban() {
         // given
-        OpenAccountCommand command =
-                new OpenAccountCommand(OWNER, AccountType.CREDIT_CARD, "Visa", Optional.empty(), INITIAL);
+        OpenAccountCommand command = new OpenAccountCommand(AccountType.CREDIT_CARD, "Visa", Optional.empty(), INITIAL);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(idGenerator.newId()).thenReturn(GENERATED);
 
         // when

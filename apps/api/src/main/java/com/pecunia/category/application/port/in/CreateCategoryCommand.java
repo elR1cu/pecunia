@@ -3,7 +3,6 @@ package com.pecunia.category.application.port.in;
 import com.pecunia.category.domain.CategoryType;
 import com.pecunia.category.domain.HexColor;
 import com.pecunia.sharedkernel.CategoryId;
-import com.pecunia.sharedkernel.UserId;
 import java.util.Optional;
 
 /**
@@ -15,7 +14,6 @@ import java.util.Optional;
  * {@link Optional} to keep the module boundary null-free.
  */
 public record CreateCategoryCommand(
-        UserId owner,
         String name,
         CategoryType type,
         HexColor color,

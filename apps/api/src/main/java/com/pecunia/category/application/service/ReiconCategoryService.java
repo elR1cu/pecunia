@@ -5,6 +5,8 @@ import com.pecunia.category.application.port.in.ReiconCategory;
 import com.pecunia.category.application.port.in.ReiconCategoryCommand;
 import com.pecunia.category.application.port.out.CategoryRepository;
 import com.pecunia.category.domain.Category;
+import com.pecunia.sharedkernel.CurrentUserProvider;
+import com.pecunia.sharedkernel.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,12 +16,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReiconCategoryService implements ReiconCategory {
 
     private final CategoryRepository categoryRepository;
+    private final CurrentUserProvider currentUserProvider;
 
     @Override
     @Transactional
     public void reicon(ReiconCategoryCommand command) {
+        UserId owner = currentUserProvider.currentUserId();
         Category category = categoryRepository
-                .findByIdAndOwner(command.categoryId(), command.owner())
+                .findByIdAndOwner(command.categoryId(), owner)
                 .orElseThrow(() -> new CategoryNotFoundException(command.categoryId()));
 
         command.newIcon().ifPresentOrElse(category::reicon, category::clearIcon);

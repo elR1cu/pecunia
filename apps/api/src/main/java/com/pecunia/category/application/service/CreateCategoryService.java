@@ -5,7 +5,9 @@ import com.pecunia.category.application.port.in.CreateCategoryCommand;
 import com.pecunia.category.application.port.out.CategoryRepository;
 import com.pecunia.category.domain.Category;
 import com.pecunia.sharedkernel.CategoryId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.IdGenerator;
+import com.pecunia.sharedkernel.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,18 +18,19 @@ public class CreateCategoryService implements CreateCategory {
 
     private final CategoryRepository categoryRepository;
     private final ParentCategoryValidator parentCategoryValidator;
+    private final CurrentUserProvider currentUserProvider;
     private final IdGenerator idGenerator;
 
     @Override
     @Transactional
     public CategoryId create(CreateCategoryCommand command) {
-        command.parent()
-                .ifPresent(parentId -> parentCategoryValidator.validate(parentId, command.owner(), command.type()));
+        UserId owner = currentUserProvider.currentUserId();
+        command.parent().ifPresent(parentId -> parentCategoryValidator.validate(parentId, owner, command.type()));
 
         CategoryId id = CategoryId.of(idGenerator.newId());
         categoryRepository.save(Category.create(
                 id,
-                command.owner(),
+                owner,
                 command.type(),
                 command.name(),
                 command.color(),

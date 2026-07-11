@@ -3,8 +3,10 @@ package com.pecunia.architecture;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
+import com.pecunia.sharedkernel.UserId;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaMethod;
@@ -106,6 +108,23 @@ class HexagonalArchitectureTest {
             .areInterfaces()
             .should(notReturnDomainTypes())
             .as("driving ports must return read models or ids, never domain types");
+
+    // ---------------------------------------------------------------------------
+    // Owner resolution (ADR-0033): the tenant owner comes from the authenticated
+    // principal via CurrentUserProvider, resolved inside the application services
+    // — never from an adapter payload. Forbidding UserId on the port.in records
+    // makes a client-suppliable owner structurally impossible: no adapter can
+    // reintroduce the IDOR hole this closed.
+    // ---------------------------------------------------------------------------
+
+    @ArchTest
+    static final ArchRule driving_port_inputs_do_not_carry_the_owner = noFields()
+            .that()
+            .areDeclaredInClassesThat()
+            .resideInAPackage("..application.port.in..")
+            .should()
+            .haveRawType(UserId.class)
+            .as("commands and queries must not carry a UserId — application services resolve the owner (ADR-0033)");
 
     private static ArchCondition<JavaMethod> notReturnDomainTypes() {
         return new ArchCondition<>("not return a domain type") {

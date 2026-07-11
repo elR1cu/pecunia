@@ -10,5 +10,5 @@ import java.util.List;
  */
 public interface ListCategories {
 
-    List<CategoryNode> list(ListCategoriesQuery query);
+    List<CategoryNode> list();
 }

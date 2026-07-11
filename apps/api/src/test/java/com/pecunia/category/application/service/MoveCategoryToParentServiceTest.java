@@ -18,6 +18,7 @@ import com.pecunia.category.domain.CategoryType;
 import com.pecunia.category.domain.HexColor;
 import com.pecunia.category.domain.exception.ArchivedCategoryModificationException;
 import com.pecunia.sharedkernel.CategoryId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.UserId;
 import java.util.Optional;
 import java.util.Set;
@@ -41,17 +42,21 @@ class MoveCategoryToParentServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
     private MoveCategoryToParentService service;
 
     @BeforeEach
     void setUp() {
         // real validator on the mocked repository: the tests assert validation
         // behavior, not interactions with the helper
-        service = new MoveCategoryToParentService(categoryRepository, new ParentCategoryValidator(categoryRepository));
+        service = new MoveCategoryToParentService(
+                categoryRepository, new ParentCategoryValidator(categoryRepository), currentUserProvider);
     }
 
     private static MoveCategoryToParentCommand moveCommand(Optional<CategoryId> newParent) {
-        return new MoveCategoryToParentCommand(OWNER, CATEGORY_ID, newParent);
+        return new MoveCategoryToParentCommand(CATEGORY_ID, newParent);
     }
 
     private static Category category(CategoryId id, CategoryType type, CategoryId parent) {
@@ -65,6 +70,7 @@ class MoveCategoryToParentServiceTest {
         MoveCategoryToParentCommand command = moveCommand(Optional.of(PARENT_ID));
         Category moved = category(CATEGORY_ID, CategoryType.EXPENSE, null);
         Category parent = category(PARENT_ID, CategoryType.EXPENSE, null);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(moved));
         when(categoryRepository.findByIdAndOwner(PARENT_ID, OWNER)).thenReturn(Optional.of(parent));
         when(categoryRepository.findAncestorIds(PARENT_ID, OWNER)).thenReturn(Set.of());
@@ -83,6 +89,7 @@ class MoveCategoryToParentServiceTest {
         // given
         MoveCategoryToParentCommand command = moveCommand(Optional.empty());
         Category moved = category(CATEGORY_ID, CategoryType.EXPENSE, OLD_PARENT_ID);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(moved));
 
         // when
@@ -98,6 +105,7 @@ class MoveCategoryToParentServiceTest {
     void rejects_missing_category() {
         // given
         MoveCategoryToParentCommand command = moveCommand(Optional.of(PARENT_ID));
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.empty());
 
         // when + then
@@ -112,6 +120,7 @@ class MoveCategoryToParentServiceTest {
         MoveCategoryToParentCommand command = moveCommand(Optional.of(PARENT_ID));
         Category moved = category(CATEGORY_ID, CategoryType.EXPENSE, null);
         moved.archive();
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(moved));
 
         // when + then
@@ -126,6 +135,7 @@ class MoveCategoryToParentServiceTest {
         // given
         MoveCategoryToParentCommand command = moveCommand(Optional.of(PARENT_ID));
         Category moved = category(CATEGORY_ID, CategoryType.EXPENSE, null);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(moved));
         when(categoryRepository.findByIdAndOwner(PARENT_ID, OWNER)).thenReturn(Optional.empty());
 
@@ -142,6 +152,7 @@ class MoveCategoryToParentServiceTest {
         Category moved = category(CATEGORY_ID, CategoryType.EXPENSE, null);
         Category parent = category(PARENT_ID, CategoryType.EXPENSE, null);
         parent.archive();
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(moved));
         when(categoryRepository.findByIdAndOwner(PARENT_ID, OWNER)).thenReturn(Optional.of(parent));
 
@@ -157,6 +168,7 @@ class MoveCategoryToParentServiceTest {
         MoveCategoryToParentCommand command = moveCommand(Optional.of(PARENT_ID));
         Category moved = category(CATEGORY_ID, CategoryType.EXPENSE, null);
         Category parent = category(PARENT_ID, CategoryType.INCOME, null);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(moved));
         when(categoryRepository.findByIdAndOwner(PARENT_ID, OWNER)).thenReturn(Optional.of(parent));
 
@@ -171,6 +183,7 @@ class MoveCategoryToParentServiceTest {
         // given
         MoveCategoryToParentCommand command = moveCommand(Optional.of(CATEGORY_ID));
         Category moved = category(CATEGORY_ID, CategoryType.EXPENSE, null);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(moved));
 
         // when + then
@@ -185,6 +198,7 @@ class MoveCategoryToParentServiceTest {
         MoveCategoryToParentCommand command = moveCommand(Optional.of(PARENT_ID));
         Category moved = category(CATEGORY_ID, CategoryType.EXPENSE, null);
         Category parent = category(PARENT_ID, CategoryType.EXPENSE, CATEGORY_ID);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(moved));
         when(categoryRepository.findByIdAndOwner(PARENT_ID, OWNER)).thenReturn(Optional.of(parent));
         when(categoryRepository.findAncestorIds(PARENT_ID, OWNER)).thenReturn(Set.of(CATEGORY_ID));

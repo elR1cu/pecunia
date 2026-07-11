@@ -5,7 +5,9 @@ import com.pecunia.account.application.port.in.OpenAccountCommand;
 import com.pecunia.account.application.port.out.AccountRepository;
 import com.pecunia.account.domain.Account;
 import com.pecunia.sharedkernel.AccountId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.IdGenerator;
+import com.pecunia.sharedkernel.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,18 +18,15 @@ public class OpenAccountService implements OpenAccount {
 
     private final IdGenerator idGenerator;
     private final AccountRepository accountRepository;
+    private final CurrentUserProvider currentUserProvider;
 
     @Override
     @Transactional
     public AccountId open(OpenAccountCommand command) {
+        UserId owner = currentUserProvider.currentUserId();
         AccountId id = new AccountId(idGenerator.newId());
         Account account = Account.open(
-                id,
-                command.owner(),
-                command.type(),
-                command.name(),
-                command.iban().orElse(null),
-                command.initialBalance());
+                id, owner, command.type(), command.name(), command.iban().orElse(null), command.initialBalance());
         accountRepository.save(account);
         return id;
     }

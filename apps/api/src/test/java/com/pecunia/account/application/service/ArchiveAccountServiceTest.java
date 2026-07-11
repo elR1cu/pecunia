@@ -16,6 +16,7 @@ import com.pecunia.account.domain.AccountType;
 import com.pecunia.account.domain.Iban;
 import com.pecunia.account.domain.exception.AccountAlreadyArchivedException;
 import com.pecunia.sharedkernel.AccountId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.Money;
 import com.pecunia.sharedkernel.UserId;
 import java.math.BigDecimal;
@@ -39,11 +40,14 @@ class ArchiveAccountServiceTest {
     @Mock
     private AccountRepository accountRepository;
 
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
     private ArchiveAccountService service;
 
     @BeforeEach
     void setUp() {
-        service = new ArchiveAccountService(accountRepository);
+        service = new ArchiveAccountService(accountRepository, currentUserProvider);
     }
 
     private static Account activeAccount() {
@@ -54,8 +58,9 @@ class ArchiveAccountServiceTest {
     @DisplayName("archives an active account and persists it")
     void archives_active_account() {
         // given
-        ArchiveAccountCommand command = new ArchiveAccountCommand(OWNER, ACCOUNT_ID);
+        ArchiveAccountCommand command = new ArchiveAccountCommand(ACCOUNT_ID);
         Account account = activeAccount();
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(accountRepository.findByIdAndOwner(ACCOUNT_ID, OWNER)).thenReturn(Optional.of(account));
 
         // when
@@ -70,7 +75,8 @@ class ArchiveAccountServiceTest {
     @DisplayName("throws AccountNotFoundException when the account is absent or not owned")
     void rejects_missing_account() {
         // given
-        ArchiveAccountCommand command = new ArchiveAccountCommand(OWNER, ACCOUNT_ID);
+        ArchiveAccountCommand command = new ArchiveAccountCommand(ACCOUNT_ID);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(accountRepository.findByIdAndOwner(ACCOUNT_ID, OWNER)).thenReturn(Optional.empty());
 
         // when + then
@@ -82,9 +88,10 @@ class ArchiveAccountServiceTest {
     @DisplayName("propagates AccountAlreadyArchivedException and does not persist")
     void rejects_double_archive() {
         // given
-        ArchiveAccountCommand command = new ArchiveAccountCommand(OWNER, ACCOUNT_ID);
+        ArchiveAccountCommand command = new ArchiveAccountCommand(ACCOUNT_ID);
         Account account = activeAccount();
         account.archive(); // already archived
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(accountRepository.findByIdAndOwner(ACCOUNT_ID, OWNER)).thenReturn(Optional.of(account));
 
         // when + then

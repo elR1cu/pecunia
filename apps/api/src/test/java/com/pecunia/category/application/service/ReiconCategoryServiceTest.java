@@ -15,6 +15,7 @@ import com.pecunia.category.domain.CategoryType;
 import com.pecunia.category.domain.HexColor;
 import com.pecunia.category.domain.exception.ArchivedCategoryModificationException;
 import com.pecunia.sharedkernel.CategoryId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.UserId;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,11 +36,14 @@ class ReiconCategoryServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
     private ReiconCategoryService service;
 
     @BeforeEach
     void setUp() {
-        service = new ReiconCategoryService(categoryRepository);
+        service = new ReiconCategoryService(categoryRepository, currentUserProvider);
     }
 
     private static Category categoryWithIcon() {
@@ -50,8 +54,9 @@ class ReiconCategoryServiceTest {
     @DisplayName("replaces the icon and persists the category")
     void reicons_category() {
         // given
-        ReiconCategoryCommand command = new ReiconCategoryCommand(OWNER, CATEGORY_ID, Optional.of("home"));
+        ReiconCategoryCommand command = new ReiconCategoryCommand(CATEGORY_ID, Optional.of("home"));
         Category category = categoryWithIcon();
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(category));
 
         // when
@@ -66,8 +71,9 @@ class ReiconCategoryServiceTest {
     @DisplayName("clears the icon when the command carries no icon")
     void clears_icon() {
         // given
-        ReiconCategoryCommand command = new ReiconCategoryCommand(OWNER, CATEGORY_ID, Optional.empty());
+        ReiconCategoryCommand command = new ReiconCategoryCommand(CATEGORY_ID, Optional.empty());
         Category category = categoryWithIcon();
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(category));
 
         // when
@@ -82,7 +88,8 @@ class ReiconCategoryServiceTest {
     @DisplayName("throws CategoryNotFoundException when the category is absent or not owned")
     void rejects_missing_category() {
         // given
-        ReiconCategoryCommand command = new ReiconCategoryCommand(OWNER, CATEGORY_ID, Optional.of("home"));
+        ReiconCategoryCommand command = new ReiconCategoryCommand(CATEGORY_ID, Optional.of("home"));
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.empty());
 
         // when + then
@@ -94,9 +101,10 @@ class ReiconCategoryServiceTest {
     @DisplayName("propagates ArchivedCategoryModificationException and does not persist")
     void rejects_archived_category() {
         // given
-        ReiconCategoryCommand command = new ReiconCategoryCommand(OWNER, CATEGORY_ID, Optional.of("home"));
+        ReiconCategoryCommand command = new ReiconCategoryCommand(CATEGORY_ID, Optional.of("home"));
         Category category = categoryWithIcon();
         category.archive();
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(category));
 
         // when + then
