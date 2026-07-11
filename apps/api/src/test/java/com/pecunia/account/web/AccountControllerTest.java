@@ -35,9 +35,7 @@ import com.pecunia.account.web.mapper.AccountMapperImpl;
 import com.pecunia.sharedinfra.security.PecuniaOidcUserService;
 import com.pecunia.sharedinfra.security.SecurityConfig;
 import com.pecunia.sharedkernel.AccountId;
-import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.Money;
-import com.pecunia.sharedkernel.UserId;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -66,8 +64,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import({SecurityConfig.class, AccountMapperImpl.class})
 class AccountControllerTest {
 
-    private static final UUID OWNER_ID = UUID.fromString("aaaaaaaa-0000-0000-0000-000000000001");
-    private static final UserId OWNER = UserId.of(OWNER_ID);
     private static final UUID ACCOUNT_ID = UUID.fromString("bbbbbbbb-0000-0000-0000-000000000002");
     private static final UUID CREDIT_CARD_ID = UUID.fromString("cccccccc-0000-0000-0000-000000000003");
     private static final String IBAN = "CH9300762011623852957";
@@ -86,9 +82,6 @@ class AccountControllerTest {
 
     @MockitoBean
     private ArchiveAccount archiveAccount;
-
-    @MockitoBean
-    private CurrentUserProvider currentUserProvider;
 
     /** Keeps the slice hermetic: prevents a real OIDC discovery call to Keycloak at context load. */
     @MockitoBean
@@ -121,10 +114,8 @@ class AccountControllerTest {
     @Test
     @DisplayName("POST registers an account and returns 201 with a Location header and the created body")
     void openAccountReturnsCreated() throws Exception {
-        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(openAccount.open(any())).thenReturn(AccountId.of(ACCOUNT_ID));
-        when(getAccount.getById(new GetAccountQuery(OWNER, AccountId.of(ACCOUNT_ID))))
-                .thenReturn(currentAccountView());
+        when(getAccount.getById(new GetAccountQuery(AccountId.of(ACCOUNT_ID)))).thenReturn(currentAccountView());
 
         String body = """
                 {"type":"CURRENT","name":"UBS Current","iban":"CH9300762011623852957",
@@ -149,7 +140,6 @@ class AccountControllerTest {
         ArgumentCaptor<OpenAccountCommand> captor = ArgumentCaptor.forClass(OpenAccountCommand.class);
         verify(openAccount).open(captor.capture());
         OpenAccountCommand command = captor.getValue();
-        assertThat(command.owner()).isEqualTo(OWNER);
         assertThat(command.type()).isEqualTo(AccountType.CURRENT);
         assertThat(command.name()).isEqualTo("UBS Current");
         assertThat(command.iban()).contains(new Iban(IBAN));
@@ -221,7 +211,6 @@ class AccountControllerTest {
     @Test
     @DisplayName("POST with an invalid IBAN surfaces the domain exception as 400")
     void openAccountRejectsInvalidIban() throws Exception {
-        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
 
         String body = """
                 {"type":"CURRENT","name":"UBS Current","iban":"CH0000000000000000000",
@@ -241,8 +230,7 @@ class AccountControllerTest {
     @Test
     @DisplayName("GET returns the owner's accounts, including a credit card without an IBAN")
     void listAccountsReturnsOk() throws Exception {
-        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
-        when(listAccounts.list(any())).thenReturn(List.of(currentAccountView(), creditCardView()));
+        when(listAccounts.list()).thenReturn(List.of(currentAccountView(), creditCardView()));
 
         mockMvc.perform(get("/api/accounts").with(oidcLogin()))
                 .andExpect(status().isOk())
@@ -257,8 +245,7 @@ class AccountControllerTest {
     @Test
     @DisplayName("GET returns 200 with an empty array when the owner has no account")
     void listAccountsReturnsEmpty() throws Exception {
-        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
-        when(listAccounts.list(any())).thenReturn(List.of());
+        when(listAccounts.list()).thenReturn(List.of());
 
         mockMvc.perform(get("/api/accounts").with(oidcLogin()))
                 .andExpect(status().isOk())
@@ -268,7 +255,6 @@ class AccountControllerTest {
     @Test
     @DisplayName("DELETE archives the account and returns 204")
     void archiveAccountReturnsNoContent() throws Exception {
-        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
 
         mockMvc.perform(delete("/api/accounts/{accountId}", ACCOUNT_ID)
                         .with(oidcLogin())
@@ -277,14 +263,12 @@ class AccountControllerTest {
 
         ArgumentCaptor<ArchiveAccountCommand> captor = ArgumentCaptor.forClass(ArchiveAccountCommand.class);
         verify(archiveAccount).archive(captor.capture());
-        assertThat(captor.getValue().owner()).isEqualTo(OWNER);
         assertThat(captor.getValue().accountId()).isEqualTo(AccountId.of(ACCOUNT_ID));
     }
 
     @Test
     @DisplayName("DELETE on an unknown (or foreign) account returns 404")
     void archiveAccountReturnsNotFound() throws Exception {
-        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         doThrow(new AccountNotFoundException(AccountId.of(ACCOUNT_ID)))
                 .when(archiveAccount)
                 .archive(any());
@@ -300,7 +284,6 @@ class AccountControllerTest {
     @Test
     @DisplayName("DELETE on an already-archived account returns 409 (not 400, despite being a DomainException)")
     void archiveAccountReturnsConflict() throws Exception {
-        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         doThrow(new AccountAlreadyArchivedException(AccountId.of(ACCOUNT_ID)))
                 .when(archiveAccount)
                 .archive(any());

@@ -12,5 +12,5 @@ import java.util.List;
  */
 public interface ListAccounts {
 
-    List<AccountView> list(ListAccountsQuery query);
+    List<AccountView> list();
 }

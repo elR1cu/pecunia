@@ -15,6 +15,7 @@ import com.pecunia.category.domain.Category;
 import com.pecunia.category.domain.CategoryType;
 import com.pecunia.category.domain.HexColor;
 import com.pecunia.sharedkernel.CategoryId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.IdGenerator;
 import com.pecunia.sharedkernel.UserId;
 import java.util.Optional;
@@ -39,6 +40,9 @@ class CreateCategoryServiceTest {
     private CategoryRepository categoryRepository;
 
     @Mock
+    private CurrentUserProvider currentUserProvider;
+
+    @Mock
     private IdGenerator idGenerator;
 
     private CreateCategoryService service;
@@ -48,12 +52,12 @@ class CreateCategoryServiceTest {
         // real validator on the mocked repository: the tests assert validation
         // behavior, not interactions with the helper
         service = new CreateCategoryService(
-                categoryRepository, new ParentCategoryValidator(categoryRepository), idGenerator);
+                categoryRepository, new ParentCategoryValidator(categoryRepository), currentUserProvider, idGenerator);
     }
 
     private static CreateCategoryCommand command(Optional<CategoryId> parent) {
         return new CreateCategoryCommand(
-                OWNER, "Groceries", CategoryType.EXPENSE, COLOR, Optional.of("shopping_cart"), parent, 0);
+                "Groceries", CategoryType.EXPENSE, COLOR, Optional.of("shopping_cart"), parent, 0);
     }
 
     private static Category parentCategory(CategoryType type) {
@@ -65,6 +69,7 @@ class CreateCategoryServiceTest {
     void creates_root_category() {
         // given
         CreateCategoryCommand command = command(Optional.empty());
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(idGenerator.newId()).thenReturn(NEW_ID);
 
         // when
@@ -91,6 +96,7 @@ class CreateCategoryServiceTest {
     void creates_child_under_valid_parent() {
         // given
         CreateCategoryCommand command = command(Optional.of(PARENT_ID));
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(idGenerator.newId()).thenReturn(NEW_ID);
         when(categoryRepository.findByIdAndOwner(PARENT_ID, OWNER))
                 .thenReturn(Optional.of(parentCategory(CategoryType.EXPENSE)));
@@ -109,6 +115,7 @@ class CreateCategoryServiceTest {
     void rejects_missing_parent() {
         // given
         CreateCategoryCommand command = command(Optional.of(PARENT_ID));
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(PARENT_ID, OWNER)).thenReturn(Optional.empty());
 
         // when + then
@@ -121,6 +128,7 @@ class CreateCategoryServiceTest {
     void rejects_archived_parent() {
         // given
         CreateCategoryCommand command = command(Optional.of(PARENT_ID));
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         Category parent = parentCategory(CategoryType.EXPENSE);
         parent.archive();
         when(categoryRepository.findByIdAndOwner(PARENT_ID, OWNER)).thenReturn(Optional.of(parent));
@@ -135,6 +143,7 @@ class CreateCategoryServiceTest {
     void rejects_parent_type_mismatch() {
         // given
         CreateCategoryCommand command = command(Optional.of(PARENT_ID));
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(PARENT_ID, OWNER))
                 .thenReturn(Optional.of(parentCategory(CategoryType.INCOME)));
 

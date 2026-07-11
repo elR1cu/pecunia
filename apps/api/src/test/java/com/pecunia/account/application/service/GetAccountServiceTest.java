@@ -13,6 +13,7 @@ import com.pecunia.account.domain.AccountStatus;
 import com.pecunia.account.domain.AccountType;
 import com.pecunia.account.domain.Iban;
 import com.pecunia.sharedkernel.AccountId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.Money;
 import com.pecunia.sharedkernel.UserId;
 import java.math.BigDecimal;
@@ -36,19 +37,23 @@ class GetAccountServiceTest {
     @Mock
     private AccountRepository accountRepository;
 
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
     private GetAccountService service;
 
     @BeforeEach
     void setUp() {
-        service = new GetAccountService(accountRepository);
+        service = new GetAccountService(accountRepository, currentUserProvider);
     }
 
     @Test
     @DisplayName("maps every aggregate field onto the returned AccountView")
     void returns_account_view() {
         // given
-        GetAccountQuery query = new GetAccountQuery(OWNER, ACCOUNT_ID);
+        GetAccountQuery query = new GetAccountQuery(ACCOUNT_ID);
         Account account = Account.open(ACCOUNT_ID, OWNER, AccountType.CURRENT, "Main", IBAN, INITIAL);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(accountRepository.findByIdAndOwner(ACCOUNT_ID, OWNER)).thenReturn(Optional.of(account));
 
         // when
@@ -67,7 +72,8 @@ class GetAccountServiceTest {
     @DisplayName("throws AccountNotFoundException when the account is absent or not owned")
     void rejects_missing_account() {
         // given
-        GetAccountQuery query = new GetAccountQuery(OWNER, ACCOUNT_ID);
+        GetAccountQuery query = new GetAccountQuery(ACCOUNT_ID);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(accountRepository.findByIdAndOwner(ACCOUNT_ID, OWNER)).thenReturn(Optional.empty());
 
         // when + then

@@ -3,7 +3,6 @@ package com.pecunia.account.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import com.pecunia.account.application.port.in.ListAccountsQuery;
 import com.pecunia.account.application.port.out.AccountRepository;
 import com.pecunia.account.application.readmodel.AccountView;
 import com.pecunia.account.domain.Account;
@@ -11,6 +10,7 @@ import com.pecunia.account.domain.AccountStatus;
 import com.pecunia.account.domain.AccountType;
 import com.pecunia.account.domain.Iban;
 import com.pecunia.sharedkernel.AccountId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.Money;
 import com.pecunia.sharedkernel.UserId;
 import java.math.BigDecimal;
@@ -34,23 +34,26 @@ class ListAccountsServiceTest {
     @Mock
     private AccountRepository accountRepository;
 
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
     private ListAccountsService service;
 
     @BeforeEach
     void setUp() {
-        service = new ListAccountsService(accountRepository);
+        service = new ListAccountsService(accountRepository, currentUserProvider);
     }
 
     @Test
     @DisplayName("returns the owner's accounts as views carrying every aggregate field")
     void returns_owned_accounts() {
         // given
-        ListAccountsQuery query = new ListAccountsQuery(OWNER);
         Account account = Account.open(ACCOUNT_ID, OWNER, AccountType.CURRENT, "Main", IBAN, INITIAL);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(accountRepository.findAllByOwner(OWNER)).thenReturn(List.of(account));
 
         // when
-        List<AccountView> result = service.list(query);
+        List<AccountView> result = service.list();
 
         // then
         assertThat(result).hasSize(1);
@@ -67,11 +70,11 @@ class ListAccountsServiceTest {
     @DisplayName("returns an empty list when the user has no accounts")
     void returns_empty_when_none() {
         // given
-        ListAccountsQuery query = new ListAccountsQuery(OWNER);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(accountRepository.findAllByOwner(OWNER)).thenReturn(List.of());
 
         // when
-        List<AccountView> result = service.list(query);
+        List<AccountView> result = service.list();
 
         // then
         assertThat(result).isEmpty();

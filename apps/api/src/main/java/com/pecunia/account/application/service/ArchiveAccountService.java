@@ -5,6 +5,8 @@ import com.pecunia.account.application.port.in.ArchiveAccount;
 import com.pecunia.account.application.port.in.ArchiveAccountCommand;
 import com.pecunia.account.application.port.out.AccountRepository;
 import com.pecunia.account.domain.Account;
+import com.pecunia.sharedkernel.CurrentUserProvider;
+import com.pecunia.sharedkernel.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,12 +16,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class ArchiveAccountService implements ArchiveAccount {
 
     private final AccountRepository accountRepository;
+    private final CurrentUserProvider currentUserProvider;
 
     @Override
     @Transactional
     public void archive(ArchiveAccountCommand command) {
+        UserId owner = currentUserProvider.currentUserId();
         Account account = accountRepository
-                .findByIdAndOwner(command.accountId(), command.owner())
+                .findByIdAndOwner(command.accountId(), owner)
                 .orElseThrow(() -> new AccountNotFoundException(command.accountId()));
         account.archive();
         accountRepository.save(account);

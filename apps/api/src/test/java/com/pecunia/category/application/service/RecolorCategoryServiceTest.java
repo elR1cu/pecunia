@@ -15,6 +15,7 @@ import com.pecunia.category.domain.CategoryType;
 import com.pecunia.category.domain.HexColor;
 import com.pecunia.category.domain.exception.ArchivedCategoryModificationException;
 import com.pecunia.sharedkernel.CategoryId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.UserId;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,11 +37,14 @@ class RecolorCategoryServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
     private RecolorCategoryService service;
 
     @BeforeEach
     void setUp() {
-        service = new RecolorCategoryService(categoryRepository);
+        service = new RecolorCategoryService(categoryRepository, currentUserProvider);
     }
 
     private static Category activeCategory() {
@@ -51,8 +55,9 @@ class RecolorCategoryServiceTest {
     @DisplayName("recolors the category and persists it")
     void recolors_category() {
         // given
-        RecolorCategoryCommand command = new RecolorCategoryCommand(OWNER, CATEGORY_ID, NEW_COLOR);
+        RecolorCategoryCommand command = new RecolorCategoryCommand(CATEGORY_ID, NEW_COLOR);
         Category category = activeCategory();
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(category));
 
         // when
@@ -67,7 +72,8 @@ class RecolorCategoryServiceTest {
     @DisplayName("throws CategoryNotFoundException when the category is absent or not owned")
     void rejects_missing_category() {
         // given
-        RecolorCategoryCommand command = new RecolorCategoryCommand(OWNER, CATEGORY_ID, NEW_COLOR);
+        RecolorCategoryCommand command = new RecolorCategoryCommand(CATEGORY_ID, NEW_COLOR);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.empty());
 
         // when + then
@@ -79,9 +85,10 @@ class RecolorCategoryServiceTest {
     @DisplayName("propagates ArchivedCategoryModificationException and does not persist")
     void rejects_archived_category() {
         // given
-        RecolorCategoryCommand command = new RecolorCategoryCommand(OWNER, CATEGORY_ID, NEW_COLOR);
+        RecolorCategoryCommand command = new RecolorCategoryCommand(CATEGORY_ID, NEW_COLOR);
         Category category = activeCategory();
         category.archive();
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(category));
 
         // when + then

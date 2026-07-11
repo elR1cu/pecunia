@@ -1,11 +1,12 @@
 package com.pecunia.category.application.service;
 
 import com.pecunia.category.application.port.in.ListCategories;
-import com.pecunia.category.application.port.in.ListCategoriesQuery;
 import com.pecunia.category.application.port.out.CategoryRepository;
 import com.pecunia.category.application.readmodel.CategoryNode;
 import com.pecunia.category.domain.Category;
 import com.pecunia.sharedkernel.CategoryId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
+import com.pecunia.sharedkernel.UserId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -19,11 +20,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class ListCategoriesService implements ListCategories {
 
     private final CategoryRepository categoryRepository;
+    private final CurrentUserProvider currentUserProvider;
 
     @Override
     @Transactional(readOnly = true)
-    public List<CategoryNode> list(ListCategoriesQuery query) {
-        List<Category> allByOwner = categoryRepository.findAllByOwner(query.owner());
+    public List<CategoryNode> list() {
+        UserId owner = currentUserProvider.currentUserId();
+        List<Category> allByOwner = categoryRepository.findAllByOwner(owner);
 
         Map<Boolean, List<Category>> hasParentPartition = allByOwner.stream()
                 .collect(Collectors.partitioningBy(cat -> cat.parent().isPresent()));

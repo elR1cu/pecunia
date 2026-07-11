@@ -15,6 +15,7 @@ import com.pecunia.category.domain.CategoryType;
 import com.pecunia.category.domain.HexColor;
 import com.pecunia.category.domain.exception.ArchivedCategoryModificationException;
 import com.pecunia.sharedkernel.CategoryId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.UserId;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,11 +36,14 @@ class ReorderCategoryServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
     private ReorderCategoryService service;
 
     @BeforeEach
     void setUp() {
-        service = new ReorderCategoryService(categoryRepository);
+        service = new ReorderCategoryService(categoryRepository, currentUserProvider);
     }
 
     private static Category activeCategory() {
@@ -50,8 +54,9 @@ class ReorderCategoryServiceTest {
     @DisplayName("changes the display order and persists the category")
     void reorders_category() {
         // given
-        ReorderCategoryCommand command = new ReorderCategoryCommand(OWNER, CATEGORY_ID, 5);
+        ReorderCategoryCommand command = new ReorderCategoryCommand(CATEGORY_ID, 5);
         Category category = activeCategory();
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(category));
 
         // when
@@ -66,7 +71,8 @@ class ReorderCategoryServiceTest {
     @DisplayName("throws CategoryNotFoundException when the category is absent or not owned")
     void rejects_missing_category() {
         // given
-        ReorderCategoryCommand command = new ReorderCategoryCommand(OWNER, CATEGORY_ID, 5);
+        ReorderCategoryCommand command = new ReorderCategoryCommand(CATEGORY_ID, 5);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.empty());
 
         // when + then
@@ -78,9 +84,10 @@ class ReorderCategoryServiceTest {
     @DisplayName("propagates ArchivedCategoryModificationException and does not persist")
     void rejects_archived_category() {
         // given
-        ReorderCategoryCommand command = new ReorderCategoryCommand(OWNER, CATEGORY_ID, 5);
+        ReorderCategoryCommand command = new ReorderCategoryCommand(CATEGORY_ID, 5);
         Category category = activeCategory();
         category.archive();
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(category));
 
         // when + then

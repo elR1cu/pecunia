@@ -6,7 +6,6 @@ import com.pecunia.account.domain.Iban;
 import com.pecunia.account.web.dto.AccountResponse;
 import com.pecunia.account.web.dto.OpenAccountRequest;
 import com.pecunia.sharedkernel.Money;
-import com.pecunia.sharedkernel.UserId;
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Optional;
@@ -34,12 +33,11 @@ public interface AccountMapper {
 
     // --- Inbound: request (+ owner resolved from the session) -> command --------
 
-    @Mapping(target = "owner", source = "owner")
     @Mapping(target = "type", source = "request.type")
     @Mapping(target = "name", source = "request.name")
     @Mapping(target = "iban", source = "request.iban", qualifiedByName = "toIban")
     @Mapping(target = "initialBalance", source = "request.initialBalance", qualifiedByName = "toDomainMoney")
-    OpenAccountCommand toCommand(OpenAccountRequest request, UserId owner);
+    OpenAccountCommand toCommand(OpenAccountRequest request);
 
     /**
      * Builds the {@link Iban} value object — the point where an

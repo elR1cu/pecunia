@@ -6,6 +6,8 @@ import com.pecunia.category.application.port.in.GetCategoryQuery;
 import com.pecunia.category.application.port.out.CategoryRepository;
 import com.pecunia.category.application.readmodel.CategoryView;
 import com.pecunia.category.domain.Category;
+import com.pecunia.sharedkernel.CurrentUserProvider;
+import com.pecunia.sharedkernel.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,12 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class GetCategoryService implements GetCategory {
 
     private final CategoryRepository categoryRepository;
+    private final CurrentUserProvider currentUserProvider;
 
     @Override
     @Transactional(readOnly = true)
     public CategoryView getById(GetCategoryQuery query) {
+        UserId owner = currentUserProvider.currentUserId();
         return categoryRepository
-                .findByIdAndOwner(query.categoryId(), query.owner())
+                .findByIdAndOwner(query.categoryId(), owner)
                 .map(this::toCategoryView)
                 .orElseThrow(() -> new CategoryNotFoundException(query.categoryId()));
     }

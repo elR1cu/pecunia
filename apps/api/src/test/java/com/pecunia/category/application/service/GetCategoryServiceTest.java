@@ -12,6 +12,7 @@ import com.pecunia.category.domain.Category;
 import com.pecunia.category.domain.CategoryType;
 import com.pecunia.category.domain.HexColor;
 import com.pecunia.sharedkernel.CategoryId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.UserId;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,20 +34,24 @@ class GetCategoryServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
     private GetCategoryService service;
 
     @BeforeEach
     void setUp() {
-        service = new GetCategoryService(categoryRepository);
+        service = new GetCategoryService(categoryRepository, currentUserProvider);
     }
 
     @Test
     @DisplayName("maps every aggregate field onto the returned CategoryView")
     void returns_category_view() {
         // given
-        GetCategoryQuery query = new GetCategoryQuery(OWNER, CATEGORY_ID);
+        GetCategoryQuery query = new GetCategoryQuery(CATEGORY_ID);
         Category category = Category.create(
                 CATEGORY_ID, OWNER, CategoryType.EXPENSE, "Groceries", COLOR, "shopping_cart", PARENT_ID, 3);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(category));
 
         // when
@@ -67,7 +72,8 @@ class GetCategoryServiceTest {
     @DisplayName("throws CategoryNotFoundException when the category is absent or not owned")
     void rejects_missing_category() {
         // given
-        GetCategoryQuery query = new GetCategoryQuery(OWNER, CATEGORY_ID);
+        GetCategoryQuery query = new GetCategoryQuery(CATEGORY_ID);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.empty());
 
         // when + then

@@ -15,6 +15,7 @@ import com.pecunia.category.domain.CategoryType;
 import com.pecunia.category.domain.HexColor;
 import com.pecunia.category.domain.exception.CategoryAlreadyArchivedException;
 import com.pecunia.sharedkernel.CategoryId;
+import com.pecunia.sharedkernel.CurrentUserProvider;
 import com.pecunia.sharedkernel.UserId;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,11 +36,14 @@ class ArchiveCategoryServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private CurrentUserProvider currentUserProvider;
+
     private ArchiveCategoryService service;
 
     @BeforeEach
     void setUp() {
-        service = new ArchiveCategoryService(categoryRepository);
+        service = new ArchiveCategoryService(categoryRepository, currentUserProvider);
     }
 
     private static Category activeCategory() {
@@ -50,8 +54,9 @@ class ArchiveCategoryServiceTest {
     @DisplayName("archives an active category and persists it")
     void archives_active_category() {
         // given
-        ArchiveCategoryCommand command = new ArchiveCategoryCommand(OWNER, CATEGORY_ID);
+        ArchiveCategoryCommand command = new ArchiveCategoryCommand(CATEGORY_ID);
         Category category = activeCategory();
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(category));
 
         // when
@@ -66,7 +71,8 @@ class ArchiveCategoryServiceTest {
     @DisplayName("throws CategoryNotFoundException when the category is absent or not owned")
     void rejects_missing_category() {
         // given
-        ArchiveCategoryCommand command = new ArchiveCategoryCommand(OWNER, CATEGORY_ID);
+        ArchiveCategoryCommand command = new ArchiveCategoryCommand(CATEGORY_ID);
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.empty());
 
         // when + then
@@ -78,9 +84,10 @@ class ArchiveCategoryServiceTest {
     @DisplayName("propagates CategoryAlreadyArchivedException and does not persist")
     void rejects_double_archive() {
         // given
-        ArchiveCategoryCommand command = new ArchiveCategoryCommand(OWNER, CATEGORY_ID);
+        ArchiveCategoryCommand command = new ArchiveCategoryCommand(CATEGORY_ID);
         Category category = activeCategory();
         category.archive(); // already archived
+        when(currentUserProvider.currentUserId()).thenReturn(OWNER);
         when(categoryRepository.findByIdAndOwner(CATEGORY_ID, OWNER)).thenReturn(Optional.of(category));
 
         // when + then
