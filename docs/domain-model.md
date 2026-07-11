@@ -316,10 +316,22 @@ single class with a single public method.
 
 #### Category context
 
-- `CreateCategory`: create a new category.
-- `RenameCategory`, `RecolorCategory`, `MoveCategoryToParent`,
-  `ArchiveCategory`.
-- `ListCategories`: retrieve the user's category tree.
+- `CreateCategory`: create a new category. Returns the new `CategoryId`
+  only (a command yields metadata, not a read model — CQRS); the web layer
+  builds the response body via `GetCategory`.
+- `RenameCategory`, `RecolorCategory`, `ReiconCategory`, `ReorderCategory`:
+  task-based edit use cases, one per intent, mirroring the aggregate's
+  mutators (rather than a single generic `UpdateCategory`).
+- `MoveCategoryToParent`: reparent a category, or detach it to a root. The
+  application service enforces the cross-aggregate invariants the pure
+  aggregate cannot see — the parent must exist, be owned by the same user,
+  be active, and share the category's `type`, and the move must not create
+  a cycle (checked by walking the ancestor chain via `CategoryRepository`).
+- `ArchiveCategory`: archive a category.
+- `GetCategory`: retrieve a single category as a flat read model (used for
+  the create response body and the edit form).
+- `ListCategories`: retrieve the user's category tree as an immutable read
+  model (never the domain aggregate).
 
 #### Import context
 

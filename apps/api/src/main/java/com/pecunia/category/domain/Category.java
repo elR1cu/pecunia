@@ -90,6 +90,11 @@ public final class Category {
         this.icon = normalizeIconIfPresent(newIcon);
     }
 
+    public void clearIcon() {
+        validateIsNotArchived();
+        this.icon = null;
+    }
+
     public void reorder(int newDisplayOrder) {
         validateIsNotArchived();
         this.displayOrder = validateDisplayOrder(newDisplayOrder);
@@ -105,6 +110,11 @@ public final class Category {
     public void moveTo(CategoryId newParent) {
         validateIsNotArchived();
         this.parent = validateParent(newParent);
+    }
+
+    public void detach() {
+        validateIsNotArchived();
+        this.parent = null;
     }
 
     private int validateDisplayOrder(int displayOrder) {
