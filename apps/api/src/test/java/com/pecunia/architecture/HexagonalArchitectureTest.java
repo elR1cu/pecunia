@@ -1,12 +1,20 @@
 package com.pecunia.architecture;
 
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
+import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
+import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.lang.ConditionEvents;
+import com.tngtech.archunit.lang.SimpleConditionEvent;
 
 /**
  * Architectural fitness tests (ADR-0016) enforcing the hexagonal boundaries (ADR-0003), the port
@@ -75,6 +83,43 @@ class HexagonalArchitectureTest {
             .dependOnClassesThat()
             .resideInAPackage("..infrastructure..")
             .as("the web layer must go through the application layer, never straight to infrastructure");
+
+    // ---------------------------------------------------------------------------
+    // Read-model discipline (Session 25 debt, closed by the account/category read
+    // models): driving-port interfaces return read models or ids, never domain
+    // types — otherwise the mutable aggregate leaks to the adapters (archive()
+    // callable from a controller). Scoped to interfaces only: the command/query
+    // records living in port.in legitimately carry domain value objects as
+    // inputs. Generic type arguments are inspected too, so a List<Account> is
+    // caught, not just a bare Account.
+    // ---------------------------------------------------------------------------
+
+    private static final DescribedPredicate<JavaClass> A_DOMAIN_TYPE = resideInAPackage("..domain..");
+
+    @ArchTest
+    static final ArchRule driving_ports_do_not_return_domain_types = methods()
+            .that()
+            .areDeclaredInClassesThat()
+            .resideInAPackage("..application.port.in..")
+            .and()
+            .areDeclaredInClassesThat()
+            .areInterfaces()
+            .should(notReturnDomainTypes())
+            .as("driving ports must return read models or ids, never domain types");
+
+    private static ArchCondition<JavaMethod> notReturnDomainTypes() {
+        return new ArchCondition<>("not return a domain type") {
+            @Override
+            public void check(JavaMethod method, ConditionEvents events) {
+                method.getReturnType().getAllInvolvedRawTypes().stream()
+                        .filter(A_DOMAIN_TYPE)
+                        .forEach(domainType -> events.add(SimpleConditionEvent.violated(
+                                method,
+                                "%s returns %s, which resides in the domain layer"
+                                        .formatted(method.getFullName(), domainType.getName()))));
+            }
+        };
+    }
 
     // ---------------------------------------------------------------------------
     // Shared kernel (Session 19, ADR-0026, ADR-0032): a pure, framework-free sink
