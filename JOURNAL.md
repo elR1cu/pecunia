@@ -40,6 +40,35 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-11 — Session 28
+
+**Block / Task**: Block 2 — Domain Model (`category` application layer; `account` read-model alignment)
+
+**Done**:
+- Shipped the **`category` application layer** (PR #37, merged): 9 driving ports,                                                                                             
+  `CategoryRepository` (owner-scoped + `findAncestorIds`), read models                                                                                                        
+  (`CategoryView`/`CategoryNode`), shared `ParentCategoryValidator`, and 37                                                                                                   
+  generated service tests — 4 of which were red until the author implemented the                                                                                              
+  parent validation the port contract promised (TDD loop).
+- Settled the **owner-resolution question** after web research (Jovanović, UNIL,                                                                                              
+  lessthan12ms): the tenant owner will be resolved by application services via                                                                                                
+  `CurrentUserProvider`, never passed from adapters; system flows will carry it                                                                                               
+  in trusted internal events. Implementation + ADR deferred to a dedicated PR.
+- Shipped the **`account` read-model refactor** (PR #38, open): `AccountView`,                                                                                                
+  new `GetAccount` use case (201 body, no OpenAPI change), `OpenAccount` → id,                                                                                                
+  `Account.iban()` → `Optional<Iban>` — closes the Session 25 mutable-aggregate                                                                                               
+  leak and dissolves the MapStruct fluent-accessor SPI debt.
+- Added the 9th ArchUnit rule `driving_ports_do_not_return_domain_types`                                                                                                      
+  (generic type args inspected), **validated by mutation testing** before landing.
+
+**Next**:
+- Merge PR #38, then the owner-resolution refactor (ADR + 12 services + ArchUnit                                                                                              
+  guard on `port.in` records).
+- Category infrastructure slice (JPA/Flyway + recursive CTE + cross-user                                                                                                      
+  isolation IT), then the web slice.
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-11-session-28.md).
+
 ### 2026-07-07 — Session 27
 
 **Block / Task**: Block 2 — Domain Model (account context, Angular web/UI slice)
