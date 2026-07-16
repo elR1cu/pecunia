@@ -40,6 +40,31 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-16 — Session 29
+
+**Block / Task**: Block 2 — Domain Model (`category` infrastructure slice: entity + JPA adapter)
+
+**Done**:
+- Wrote `CategoryEntity` mirroring the `AccountEntity` pattern; two review                                                                                                    
+  passes caught a missing `@Version` (optimistic locking + persist/merge                                                                                                      
+  routing), a wrong `length` on `color`, and a `public` constructor leaking                                                                                                   
+  a bypass around `fromDomain`.
+- Decided `parent_id` maps as a plain `UUID` column (no `@ManyToOne`):                                                                                                        
+  aggregates reference each other by identity, and nothing navigates the                                                                                                      
+  hierarchy through the ORM.
+- Wrote `CategoryJpaRepository` (owner-scoped derived queries, no DB                                                                                                          
+  ordering) and `CategoryRepositoryAdapter`; `findAncestorIds` stubbed with                                                                                                   
+  `UnsupportedOperationException` pending the recursive CTE.
+- Decided against Jakarta Bean Validation on JPA entities: entities only                                                                                                      
+  receive domain-validated state; validation stays at DTO (untrusted) and                                                                                                     
+  DDL (defense in depth) layers.
+
+**Next**:
+- Implement `findAncestorIds` with a `WITH RECURSIVE` native query.
+- Integration tests: adapter round-trip + mandatory cross-user isolation IT.
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-16-session-29.md).
+
 ### 2026-07-11 — Session 28
 
 **Block / Task**: Block 2 — Domain Model (`category` application layer; `account` read-model alignment)
