@@ -59,6 +59,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -385,9 +386,10 @@ class CategoryControllerTest {
         verifyNoInteractions(recolorCategory, reiconCategory, reorderCategory);
     }
 
-    @Test
-    @DisplayName("PATCH with an empty-string icon clears the icon (Optional.empty)")
-    void updateCategoryClearsIcon() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"", "   "})
+    @DisplayName("PATCH with a blank icon clears it (Optional.empty)")
+    void updateCategoryClearsIcon(String blankIcon) throws Exception {
         when(getCategory.getById(new GetCategoryQuery(CategoryId.of(CATEGORY_ID))))
                 .thenReturn(childView());
 
@@ -395,7 +397,7 @@ class CategoryControllerTest {
                         .with(oidcLogin())
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"icon\":\"\"}"))
+                        .content("{\"icon\":\"" + blankIcon + "\"}"))
                 .andExpect(status().isOk());
 
         ArgumentCaptor<ReiconCategoryCommand> reicon = ArgumentCaptor.forClass(ReiconCategoryCommand.class);
