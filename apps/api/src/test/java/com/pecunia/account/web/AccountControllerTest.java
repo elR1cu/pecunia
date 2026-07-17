@@ -209,7 +209,7 @@ class AccountControllerTest {
     }
 
     @Test
-    @DisplayName("POST with an invalid IBAN surfaces the domain exception as 400")
+    @DisplayName("POST with an invalid IBAN surfaces the domain exception as 422")
     void openAccountRejectsInvalidIban() throws Exception {
 
         String body = """
@@ -221,7 +221,7 @@ class AccountControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
 
         verifyNoInteractions(openAccount);
