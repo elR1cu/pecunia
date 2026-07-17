@@ -7,6 +7,7 @@ import com.pecunia.sharedkernel.UserId;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +38,8 @@ public class CategoryRepositoryAdapter implements CategoryRepository {
 
     @Override
     public Set<CategoryId> findAncestorIds(CategoryId id, UserId owner) {
-        throw new UnsupportedOperationException("findAncestorIds: recursive CTE pending.");
+        return categoryJpaRepository.findAncestorIds(id.value(), owner.value()).stream()
+                .map(CategoryId::of)
+                .collect(Collectors.toUnmodifiableSet());
     }
 }
