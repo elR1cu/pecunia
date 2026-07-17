@@ -46,6 +46,14 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # TypeScript majors are dictated by Angular: @angular/build pins a narrow
+      # peer range (e.g. ">=6.0 <6.1" for Angular 22), so a major TS bump fails
+      # npm ci with ERESOLVE before anything compiles (see PR #43). TS moves to
+      # the next major only when an Angular major supporting it lands here.
+      - dependency-name: typescript
+        update-types:
+          - "version-update:semver-major"
 
   # The GitHub Actions pinned in .github/workflows (checkout, setup-java, trivy, ...).
   - package-ecosystem: github-actions
