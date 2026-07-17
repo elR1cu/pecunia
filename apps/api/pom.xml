@@ -356,7 +356,7 @@
                             <globalProperties>
                                 <apis>Category</apis>
                                 <!-- See the note on the Identity execution: models are filtered per context. -->
-                                <models>CategoryType,CreateCategoryRequest,UpdateCategoryRequest,MoveCategoryRequest,CategoryView,CategoryNode,ProblemDetail</models>
+                                <models>CategoryType,CreateCategoryRequest,UpdateCategoryRequest,MoveCategoryRequest,CategoryResponse,CategoryNodeResponse,ProblemDetail</models>
                             </globalProperties>
                             <configOptions>
                                 <useSpringBoot4>true</useSpringBoot4>

@@ -155,7 +155,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CategoryView'
+                $ref: '#/components/schemas/CategoryResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -179,7 +179,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/CategoryNode'
+                  $ref: '#/components/schemas/CategoryNodeResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -198,7 +198,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CategoryView'
+                $ref: '#/components/schemas/CategoryResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -233,7 +233,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CategoryView'
+                $ref: '#/components/schemas/CategoryResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -566,7 +566,7 @@ components:
             user, not be archived, and have the same type; a move that
             would create a cycle is rejected with 409.
 
-    CategoryView:
+    CategoryResponse:
       type: object
       description: |
         A single category, flat (no children). Returned by reads on one
@@ -601,12 +601,14 @@ components:
         archived:
           type: boolean
 
-    CategoryNode:
+    CategoryNodeResponse:
       type: object
       description: |
-        A category in the hierarchy: the same data as CategoryView plus the
-        ordered children, recursively. Defined standalone (not composed via
-        allOf) so the generators produce a simple self-referencing model.
+        A category in the hierarchy, with its ordered children, recursively.
+        No parentId: unlike the flat CategoryResponse, the nesting already
+        encodes parenthood (mirrors the CategoryNode read model, which omits
+        the parent link for the same reason). Defined standalone (not composed
+        via allOf) so the generators produce a simple self-referencing model.
       required: [id, type, name, color, displayOrder, archived, children]
       properties:
         id:
@@ -623,10 +625,6 @@ components:
         icon:
           type: string
           description: Present only when the category has an icon.
-        parentId:
-          type: string
-          format: uuid
-          description: Present only for non-root categories.
         displayOrder:
           type: integer
           format: int32
@@ -636,7 +634,7 @@ components:
           type: array
           description: Ordered child categories (may be empty).
           items:
-            $ref: '#/components/schemas/CategoryNode'
+            $ref: '#/components/schemas/CategoryNodeResponse'
 
     ProblemDetail:
       type: object
