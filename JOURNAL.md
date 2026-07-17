@@ -40,6 +40,33 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-17 — Session 31
+
+**Block / Task**: Block 2 — Domain Model (`category` context: persistence CTE + full web slice)
+
+**Done**:
+- Implemented `findAncestorIds` (native `WITH RECURSIVE`, owner-filtered                                                                                                      
+  both members, `UNION` for cycle-safe termination) + integration tests;                                                                                                      
+  merged as PR #44.
+- Wrote **ADR-0034** (HTTP status doctrine: 400 schema / 422 semantics /                                                                                                      
+  409 state / 404 tenancy), migrated `account` to 422; merged as PR #48.
+- Designed the `category` API contract after researching Geewax / Google                                                                                                      
+  AIPs / Zalando: hybrid split (PATCH for fields, `POST /{id}/move` custom                                                                                                    
+  method, soft-delete DELETE), GitHub-style partial update (Jackson 3 rules                                                                                                   
+  out `JsonNullable`).
+- Built the full `category` web slice (controller, MapStruct mapper,                                                                                                          
+  package-scoped advice, web-slice tests); full module suite green (262 at                                                                                                    
+  merge). Merged as PR #49.
+- Post-merge follow-up (uncommitted): tightened the icon clear to `isBlank()`                                                                                                 
+  and parameterized its test (module suite → 263), closing the Session 28 TODO.
+
+**Next**:
+- Commit the icon follow-up (on a branch, not directly on `main`).
+- Angular `category` slice (lazy route, signal state, tree view,                                                                                                              
+  create/edit dialogs) — closes the Block 2 exit criterion.
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-17-session-31.md).
+
 ### 2026-07-16 — Session 30
 
 **Block / Task**: Block 2 — Domain Model (`category` infrastructure slice: entity + JPA adapter)
