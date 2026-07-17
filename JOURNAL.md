@@ -40,7 +40,7 @@ Each entry follows this structure:
 
 ---
 
-### 2026-07-16 — Session 29
+### 2026-07-16 — Session 30
 
 **Block / Task**: Block 2 — Domain Model (`category` infrastructure slice: entity + JPA adapter)
 
@@ -63,7 +63,32 @@ Each entry follows this structure:
 - Implement `findAncestorIds` with a `WITH RECURSIVE` native query.
 - Integration tests: adapter round-trip + mandatory cross-user isolation IT.
 
-See [detailed recap](docs/session-recaps/2026-07/2026-07-16-session-29.md).
+See [detailed recap](docs/session-recaps/2026-07/2026-07-16-session-30.md).
+
+### 2026-07-11 — Session 29
+
+**Block / Task**: Block 2 — Domain Model (owner resolution shipped; `category` infrastructure started)
+
+**Done**:
+- Wrote and accepted **ADR-0033** (owner resolved by application services via                                                                                                 
+  `CurrentUserProvider`; two trust sources: authenticated principal / trusted                                                                                                 
+  internal event; system-flow mechanism deferred).
+- Shipped the owner-resolution refactor (PR #40, merged): 13 services resolve                                                                                                 
+  the owner themselves, commands/queries carry no `UserId` (empty query records                                                                                               
+  deleted), `AccountController` is identity-free, 10th ArchUnit rule forbids                                                                                                  
+  `UserId` on `port.in` records (mutation-tested). 223 tests green.
+- Started the `category` persistence slice on `feat/category-persistence-adapter`:                                                                                            
+  settled the DDL decisions (hex-color/display-order CHECKs; no sibling-name                                                                                                  
+  uniqueness; `parent_id` indexed) and generated `V4__categories.sql`; framed                                                                                                 
+  the `findAncestorIds` recursive CTE (owner filter in both members, `UNION`                                                                                                  
+  as cycle guard).
+
+**Next**:
+- Write `CategoryEntity` / `CategoryJpaRepository` (recursive CTE) /                                                                                                          
+  `CategoryRepositoryAdapter`; Claude reviews.
+- Generate the ITs (mandatory cross-user isolation + CTE cases), verify, PR.
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-11-session-29.md).
 
 ### 2026-07-11 — Session 28
 
