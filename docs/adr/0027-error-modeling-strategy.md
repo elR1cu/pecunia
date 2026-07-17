@@ -4,6 +4,10 @@
 
 Accepted
 
+Amended by ADR-0034: domain invariant violations now map to HTTP 422
+instead of 400 (the Rule 2 table's HTTP column). Rules 1 and 2 themselves
+are unchanged.
+
 ## Context
 
 Block 2 introduces the first real use cases (`OpenAccount`, `ArchiveAccount`,

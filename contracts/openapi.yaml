@@ -68,6 +68,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
     get:
       tags: [Account]
       operationId: listAccounts
@@ -131,7 +133,7 @@ components:
 
   responses:
     BadRequest:
-      description: The request is malformed or violates a domain invariant.
+      description: The request is malformed or violates the request schema.
       content:
         application/problem+json:
           schema:
@@ -146,6 +148,12 @@ components:
             $ref: '#/components/schemas/ProblemDetail'
     Conflict:
       description: The request conflicts with the resource's current state.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    UnprocessableContent:
+      description: The request is well-formed but violates a business rule.
       content:
         application/problem+json:
           schema:
