@@ -13,6 +13,8 @@ tags:
     description: Authenticated user identity.
   - name: Account
     description: Registry of the current user's tracked bank accounts.
+  - name: Category
+    description: User-defined hierarchical classification of transactions.
 
 paths:
   /api/me:
@@ -42,7 +44,7 @@ paths:
         resolved server-side from the session and is never part of the
         payload. Domain invariants (IBAN mod-97, and the IBAN-required /
         IBAN-forbidden rule per account type) are enforced by the domain and
-        surface as 400.
+        surface as 422 (ADR-0034).
       security:
         - bffSession: []
       requestBody:
@@ -120,6 +122,189 @@ paths:
         '409':
           $ref: '#/components/responses/Conflict'
 
+  /api/categories:
+    post:
+      tags: [Category]
+      operationId: createCategory
+      summary: Create a category for the current user.
+      description: |
+        Creates a category owned by the authenticated user. The owner is
+        resolved server-side from the session and is never part of the
+        payload. When a parentId is supplied, the parent must exist, belong
+        to the current user, not be archived, and have the same type; any
+        violation surfaces as 422 with a response that never reveals which
+        rule failed for a foreign parent (ADR-0034). A brand-new category
+        cannot form a cycle.
+      security:
+        - bffSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCategoryRequest'
+      responses:
+        '201':
+          description: Category created.
+          headers:
+            Location:
+              description: URI of the newly created category.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
+    get:
+      tags: [Category]
+      operationId: listCategories
+      summary: List the current user's categories as a tree.
+      description: |
+        Returns the full hierarchy: root categories carrying their ordered
+        children, recursively. Sorted by type, then displayOrder.
+      security:
+        - bffSession: []
+      responses:
+        '200':
+          description: The user's category tree (may be empty).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryNodeResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/categories/{categoryId}:
+    get:
+      tags: [Category]
+      operationId: getCategory
+      summary: Return a single category.
+      security:
+        - bffSession: []
+      parameters:
+        - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '200':
+          description: The category.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Category]
+      operationId: updateCategory
+      summary: Partially update a category.
+      description: |
+        GitHub-style partial update: only the properties present in the
+        payload are applied; absent properties are left untouched. `type`
+        is immutable and cannot be changed. To clear the icon, send an
+        empty string (an explicit null is indistinguishable from an absent
+        property server-side and is therefore ignored, not treated as a
+        JSON Merge Patch deletion). Updating an archived category is a
+        state conflict (409). Returns the updated category, including the
+        normalizations applied by the domain (name stripped, color
+        uppercased).
+      security:
+        - bffSession: []
+      parameters:
+        - $ref: '#/components/parameters/CategoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategoryRequest'
+      responses:
+        '200':
+          description: Category updated; the fresh representation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
+    delete:
+      tags: [Category]
+      operationId: archiveCategory
+      summary: Archive a category (soft delete).
+      description: |
+        Marks the category as archived. It is retained for historical
+        transactions and excluded from active views; archiving an
+        already-archived category is a state conflict and returns 409
+        (see AIP-164). A category owned by another user is reported as
+        404, never 403, to avoid leaking its existence.
+      security:
+        - bffSession: []
+      parameters:
+        - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '204':
+          description: Category archived. No content.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/categories/{categoryId}/move:
+    post:
+      tags: [Category]
+      operationId: moveCategory
+      summary: Move a category to a new parent, or detach it to a root.
+      description: |
+        Custom method (AIP-136): re-parenting is a structural transition,
+        not a field update, so it is deliberately excluded from the PATCH.
+        A null or omitted newParentId detaches the category, promoting it
+        to a root. The new parent must exist, belong to the current user,
+        not be archived, and have the same type (422, with no distinction
+        between a missing and a foreign parent); a move that would create
+        a cycle, or target an archived category, is a state conflict (409).
+      security:
+        - bffSession: []
+      parameters:
+        - $ref: '#/components/parameters/CategoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveCategoryRequest'
+      responses:
+        '204':
+          description: Category moved. No content.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
+
 components:
   securitySchemes:
     bffSession:
@@ -130,6 +315,16 @@ components:
         HttpOnly session cookie set by the BFF after a successful OIDC
         login against Keycloak. Sent automatically by the browser on
         same-origin requests.
+
+  parameters:
+    CategoryId:
+      name: categoryId
+      in: path
+      required: true
+      description: Identifier of the category.
+      schema:
+        type: string
+        format: uuid
 
   responses:
     BadRequest:
@@ -248,7 +443,7 @@ components:
           description: |
             Required for CURRENT and SAVINGS, forbidden for CREDIT_CARD. The
             cross-field rule and the ISO 7064 mod-97 check are enforced by the
-            domain; a violation maps to 400.
+            domain; a violation maps to 422 (ADR-0034).
           maxLength: 34
           example: CH9300762011623852957
         initialBalance:
@@ -279,6 +474,167 @@ components:
           $ref: '#/components/schemas/AccountStatus'
         initialBalance:
           $ref: '#/components/schemas/Money'
+
+    CategoryType:
+      type: string
+      description: |
+        Whether the category classifies money going out (EXPENSE) or coming
+        in (INCOME). Immutable after creation; a parent and its children
+        always share the same type.
+      enum: [EXPENSE, INCOME]
+
+    CreateCategoryRequest:
+      type: object
+      description: |
+        Request to create a category. The owner is resolved server-side from
+        the session and is never part of the payload. The id is generated
+        server-side (UUID v7).
+      required: [type, name, color, displayOrder]
+      properties:
+        type:
+          $ref: '#/components/schemas/CategoryType'
+        name:
+          type: string
+          description: Human-readable label. Stripped by the domain.
+          minLength: 1
+          maxLength: 100
+          example: Groceries
+        color:
+          type: string
+          description: |
+            Display color, '#RRGGBB'. Case-insensitive on input; normalized
+            to uppercase by the domain.
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          example: '#1A2B3C'
+        icon:
+          type: string
+          description: Optional icon identifier (e.g. a Material Symbols name).
+          maxLength: 50
+          example: shopping_cart
+        parentId:
+          type: string
+          format: uuid
+          description: |
+            Optional parent category. Must exist, belong to the current
+            user, not be archived, and have the same type (422 otherwise).
+        displayOrder:
+          type: integer
+          format: int32
+          description: Sibling ordering for display; zero-based.
+          minimum: 0
+          example: 0
+
+    UpdateCategoryRequest:
+      type: object
+      description: |
+        Partial update: every property is optional, absent properties are
+        left untouched. `type` and the parent are excluded — the type is
+        immutable and re-parenting goes through the move operation. An
+        empty-string icon clears the icon.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Groceries
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          example: '#1A2B3C'
+        icon:
+          type: string
+          description: New icon identifier; an empty string clears the icon.
+          maxLength: 50
+          example: shopping_cart
+        displayOrder:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 2
+
+    MoveCategoryRequest:
+      type: object
+      description: |
+        Target parent for a move. A null or omitted newParentId detaches
+        the category, promoting it to a root.
+      properties:
+        newParentId:
+          type: [string, 'null']
+          format: uuid
+          description: |
+            The new parent category. Must exist, belong to the current
+            user, not be archived, and have the same type; a move that
+            would create a cycle is rejected with 409.
+
+    CategoryResponse:
+      type: object
+      description: |
+        A single category, flat (no children). Returned by reads on one
+        category and as the body of create/update responses.
+      required: [id, type, name, color, displayOrder, archived]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Internal category identifier (UUID v7).
+        type:
+          $ref: '#/components/schemas/CategoryType'
+        name:
+          type: string
+          example: Groceries
+        color:
+          type: string
+          description: Normalized '#RRGGBB', uppercase.
+          example: '#1A2B3C'
+        icon:
+          type: string
+          description: Present only when the category has an icon.
+          example: shopping_cart
+        parentId:
+          type: string
+          format: uuid
+          description: Present only for non-root categories.
+        displayOrder:
+          type: integer
+          format: int32
+          example: 0
+        archived:
+          type: boolean
+
+    CategoryNodeResponse:
+      type: object
+      description: |
+        A category in the hierarchy, with its ordered children, recursively.
+        No parentId: unlike the flat CategoryResponse, the nesting already
+        encodes parenthood (mirrors the CategoryNode read model, which omits
+        the parent link for the same reason). Defined standalone (not composed
+        via allOf) so the generators produce a simple self-referencing model.
+      required: [id, type, name, color, displayOrder, archived, children]
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/CategoryType'
+        name:
+          type: string
+          example: Groceries
+        color:
+          type: string
+          example: '#1A2B3C'
+        icon:
+          type: string
+          description: Present only when the category has an icon.
+        displayOrder:
+          type: integer
+          format: int32
+        archived:
+          type: boolean
+        children:
+          type: array
+          description: Ordered child categories (may be empty).
+          items:
+            $ref: '#/components/schemas/CategoryNodeResponse'
 
     ProblemDetail:
       type: object
