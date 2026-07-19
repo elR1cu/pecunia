@@ -10,6 +10,7 @@
     "logout": "Se déconnecter"
   },
   "nav": {
+    "mainNavigation": "Navigation principale",
     "openMenu": "Ouvrir la navigation",
     "dashboard": "Tableau de bord",
     "accounts": "Comptes",

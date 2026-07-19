@@ -11,7 +11,7 @@
       <mat-icon>menu</mat-icon>
     </button>
     <a routerLink="/dashboard" class="wordmark">Pecunia</a>
-    <nav class="app-nav">
+    <nav class="app-nav" [attr.aria-label]="'nav.mainNavigation' | translate">
       <a routerLink="/dashboard" routerLinkActive="active">{{ 'nav.dashboard' | translate }}</a>
       <a routerLink="/accounts" routerLinkActive="active">{{ 'nav.accounts' | translate }}</a>
       <a routerLink="/categories" routerLinkActive="active">{{ 'nav.categories' | translate }}</a>
@@ -38,7 +38,7 @@
     [opened]="menuOpen()"
     (openedChange)="menuOpen.set($event)"
   >
-    <nav class="drawer-nav">
+    <nav class="drawer-nav" [attr.aria-label]="'nav.mainNavigation' | translate">
       <a routerLink="/dashboard" routerLinkActive="active" (click)="menuOpen.set(false)">
         <mat-icon>space_dashboard</mat-icon>
         {{ 'nav.dashboard' | translate }}

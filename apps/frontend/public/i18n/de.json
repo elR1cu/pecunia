@@ -10,6 +10,7 @@
     "logout": "Abmelden"
   },
   "nav": {
+    "mainNavigation": "Hauptnavigation",
     "openMenu": "Navigation öffnen",
     "dashboard": "Übersicht",
     "accounts": "Konten",
