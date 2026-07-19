@@ -1,0 +1,45 @@
+<ul class="category-tree">
+  @for (node of nodes(); track node.id) {
+    <li>
+      <div class="category-row" [class.category-row-archived]="node.archived">
+        <span class="color-dot" [style.background-color]="node.color" aria-hidden="true"></span>
+        <mat-icon class="category-icon">{{ node.icon || 'label' }}</mat-icon>
+        <span class="category-name">{{ node.name }}</span>
+        @if (node.archived) {
+          <span class="archived-chip">{{ 'categories.archived' | translate }}</span>
+        } @else {
+          <button
+            matIconButton
+            class="row-actions"
+            [matMenuTriggerFor]="menu"
+            [attr.aria-label]="'categories.actionsFor' | translate: { name: node.name }"
+          >
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menu>
+            <button mat-menu-item (click)="edit.emit(node)">
+              <mat-icon>edit</mat-icon>
+              <span>{{ 'categories.edit' | translate }}</span>
+            </button>
+            <button mat-menu-item (click)="move.emit(node)">
+              <mat-icon>drive_file_move</mat-icon>
+              <span>{{ 'categories.move' | translate }}</span>
+            </button>
+            <button mat-menu-item (click)="archive.emit(node)">
+              <mat-icon>archive</mat-icon>
+              <span>{{ 'categories.archive' | translate }}</span>
+            </button>
+          </mat-menu>
+        }
+      </div>
+      @if (node.children.length > 0) {
+        <app-category-tree
+          [nodes]="node.children"
+          (edit)="edit.emit($event)"
+          (move)="move.emit($event)"
+          (archive)="archive.emit($event)"
+        />
+      }
+    </li>
+  }
+</ul>

@@ -1,0 +1,45 @@
+<header class="page-header">
+  <h1>{{ 'categories.title' | translate }}</h1>
+</header>
+
+<div class="category-columns">
+  <section class="category-section">
+    <div class="section-header">
+      <h2>{{ 'categories.expenses' | translate }}</h2>
+      <button matButton (click)="openCreate(CategoryType.Expense)">
+        <mat-icon>add</mat-icon>
+        {{ 'categories.new' | translate }}
+      </button>
+    </div>
+    @if (expenseRoots().length > 0) {
+      <app-category-tree
+        [nodes]="expenseRoots()"
+        (edit)="edit($event)"
+        (move)="move($event)"
+        (archive)="archive($event)"
+      />
+    } @else {
+      <p class="empty-state">{{ 'categories.emptyExpenses' | translate }}</p>
+    }
+  </section>
+
+  <section class="category-section">
+    <div class="section-header">
+      <h2>{{ 'categories.income' | translate }}</h2>
+      <button matButton (click)="openCreate(CategoryType.Income)">
+        <mat-icon>add</mat-icon>
+        {{ 'categories.new' | translate }}
+      </button>
+    </div>
+    @if (incomeRoots().length > 0) {
+      <app-category-tree
+        [nodes]="incomeRoots()"
+        (edit)="edit($event)"
+        (move)="move($event)"
+        (archive)="archive($event)"
+      />
+    } @else {
+      <p class="empty-state">{{ 'categories.emptyIncome' | translate }}</p>
+    }
+  </section>
+</div>

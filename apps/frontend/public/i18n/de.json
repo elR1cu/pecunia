@@ -14,7 +14,8 @@
   },
   "dashboard": {
     "greeting": "Hallo {{name}}",
-    "myAccounts": "Meine Konten"
+    "myAccounts": "Meine Konten",
+    "myCategories": "Meine Kategorien"
   },
   "accounts": {
     "new": "Neues Konto",
@@ -40,6 +41,43 @@
       "create": "Erstellen",
       "ibanRequired": "Für ein Giro- oder Sparkonto ist eine IBAN erforderlich.",
       "ibanForbidden": "Eine Kreditkarte darf keine IBAN haben."
+    }
+  },
+  "categories": {
+    "title": "Kategorien",
+    "new": "Neue Kategorie",
+    "expenses": "Ausgaben",
+    "income": "Einnahmen",
+    "emptyExpenses": "Noch keine Ausgabenkategorie. Erstellen Sie eine, um Ihre Ausgaben zu ordnen.",
+    "emptyIncome": "Noch keine Einnahmenkategorie. Erstellen Sie eine, um Ihre Einnahmen zu klassifizieren.",
+    "archived": "Archiviert",
+    "actionsFor": "Aktionen für {{name}}",
+    "edit": "Bearbeiten",
+    "move": "Verschieben",
+    "archive": "Archivieren",
+    "archiveConfirmTitle": "Kategorie archivieren",
+    "archiveConfirmMessage": "« {{name}} » archivieren? Die Unterkategorien bleiben bestehen.",
+    "moveTitle": "« {{name}} » verschieben",
+    "moveTarget": "Neue übergeordnete Kategorie",
+    "moveRoot": "— Oberste Ebene —",
+    "moveSubmit": "Verschieben",
+    "type": {
+      "EXPENSE": "Ausgabe",
+      "INCOME": "Einnahme"
+    },
+    "form": {
+      "createTitle": "Neue Kategorie",
+      "editTitle": "Kategorie bearbeiten",
+      "type": "Typ",
+      "name": "Name",
+      "color": "Farbe",
+      "customColor": "Eigene Farbe",
+      "icon": "Symbol",
+      "parent": "Übergeordnete Kategorie",
+      "parentNone": "— Keine (oberste Ebene) —",
+      "order": "Reihenfolge",
+      "create": "Erstellen",
+      "save": "Speichern"
     }
   }
 }

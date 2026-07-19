@@ -1,0 +1,87 @@
+<h2 mat-dialog-title>
+  {{
+    (data.mode === 'create' ? 'categories.form.createTitle' : 'categories.form.editTitle')
+      | translate
+  }}
+</h2>
+<form [formGroup]="form">
+  <mat-dialog-content>
+    <p class="type-line">
+      {{ 'categories.form.type' | translate }}:
+      <strong>{{
+        'categories.type.' + (data.mode === 'create' ? data.type : data.category.type) | translate
+      }}</strong>
+    </p>
+
+    <mat-form-field>
+      <mat-label>{{ 'categories.form.name' | translate }}</mat-label>
+      <input matInput formControlName="name" />
+    </mat-form-field>
+
+    <div class="color-field">
+      <span class="field-label">{{ 'categories.form.color' | translate }}</span>
+      <div class="color-swatches">
+        @for (preset of colorPresets; track preset) {
+          <button
+            type="button"
+            class="color-swatch"
+            [class.color-swatch-selected]="form.controls.color.value === preset"
+            [style.background-color]="preset"
+            [attr.aria-label]="preset"
+            (click)="pickColor(preset)"
+          ></button>
+        }
+        <input
+          type="color"
+          class="color-input"
+          [value]="form.controls.color.value"
+          [attr.aria-label]="'categories.form.customColor' | translate"
+          (input)="pickColor($any($event.target).value)"
+        />
+      </div>
+    </div>
+
+    <div class="icon-field">
+      <span class="field-label">{{ 'categories.form.icon' | translate }}</span>
+      <div class="icon-suggestions">
+        @for (suggestion of iconSuggestions; track suggestion) {
+          <button
+            type="button"
+            class="icon-choice"
+            [class.icon-choice-selected]="form.controls.icon.value === suggestion"
+            [attr.aria-label]="suggestion"
+            (click)="pickIcon(suggestion)"
+          >
+            <mat-icon>{{ suggestion }}</mat-icon>
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (data.mode === 'create') {
+      <mat-form-field>
+        <mat-label>{{ 'categories.form.parent' | translate }}</mat-label>
+        <mat-select formControlName="parentId">
+          <mat-option [value]="null">{{ 'categories.form.parentNone' | translate }}</mat-option>
+          @for (option of parentOptions(); track option.id) {
+            <mat-option [value]="option.id">
+              <span [style.padding-left.px]="option.depth * 16">{{ option.name }}</span>
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    } @else {
+      <mat-form-field class="order-field">
+        <mat-label>{{ 'categories.form.order' | translate }}</mat-label>
+        <input matInput type="number" min="0" formControlName="displayOrder" />
+      </mat-form-field>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <button matButton mat-dialog-close>{{ 'common.cancel' | translate }}</button>
+    <button matButton="filled" [disabled]="form.invalid || submitting()" (click)="submit()">
+      {{ (data.mode === 'create' ? 'categories.form.create' : 'categories.form.save') | translate }}
+    </button>
+  </mat-dialog-actions>
+</form>

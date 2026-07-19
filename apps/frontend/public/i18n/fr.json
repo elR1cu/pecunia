@@ -14,7 +14,8 @@
   },
   "dashboard": {
     "greeting": "Bonjour {{name}}",
-    "myAccounts": "Mes comptes"
+    "myAccounts": "Mes comptes",
+    "myCategories": "Mes catégories"
   },
   "accounts": {
     "new": "Nouveau compte",
@@ -40,6 +41,43 @@
       "create": "Créer",
       "ibanRequired": "Un IBAN est requis pour un compte courant ou d'épargne.",
       "ibanForbidden": "Une carte de crédit ne doit pas avoir d'IBAN."
+    }
+  },
+  "categories": {
+    "title": "Catégories",
+    "new": "Nouvelle catégorie",
+    "expenses": "Dépenses",
+    "income": "Revenus",
+    "emptyExpenses": "Aucune catégorie de dépense pour l'instant. Créez-en une pour organiser vos dépenses.",
+    "emptyIncome": "Aucune catégorie de revenu pour l'instant. Créez-en une pour classer vos entrées.",
+    "archived": "Archivée",
+    "actionsFor": "Actions pour {{name}}",
+    "edit": "Modifier",
+    "move": "Déplacer",
+    "archive": "Archiver",
+    "archiveConfirmTitle": "Archiver la catégorie",
+    "archiveConfirmMessage": "Archiver « {{name}} » ? Ses sous-catégories restent en place.",
+    "moveTitle": "Déplacer « {{name}} »",
+    "moveTarget": "Nouveau parent",
+    "moveRoot": "— Niveau racine —",
+    "moveSubmit": "Déplacer",
+    "type": {
+      "EXPENSE": "Dépense",
+      "INCOME": "Revenu"
+    },
+    "form": {
+      "createTitle": "Nouvelle catégorie",
+      "editTitle": "Modifier la catégorie",
+      "type": "Type",
+      "name": "Nom",
+      "color": "Couleur",
+      "customColor": "Couleur personnalisée",
+      "icon": "Icône",
+      "parent": "Catégorie parente",
+      "parentNone": "— Aucune (niveau racine) —",
+      "order": "Ordre",
+      "create": "Créer",
+      "save": "Enregistrer"
     }
   }
 }
