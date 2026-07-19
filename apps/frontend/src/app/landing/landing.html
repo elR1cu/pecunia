@@ -1,3 +1,24 @@
-<h1>Pecunia</h1>
-<p>{{ 'landing.tagline' | translate }}</p>
-<a href="/oauth2/authorization/pecunia">{{ 'auth.login' | translate }}</a>
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">Pecunia</p>
+    <h1>{{ 'landing.tagline' | translate }}</h1>
+    <p class="subline">{{ 'landing.subline' | translate }}</p>
+    <a matButton="filled" href="/oauth2/authorization/pecunia">{{ 'auth.login' | translate }}</a>
+  </div>
+
+  <!-- Decorative ledger extract: the product's whole promise in three lines. -->
+  <aside class="ledger-card" aria-hidden="true">
+    <div class="ledger-line">
+      <span>{{ 'landing.demo.income' | translate }}</span>
+      <span class="tabular">CHF 8'450.00</span>
+    </div>
+    <div class="ledger-line">
+      <span>{{ 'landing.demo.spending' | translate }}</span>
+      <span class="tabular">CHF −5'210.35</span>
+    </div>
+    <div class="ledger-line ledger-total">
+      <span>{{ 'landing.demo.savings' | translate }}</span>
+      <span class="tabular">CHF 3'239.65</span>
+    </div>
+  </aside>
+</section>

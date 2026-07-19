@@ -42,13 +42,31 @@ mat-dialog-content {
   border-color: var(--mat-sys-on-surface);
 }
 
+// The native color picker, dressed as one more (custom) swatch.
 .color-input {
-  width: 34px;
+  appearance: none;
+  width: 30px;
   height: 30px;
-  border: none;
+  border: 1px dashed var(--mat-sys-outline-variant);
+  border-radius: 50%;
+  overflow: hidden;
   background: none;
   padding: 0;
   cursor: pointer;
+
+  &::-webkit-color-swatch-wrapper {
+    padding: 4px;
+  }
+
+  &::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: 2px;
+  }
 }
 
 .icon-suggestions {

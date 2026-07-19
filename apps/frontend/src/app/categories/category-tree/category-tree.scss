@@ -3,20 +3,29 @@
   margin: 0;
   padding: 0;
 
-  // Children are indented and guided by a subtle rail.
+  > li {
+    margin-bottom: 2px;
+  }
+
+  // Children are indented under their parent's badge and guided by a rail.
   .category-tree {
-    margin-left: 14px;
-    padding-left: 14px;
+    margin-left: 15px;
+    padding-left: 19px;
     border-left: 1px solid var(--mat-sys-outline-variant);
+  }
+
+  // Only root categories read as headings; nested ones stay regular.
+  .category-tree .category-name {
+    font-weight: 400;
   }
 }
 
 .category-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 4px;
-  border-radius: 8px;
+  gap: 12px;
+  padding: 7px 8px;
+  border-radius: 10px;
 
   &:hover {
     background-color: var(--mat-sys-surface-container);
@@ -31,18 +40,22 @@
   opacity: 0.55;
 }
 
-.color-dot {
+// The category's color carries its identity: a soft tint behind its icon.
+.category-badge {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   flex-shrink: 0;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
+  background-color: color-mix(in srgb, var(--category-color) 15%, transparent);
+  color: var(--category-color);
 
-.category-icon {
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
-  color: var(--mat-sys-on-surface-variant);
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .category-name {
@@ -51,6 +64,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 500;
 }
 
 .archived-chip {

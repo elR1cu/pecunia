@@ -9,15 +9,30 @@
     "login": "Accedi",
     "logout": "Disconnetti"
   },
+  "nav": {
+    "dashboard": "Panoramica",
+    "accounts": "Conti",
+    "categories": "Categorie"
+  },
   "landing": {
-    "tagline": "Gestisci il tuo budget personale."
+    "tagline": "Gestisci il tuo budget personale.",
+    "subline": "Importa i tuoi estratti conto svizzeri (camt.053), categorizza ogni transazione e visualizza la tua capacità di risparmio a colpo d'occhio.",
+    "demo": {
+      "income": "Entrate",
+      "spending": "Spese",
+      "savings": "Capacità di risparmio"
+    }
   },
   "dashboard": {
+    "eyebrow": "Panoramica",
     "greeting": "Ciao {{name}}",
     "myAccounts": "I miei conti",
-    "myCategories": "Le mie categorie"
+    "accountsHint": "Gestisci i tuoi conti bancari e i loro saldi.",
+    "myCategories": "Le mie categorie",
+    "categoriesHint": "Organizza spese ed entrate in un albero di categorie."
   },
   "accounts": {
+    "title": "Conti",
     "new": "Nuovo conto",
     "empty": "Nessun conto per ora.",
     "archive": "Archivia",

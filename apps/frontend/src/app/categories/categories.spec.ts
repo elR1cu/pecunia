@@ -5,7 +5,7 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { CategoryNodeResponse, CategoryType } from '../../generated/api';
-import { CategoriesState } from '../services/categories-state';
+import { CategoriesState, FlatCategory } from '../services/categories-state';
 import { NotificationService } from '../services/notification-service';
 import { Categories } from './categories';
 
@@ -28,6 +28,7 @@ describe('Categories', () => {
   let categoriesState: {
     expenseRoots: ReturnType<typeof signal<CategoryNodeResponse[]>>;
     incomeRoots: ReturnType<typeof signal<CategoryNodeResponse[]>>;
+    flat: ReturnType<typeof signal<FlatCategory[]>>;
     load: ReturnType<typeof vi.fn>;
     archive: ReturnType<typeof vi.fn>;
   };
@@ -47,6 +48,7 @@ describe('Categories', () => {
     categoriesState = {
       expenseRoots: signal<CategoryNodeResponse[]>([]),
       incomeRoots: signal<CategoryNodeResponse[]>([]),
+      flat: signal<FlatCategory[]>([]),
       load: vi.fn(),
       archive: vi.fn(() => of(undefined)),
     };

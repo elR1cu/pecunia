@@ -2,8 +2,9 @@
   @for (node of nodes(); track node.id) {
     <li>
       <div class="category-row" [class.category-row-archived]="node.archived">
-        <span class="color-dot" [style.background-color]="node.color" aria-hidden="true"></span>
-        <mat-icon class="category-icon">{{ node.icon || 'label' }}</mat-icon>
+        <span class="category-badge" [style.--category-color]="node.color" aria-hidden="true">
+          <mat-icon>{{ node.icon || 'label' }}</mat-icon>
+        </span>
         <span class="category-name">{{ node.name }}</span>
         @if (node.archived) {
           <span class="archived-chip">{{ 'categories.archived' | translate }}</span>

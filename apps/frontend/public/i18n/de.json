@@ -9,15 +9,30 @@
     "login": "Anmelden",
     "logout": "Abmelden"
   },
+  "nav": {
+    "dashboard": "Übersicht",
+    "accounts": "Konten",
+    "categories": "Kategorien"
+  },
   "landing": {
-    "tagline": "Verwalten Sie Ihr persönliches Budget."
+    "tagline": "Verwalten Sie Ihr persönliches Budget.",
+    "subline": "Importieren Sie Ihre Schweizer Bankauszüge (camt.053), kategorisieren Sie jede Transaktion und sehen Sie Ihre Sparkapazität auf einen Blick.",
+    "demo": {
+      "income": "Einnahmen",
+      "spending": "Ausgaben",
+      "savings": "Sparkapazität"
+    }
   },
   "dashboard": {
+    "eyebrow": "Überblick",
     "greeting": "Hallo {{name}}",
     "myAccounts": "Meine Konten",
-    "myCategories": "Meine Kategorien"
+    "accountsHint": "Verwalten Sie Ihre Bankkonten und deren Salden.",
+    "myCategories": "Meine Kategorien",
+    "categoriesHint": "Ordnen Sie Ausgaben und Einnahmen in einem Kategorienbaum."
   },
   "accounts": {
+    "title": "Konten",
     "new": "Neues Konto",
     "empty": "Noch kein Konto.",
     "archive": "Archivieren",

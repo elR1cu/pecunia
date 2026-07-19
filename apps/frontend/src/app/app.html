@@ -1,1 +1,24 @@
-<router-outlet /><app-language-switcher />
+@if (user(); as currentUser) {
+  <header class="app-header">
+    <a routerLink="/dashboard" class="wordmark">Pecunia</a>
+    <nav class="app-nav">
+      <a routerLink="/dashboard" routerLinkActive="active">{{ 'nav.dashboard' | translate }}</a>
+      <a routerLink="/accounts" routerLinkActive="active">{{ 'nav.accounts' | translate }}</a>
+      <a routerLink="/categories" routerLinkActive="active">{{ 'nav.categories' | translate }}</a>
+    </nav>
+    <div class="header-utilities">
+      <app-language-switcher />
+      <span class="user-initials" aria-hidden="true">{{ initials(currentUser.displayName) }}</span>
+      <button matIconButton (click)="logout()" [attr.aria-label]="'auth.logout' | translate">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </header>
+} @else {
+  <div class="floating-language">
+    <app-language-switcher />
+  </div>
+}
+<main>
+  <router-outlet />
+</main>

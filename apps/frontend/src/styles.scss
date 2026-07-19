@@ -1,8 +1,10 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
+// Pecunia global styles — the "ink & ledger" identity.
+//
+// Angular Material's `mat.theme()` generates the Material 3 system tokens
+// (CSS variables); we then retune a handful of them so the whole component
+// set inherits the identity: paper-calm surfaces, ink text, pine-green
+// primary. Typography splits the M3 roles: Fraunces carries the brand voice
+// (display/headline), Inter carries the UI (body/label).
 @use '@angular/material' as mat;
 
 html {
@@ -10,30 +12,74 @@ html {
   @include mat.theme(
     (
       color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
+        primary: mat.$green-palette,
+        tertiary: mat.$yellow-palette,
       ),
-      typography: Roboto,
+      typography: (
+        plain-family: 'Inter, sans-serif',
+        brand-family: 'Fraunces, serif',
+      ),
       density: 0,
     )
   );
+
+  // Identity overrides on top of the generated palette. Components reference
+  // the system variables, so these few lines restyle everything coherently.
+  --mat-sys-primary: #1e5c46;
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary-container: #d6e9dd;
+  --mat-sys-on-primary-container: #0a2e1f;
+  --mat-sys-surface: #fafaf7;
+  --mat-sys-surface-container-lowest: #ffffff;
+  --mat-sys-surface-container-low: #f3f5f0;
+  --mat-sys-surface-container: #ecefe8;
+  --mat-sys-surface-container-high: #e5e9e1;
+  --mat-sys-on-surface: #1c201d;
+  --mat-sys-on-surface-variant: #4e5850;
+  --mat-sys-outline-variant: #dce0d8;
+
+  // Pecunia-specific tokens (outside the Material system).
+  --pecunia-brass: #9a7b2d;
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
   color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
   background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
   margin: 0;
   height: 100%;
 }
-/* You can add global styles to this file, and also import other style files */
+
+// ---------------------------------------------------------------------------
+// Shared identity utilities
+// ---------------------------------------------------------------------------
+
+// Monetary amounts align like a statement column.
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+// Small letter-spaced label above a title (statement-header style).
+.eyebrow {
+  font: var(--mat-sys-label-medium);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+// Page title with the Pecunia signature: the accounting double rule — the
+// double line that closes a summed ledger column.
+.page-title {
+  font: var(--mat-sys-headline-medium);
+  margin: 0;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 56px;
+    margin-top: 10px;
+    border-top: 3px double var(--pecunia-brass);
+  }
+}

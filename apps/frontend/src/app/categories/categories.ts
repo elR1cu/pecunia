@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -28,10 +28,21 @@ export class Categories implements OnInit {
 
   protected readonly expenseRoots = this.categoriesState.expenseRoots;
   protected readonly incomeRoots = this.categoriesState.incomeRoots;
+  protected readonly expenseCount = this.activeCount(CategoryType.Expense);
+  protected readonly incomeCount = this.activeCount(CategoryType.Income);
   protected readonly CategoryType = CategoryType;
 
   ngOnInit(): void {
     this.categoriesState.load();
+  }
+
+  private activeCount(type: CategoryType) {
+    return computed(
+      () =>
+        this.categoriesState
+          .flat()
+          .filter((category) => category.type === type && !category.archived).length,
+    );
   }
 
   protected openCreate(type: CategoryType): void {

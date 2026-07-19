@@ -1,0 +1,81 @@
+:host {
+  display: flex;
+  // The landing is anonymous (no app header): it owns the full viewport.
+  min-height: 100dvh;
+  // Faint statement paper: one hairline every baseline, concentrated around
+  // the hero and fading out toward both edges.
+  background:
+    linear-gradient(
+      to bottom,
+      var(--mat-sys-surface) 8%,
+      transparent 35% 60%,
+      var(--mat-sys-surface) 92%
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 35px,
+      color-mix(in srgb, var(--mat-sys-outline-variant) 40%, transparent) 35px 36px
+    );
+}
+
+.hero {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(32px, 8vw, 96px);
+  flex-wrap: wrap;
+  padding: 48px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.hero-copy {
+  max-width: 460px;
+
+  h1 {
+    font: var(--mat-sys-display-small);
+    margin: 12px 0 16px;
+  }
+
+  .subline {
+    color: var(--mat-sys-on-surface-variant);
+    font: var(--mat-sys-body-large);
+    margin: 0 0 28px;
+  }
+}
+
+.ledger-card {
+  background-color: var(--mat-sys-surface-container-lowest);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 16px;
+  padding: 28px 32px;
+  min-width: 300px;
+  box-shadow: 0 12px 32px -20px rgb(28 32 29 / 0.35);
+}
+
+.ledger-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 10px 0;
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface-variant);
+
+  .tabular {
+    color: var(--mat-sys-on-surface);
+  }
+}
+
+// The signature: a summed column closed by the accounting double rule.
+.ledger-total {
+  border-top: 4px double var(--pecunia-brass);
+  margin-top: 6px;
+  padding-top: 14px;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+
+  .tabular {
+    color: var(--mat-sys-primary);
+  }
+}

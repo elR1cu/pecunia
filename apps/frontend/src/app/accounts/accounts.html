@@ -1,22 +1,48 @@
-<button matButton="filled" (click)="openCreate()">{{ 'accounts.new' | translate }}</button>
+<header class="page-header">
+  <h1 class="page-title">{{ 'accounts.title' | translate }}</h1>
+  <button matButton="filled" (click)="openCreate()">
+    <mat-icon>add</mat-icon>
+    {{ 'accounts.new' | translate }}
+  </button>
+</header>
 
-@for (account of accounts(); track account.id) {
-  <mat-card>
-    <mat-card-title>{{ account.name }}</mat-card-title>
-    <mat-card-content>
-      <p>{{ 'accounts.type.' + account.type | translate }}</p>
-      @if (account.iban) {
-        <p>{{ account.iban }}</p>
-      }
-      <p>{{ account.initialBalance.amount }} {{ account.initialBalance.currency }}</p>
-      <p>{{ 'accounts.status.' + account.status | translate }}</p>
-    </mat-card-content>
-    @if (account.status === AccountStatus.Active) {
-      <mat-card-actions>
-        <button matButton (click)="archive(account)">{{ 'accounts.archive' | translate }}</button>
-      </mat-card-actions>
-    }
-  </mat-card>
-} @empty {
-  <p>{{ 'accounts.empty' | translate }}</p>
-}
+<div class="account-list">
+  @for (account of accounts(); track account.id) {
+    <mat-card appearance="outlined" class="account-card">
+      <div
+        class="account-row"
+        [class.account-row-archived]="account.status === AccountStatus.Archived"
+      >
+        <span class="type-badge">
+          <mat-icon>{{ icon(account.type) }}</mat-icon>
+        </span>
+        <div class="account-identity">
+          <span class="account-name">{{ account.name }}</span>
+          <span class="account-meta">
+            {{ 'accounts.type.' + account.type | translate }}
+            @if (account.iban) {
+              <span class="account-iban">· {{ account.iban }}</span>
+            }
+          </span>
+        </div>
+        <div class="account-balance">
+          <span class="balance-amount tabular">
+            {{ account.initialBalance.amount }} {{ account.initialBalance.currency }}
+          </span>
+          <span class="balance-label">{{ 'accounts.form.initialBalance' | translate }}</span>
+        </div>
+        <span
+          class="status-chip"
+          [class.status-chip-active]="account.status === AccountStatus.Active"
+        >
+          {{ 'accounts.status.' + account.status | translate }}
+        </span>
+        @if (account.status === AccountStatus.Active) {
+          <button matButton (click)="archive(account)">{{ 'accounts.archive' | translate }}</button>
+        }
+      </div>
+    </mat-card>
+  } @empty {
+    <p class="empty-state">{{ 'accounts.empty' | translate }}</p>
+  }
+</div>

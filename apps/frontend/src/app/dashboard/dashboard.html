@@ -1,6 +1,27 @@
 @if (user(); as currentUser) {
-  <p>{{ 'dashboard.greeting' | translate: { name: currentUser.displayName } }}</p>
-  <a matButton="filled" routerLink="/accounts">{{ 'dashboard.myAccounts' | translate }}</a>
-  <a matButton="filled" routerLink="/categories">{{ 'dashboard.myCategories' | translate }}</a>
-  <button matButton="outlined" (click)="logout()">{{ 'auth.logout' | translate }}</button>
+  <header class="page-header">
+    <p class="eyebrow">{{ 'dashboard.eyebrow' | translate }}</p>
+    <h1 class="page-title">
+      {{ 'dashboard.greeting' | translate: { name: currentUser.displayName } }}
+    </h1>
+  </header>
+
+  <nav class="quick-cards">
+    <a routerLink="/accounts" class="quick-card">
+      <mat-icon>account_balance</mat-icon>
+      <span class="quick-card-text">
+        <span class="quick-card-title">{{ 'dashboard.myAccounts' | translate }}</span>
+        <span class="quick-card-hint">{{ 'dashboard.accountsHint' | translate }}</span>
+      </span>
+      <mat-icon class="quick-card-arrow">arrow_forward</mat-icon>
+    </a>
+    <a routerLink="/categories" class="quick-card">
+      <mat-icon>category</mat-icon>
+      <span class="quick-card-text">
+        <span class="quick-card-title">{{ 'dashboard.myCategories' | translate }}</span>
+        <span class="quick-card-hint">{{ 'dashboard.categoriesHint' | translate }}</span>
+      </span>
+      <mat-icon class="quick-card-arrow">arrow_forward</mat-icon>
+    </a>
+  </nav>
 }
