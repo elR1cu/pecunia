@@ -40,6 +40,33 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-19 — Session 32
+
+**Block / Task**: Block 2 — Domain Model (category Angular slice + full UI redesign; PRs #52 & #53)
+
+**Done**:
+- Built and merged the full `category` Angular slice (PR #52): signal                                                                                                         
+  state service, lazy route, recursive tree, create/edit/move dialogs,                                                                                                        
+  archive, EN/FR/DE/IT i18n, unit specs, and a Playwright e2e covering                                                                                                        
+  create → nest → move → rename → archive.
+- Designed and merged the "ink & ledger" redesign (PR #53): M3 tokens                                                                                                         
+  retuned (paper/ink/pine/brass), Fraunces + Inter, accounting double                                                                                                         
+  rule as signature, app shell, landing hero, statement-row accounts,                                                                                                         
+  tinted category badges, refined dialogs, mobile hamburger + sidenav.
+- Fixed two real e2e bugs (relative `has:` locator; outline-notch label                                                                                                       
+  intercepting select clicks) — validated against a stateful mocked                                                                                                           
+  backend, then the real stack.
+- Passed both Sonar gates: render specs brought new category code to                                                                                                          
+  97 % coverage; labeled the two nav landmarks (Web:S5255) with an                                                                                                            
+  i18n-bound aria-label plus a documented ignore.
+
+**Next**:
+- Walk the Block 2 exit criterion through the real UI, then close Block 2.
+- Define the minimal deployment path (stated priority), then start                                                                                                            
+  Block 3 (camt.053 import).
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-19-session-32.md).
+
 ### 2026-07-17 — Session 31
 
 **Block / Task**: Block 2 — Domain Model (`category` context: persistence CTE + full web slice)
