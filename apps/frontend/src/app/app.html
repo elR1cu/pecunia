@@ -1,5 +1,15 @@
 @if (user(); as currentUser) {
   <header class="app-header">
+    <button
+      matIconButton
+      class="menu-button"
+      (click)="menuOpen.set(true)"
+      [attr.aria-label]="'nav.openMenu' | translate"
+      aria-controls="app-drawer"
+      [attr.aria-expanded]="menuOpen()"
+    >
+      <mat-icon>menu</mat-icon>
+    </button>
     <a routerLink="/dashboard" class="wordmark">Pecunia</a>
     <nav class="app-nav">
       <a routerLink="/dashboard" routerLinkActive="active">{{ 'nav.dashboard' | translate }}</a>
@@ -7,7 +17,7 @@
       <a routerLink="/categories" routerLinkActive="active">{{ 'nav.categories' | translate }}</a>
     </nav>
     <div class="header-utilities">
-      <app-language-switcher />
+      <app-language-switcher class="header-languages" />
       <span class="user-initials" aria-hidden="true">{{ initials(currentUser.displayName) }}</span>
       <button matIconButton (click)="logout()" [attr.aria-label]="'auth.logout' | translate">
         <mat-icon>logout</mat-icon>
@@ -19,6 +29,36 @@
     <app-language-switcher />
   </div>
 }
-<main>
-  <router-outlet />
-</main>
+
+<mat-sidenav-container class="app-body">
+  <mat-sidenav
+    id="app-drawer"
+    class="app-drawer"
+    mode="over"
+    [opened]="menuOpen()"
+    (openedChange)="menuOpen.set($event)"
+  >
+    <nav class="drawer-nav">
+      <a routerLink="/dashboard" routerLinkActive="active" (click)="menuOpen.set(false)">
+        <mat-icon>space_dashboard</mat-icon>
+        {{ 'nav.dashboard' | translate }}
+      </a>
+      <a routerLink="/accounts" routerLinkActive="active" (click)="menuOpen.set(false)">
+        <mat-icon>account_balance</mat-icon>
+        {{ 'nav.accounts' | translate }}
+      </a>
+      <a routerLink="/categories" routerLinkActive="active" (click)="menuOpen.set(false)">
+        <mat-icon>category</mat-icon>
+        {{ 'nav.categories' | translate }}
+      </a>
+    </nav>
+    <div class="drawer-footer">
+      <app-language-switcher />
+    </div>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <main>
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

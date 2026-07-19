@@ -1,14 +1,18 @@
 :host {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  height: 100%;
 }
 
-// Router-created components carry no _ngcontent attribute, so scoped child
-// selectors (main > *) cannot reach them: each page styles its own :host and
-// main just provides the remaining height.
-main {
+// The sidenav container owns the scrolling below the fixed header.
+.app-body {
   flex: 1;
+  min-height: 0;
+}
+
+main {
+  display: block;
+  min-height: 100%;
 }
 
 .app-header {
@@ -19,9 +23,12 @@ main {
   padding: 0 24px;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
   background-color: var(--mat-sys-surface);
-  position: sticky;
-  top: 0;
   z-index: 10;
+}
+
+// Hamburger: mobile only.
+.menu-button {
+  display: none;
 }
 
 .wordmark {
@@ -38,9 +45,6 @@ main {
   gap: 4px;
   flex: 1;
   min-width: 0;
-  // On narrow screens the links scroll instead of pushing the logout away.
-  overflow-x: auto;
-  scrollbar-width: none;
 
   a {
     font: var(--mat-sys-label-large);
@@ -48,6 +52,7 @@ main {
     text-decoration: none;
     padding: 8px 12px;
     border-radius: 8px;
+    white-space: nowrap;
 
     &:hover {
       background-color: var(--mat-sys-surface-container);
@@ -93,13 +98,73 @@ main {
   z-index: 10;
 }
 
+// ---------------------------------------------------------------------------
+// Mobile navigation drawer
+// ---------------------------------------------------------------------------
+
+.app-drawer {
+  width: min(280px, 80vw);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 12px;
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font: var(--mat-sys-label-large);
+    color: var(--mat-sys-on-surface-variant);
+    text-decoration: none;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border-left: 3px solid transparent;
+
+    mat-icon {
+      color: inherit;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mat-sys-primary);
+      outline-offset: 2px;
+    }
+
+    // Active route: the brass ledger rail moves to the left edge.
+    &.active {
+      color: var(--mat-sys-on-surface);
+      background-color: var(--mat-sys-surface-container);
+      border-left-color: var(--pecunia-brass);
+    }
+  }
+}
+
+.drawer-footer {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
 @media (max-width: 720px) {
   .app-header {
-    gap: 12px;
-    padding: 0 12px;
+    gap: 8px;
+    padding: 0 8px 0 4px;
   }
 
-  // On small screens the initials give way to the essentials.
+  .menu-button {
+    display: inline-flex;
+  }
+
+  // The inline nav and header language switcher move into the drawer.
+  .app-nav,
+  .header-languages {
+    display: none;
+  }
+
   .user-initials {
     display: none;
   }

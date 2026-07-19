@@ -10,6 +10,7 @@
     "logout": "Se déconnecter"
   },
   "nav": {
+    "openMenu": "Ouvrir la navigation",
     "dashboard": "Tableau de bord",
     "accounts": "Comptes",
     "categories": "Catégories"

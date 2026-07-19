@@ -10,6 +10,7 @@
     "logout": "Sign out"
   },
   "nav": {
+    "openMenu": "Open navigation",
     "dashboard": "Dashboard",
     "accounts": "Accounts",
     "categories": "Categories"
