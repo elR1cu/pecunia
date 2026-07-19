@@ -85,6 +85,7 @@
       "editTitle": "Modifica categoria",
       "type": "Tipo",
       "name": "Nome",
+      "namePlaceholder": "Nome della categoria",
       "color": "Colore",
       "customColor": "Colore personalizzato",
       "icon": "Icona",

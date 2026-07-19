@@ -4,9 +4,18 @@
     <mat-form-field>
       <mat-label>{{ 'accounts.form.type' | translate }}</mat-label>
       <mat-select formControlName="type">
-        <mat-option value="CURRENT">{{ 'accounts.type.CURRENT' | translate }}</mat-option>
-        <mat-option value="SAVINGS">{{ 'accounts.type.SAVINGS' | translate }}</mat-option>
-        <mat-option value="CREDIT_CARD">{{ 'accounts.type.CREDIT_CARD' | translate }}</mat-option>
+        <mat-option value="CURRENT">
+          <mat-icon>account_balance</mat-icon>
+          {{ 'accounts.type.CURRENT' | translate }}
+        </mat-option>
+        <mat-option value="SAVINGS">
+          <mat-icon>savings</mat-icon>
+          {{ 'accounts.type.SAVINGS' | translate }}
+        </mat-option>
+        <mat-option value="CREDIT_CARD">
+          <mat-icon>credit_card</mat-icon>
+          {{ 'accounts.type.CREDIT_CARD' | translate }}
+        </mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -17,20 +26,26 @@
 
     <mat-form-field>
       <mat-label>{{ 'accounts.form.iban' | translate }}</mat-label>
-      <input matInput formControlName="iban" />
+      <input matInput formControlName="iban" class="iban-input" />
     </mat-form-field>
 
     @if (form.hasError('ibanRequired')) {
-      <p class="field-error">{{ 'accounts.form.ibanRequired' | translate }}</p>
+      <p class="field-error">
+        <mat-icon>error_outline</mat-icon>
+        {{ 'accounts.form.ibanRequired' | translate }}
+      </p>
     }
     @if (form.hasError('ibanForbidden')) {
-      <p class="field-error">{{ 'accounts.form.ibanForbidden' | translate }}</p>
+      <p class="field-error">
+        <mat-icon>error_outline</mat-icon>
+        {{ 'accounts.form.ibanForbidden' | translate }}
+      </p>
     }
 
     <div formGroupName="initialBalance">
       <mat-form-field>
         <mat-label>{{ 'accounts.form.initialBalance' | translate }}</mat-label>
-        <input matInput formControlName="amount" />
+        <input matInput formControlName="amount" class="tabular" />
         <span matTextSuffix>CHF</span>
       </mat-form-field>
     </div>

@@ -10,6 +10,7 @@ import {
 } from '@angular/forms';
 import { AccountType, OpenAccountRequest } from '../../../generated/api';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { AccountsState } from '../../services/accounts-state';
@@ -31,6 +32,7 @@ function ibanMatchesType(group: AbstractControl): ValidationErrors | null {
     MatDialogModule,
     MatButton,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
     MatSelectModule,
     TranslatePipe,

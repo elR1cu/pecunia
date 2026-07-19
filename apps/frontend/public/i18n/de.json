@@ -85,6 +85,7 @@
       "editTitle": "Kategorie bearbeiten",
       "type": "Typ",
       "name": "Name",
+      "namePlaceholder": "Name der Kategorie",
       "color": "Farbe",
       "customColor": "Eigene Farbe",
       "icon": "Symbol",

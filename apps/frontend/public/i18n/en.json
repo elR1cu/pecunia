@@ -85,6 +85,7 @@
       "editTitle": "Edit category",
       "type": "Type",
       "name": "Name",
+      "namePlaceholder": "Category name",
       "color": "Color",
       "customColor": "Custom color",
       "icon": "Icon",

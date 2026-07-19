@@ -40,6 +40,15 @@ html {
 
   // Pecunia-specific tokens (outside the Material system).
   --pecunia-brass: #9a7b2d;
+
+  // Crisper dialog corners than the M3 default (28px).
+  --mat-dialog-container-shape: 20px;
+}
+
+// Dialogs close on a hairline above their actions, like a form's footer.
+mat-dialog-actions.mat-mdc-dialog-actions {
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  padding: 14px 24px;
 }
 
 body {
