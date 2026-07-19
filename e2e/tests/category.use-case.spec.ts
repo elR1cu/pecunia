@@ -76,11 +76,10 @@ test('creates, nests, moves, renames and archives categories through the UI', as
   await childDialog.getByRole('button', { name: 'Create' }).click();
   await expect(childDialog).toBeHidden();
 
-  // The child renders inside the parent's nested sub-tree.
-  const parentSubtree = expenses
-    .locator('li', { has: row(expenses, parentName) })
-    .locator('app-category-tree');
-  await expect(row(parentSubtree, childName)).toBeVisible();
+  // The child renders inside the parent's nested sub-tree. The parent's <li>
+  // wraps its own row plus the nested <app-category-tree> with the children.
+  const parentItem = expenses.locator('li').filter({ hasText: parentName });
+  await expect(row(parentItem.locator('app-category-tree'), childName)).toBeVisible();
 
   // --- Move use case: promote the child back to the top level --------------
   await rowAction(page, row(expenses, childName), 'Move');
@@ -90,8 +89,9 @@ test('creates, nests, moves, renames and archives categories through the UI', as
   await moveDialog.getByRole('button', { name: 'Move' }).click();
   await expect(moveDialog).toBeHidden();
 
-  // After the refetch the child is no longer inside the parent's sub-tree.
-  await expect(row(parentSubtree, childName)).toHaveCount(0);
+  // After the refetch the parent has no sub-tree left and the child sits at
+  // the top level of the section.
+  await expect(parentItem.locator('app-category-tree')).toHaveCount(0);
   await expect(row(expenses, childName)).toBeVisible();
 
   // --- Update use case: rename through the edit dialog ---------------------
