@@ -35,3 +35,6 @@ logs/
 *.key
 *.crt
 mkcert-CAROOT/
+
+# Local IDE ↔ Claude Code MCP bridge (machine-specific, ephemeral port)
+.mcp.json
