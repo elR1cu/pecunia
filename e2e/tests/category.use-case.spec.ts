@@ -71,7 +71,11 @@ test('creates, nests, moves, renames and archives categories through the UI', as
   await expenses.getByRole('button', { name: 'New category' }).click();
   const childDialog = page.getByRole('dialog');
   await childDialog.locator('input[formcontrolname="name"]').fill(childName);
-  await childDialog.locator('mat-select[formcontrolname="parentId"]').click();
+  // Click the form field, not the mat-select: with outlined fields the
+  // floating label sits in the outline notch and can intercept the pointer,
+  // which Playwright's actionability check refuses. The form field forwards
+  // the click to its control either way.
+  await childDialog.locator('mat-form-field', { hasText: 'Parent category' }).click();
   await page.getByRole('option', { name: parentName }).click();
   await childDialog.getByRole('button', { name: 'Create' }).click();
   await expect(childDialog).toBeHidden();
@@ -84,7 +88,8 @@ test('creates, nests, moves, renames and archives categories through the UI', as
   // --- Move use case: promote the child back to the top level --------------
   await rowAction(page, row(expenses, childName), 'Move');
   const moveDialog = page.getByRole('dialog');
-  await moveDialog.locator('mat-select').click();
+  // Same outlined-label caveat as above: click the (only) form field.
+  await moveDialog.locator('mat-form-field').click();
   await page.getByRole('option', { name: 'Top level' }).click();
   await moveDialog.getByRole('button', { name: 'Move' }).click();
   await expect(moveDialog).toBeHidden();
