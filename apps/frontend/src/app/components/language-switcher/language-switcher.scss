@@ -1,0 +1,21 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+// Compact enough to sit in the app header.
+button {
+  min-width: 0;
+  padding: 0 10px;
+  font: var(--mat-sys-label-medium);
+  letter-spacing: 0.06em;
+}
+
+// The current language is disabled to prevent a no-op switch, but it should
+// read as the emphasized one, not the faded one.
+button[aria-current='true'] {
+  --mat-button-text-disabled-label-text-color: var(--mat-sys-on-surface);
+  --mdc-text-button-disabled-label-text-color: var(--mat-sys-on-surface);
+  font-weight: 700;
+}

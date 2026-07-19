@@ -1,0 +1,171 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+// The sidenav container owns the scrolling below the fixed header.
+.app-body {
+  flex: 1;
+  min-height: 0;
+}
+
+main {
+  display: block;
+  min-height: 100%;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  height: 60px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  background-color: var(--mat-sys-surface);
+  z-index: 10;
+}
+
+// Hamburger: mobile only.
+.menu-button {
+  display: none;
+}
+
+.wordmark {
+  font-family: Fraunces, serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+
+.app-nav {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+
+  a {
+    font: var(--mat-sys-label-large);
+    color: var(--mat-sys-on-surface-variant);
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+
+    &:hover {
+      background-color: var(--mat-sys-surface-container);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mat-sys-primary);
+      outline-offset: 2px;
+    }
+
+    // Active route: ink text over the brass ledger underline.
+    &.active {
+      color: var(--mat-sys-on-surface);
+      background: linear-gradient(var(--pecunia-brass), var(--pecunia-brass)) no-repeat bottom 12px
+        center / calc(100% - 24px) 2px;
+    }
+  }
+}
+
+.header-utilities {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-initials {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+  font: var(--mat-sys-label-medium);
+  letter-spacing: 0.04em;
+}
+
+.floating-language {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+}
+
+// ---------------------------------------------------------------------------
+// Mobile navigation drawer
+// ---------------------------------------------------------------------------
+
+.app-drawer {
+  width: min(280px, 80vw);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 12px;
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font: var(--mat-sys-label-large);
+    color: var(--mat-sys-on-surface-variant);
+    text-decoration: none;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border-left: 3px solid transparent;
+
+    mat-icon {
+      color: inherit;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mat-sys-primary);
+      outline-offset: 2px;
+    }
+
+    // Active route: the brass ledger rail moves to the left edge.
+    &.active {
+      color: var(--mat-sys-on-surface);
+      background-color: var(--mat-sys-surface-container);
+      border-left-color: var(--pecunia-brass);
+    }
+  }
+}
+
+.drawer-footer {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
+@media (max-width: 720px) {
+  .app-header {
+    gap: 8px;
+    padding: 0 8px 0 4px;
+  }
+
+  .menu-button {
+    display: inline-flex;
+  }
+
+  // The inline nav and header language switcher move into the drawer.
+  .app-nav,
+  .header-languages {
+    display: none;
+  }
+
+  .user-initials {
+    display: none;
+  }
+}

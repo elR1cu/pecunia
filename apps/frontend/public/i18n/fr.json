@@ -9,15 +9,32 @@
     "login": "Se connecter",
     "logout": "Se déconnecter"
   },
+  "nav": {
+    "mainNavigation": "Navigation principale",
+    "openMenu": "Ouvrir la navigation",
+    "dashboard": "Tableau de bord",
+    "accounts": "Comptes",
+    "categories": "Catégories"
+  },
   "landing": {
-    "tagline": "Gérez votre budget personnel."
+    "tagline": "Gérez votre budget personnel.",
+    "subline": "Importez vos relevés bancaires suisses (camt.053), catégorisez chaque transaction et visualisez votre capacité d'épargne en un coup d'œil.",
+    "demo": {
+      "income": "Revenus",
+      "spending": "Dépenses",
+      "savings": "Capacité d'épargne"
+    }
   },
   "dashboard": {
+    "eyebrow": "Vue d'ensemble",
     "greeting": "Bonjour {{name}}",
     "myAccounts": "Mes comptes",
-    "myCategories": "Mes catégories"
+    "accountsHint": "Gérez vos comptes bancaires et leurs soldes.",
+    "myCategories": "Mes catégories",
+    "categoriesHint": "Organisez dépenses et revenus en arborescence de catégories."
   },
   "accounts": {
+    "title": "Comptes",
     "new": "Nouveau compte",
     "empty": "Aucun compte pour l'instant.",
     "archive": "Archiver",
@@ -70,6 +87,7 @@
       "editTitle": "Modifier la catégorie",
       "type": "Type",
       "name": "Nom",
+      "namePlaceholder": "Nom de la catégorie",
       "color": "Couleur",
       "customColor": "Couleur personnalisée",
       "icon": "Icône",

@@ -5,7 +5,7 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { CategoryNodeResponse, CategoryType } from '../../generated/api';
-import { CategoriesState } from '../services/categories-state';
+import { CategoriesState, FlatCategory } from '../services/categories-state';
 import { NotificationService } from '../services/notification-service';
 import { Categories } from './categories';
 
@@ -28,6 +28,7 @@ describe('Categories', () => {
   let categoriesState: {
     expenseRoots: ReturnType<typeof signal<CategoryNodeResponse[]>>;
     incomeRoots: ReturnType<typeof signal<CategoryNodeResponse[]>>;
+    flat: ReturnType<typeof signal<FlatCategory[]>>;
     load: ReturnType<typeof vi.fn>;
     archive: ReturnType<typeof vi.fn>;
   };
@@ -47,6 +48,7 @@ describe('Categories', () => {
     categoriesState = {
       expenseRoots: signal<CategoryNodeResponse[]>([]),
       incomeRoots: signal<CategoryNodeResponse[]>([]),
+      flat: signal<FlatCategory[]>([]),
       load: vi.fn(),
       archive: vi.fn(() => of(undefined)),
     };
@@ -66,10 +68,17 @@ describe('Categories', () => {
     component = fixture.componentInstance;
   });
 
-  it('renders each section with its tree of roots', () => {
+  it('renders each section with its tree of roots and its active count', () => {
     categoriesState.expenseRoots.set([aNode(), aNode({ id: 'id-2', name: 'Transport' })]);
     categoriesState.incomeRoots.set([
       aNode({ id: 'id-3', name: 'Salary', type: CategoryType.Income }),
+    ]);
+    // Counts derive from the flattened view and skip archived categories.
+    categoriesState.flat.set([
+      { id: 'id-1', name: 'Groceries', type: CategoryType.Expense, depth: 0, archived: false },
+      { id: 'id-2', name: 'Transport', type: CategoryType.Expense, depth: 0, archived: false },
+      { id: 'id-4', name: 'Old', type: CategoryType.Expense, depth: 0, archived: true },
+      { id: 'id-3', name: 'Salary', type: CategoryType.Income, depth: 0, archived: false },
     ]);
 
     fixture.detectChanges();
@@ -78,6 +87,10 @@ describe('Categories', () => {
     expect(host.querySelectorAll('.category-section')).toHaveLength(2);
     expect(host.querySelectorAll('.category-row')).toHaveLength(3);
     expect(host.querySelectorAll('.empty-state')).toHaveLength(0);
+    const counts = Array.from(host.querySelectorAll('.section-count'), (el) =>
+      el.textContent?.trim(),
+    );
+    expect(counts).toEqual(['2', '1']);
   });
 
   it('renders an empty state per section when there is nothing to show', () => {

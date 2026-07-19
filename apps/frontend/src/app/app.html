@@ -1,1 +1,64 @@
-<router-outlet /><app-language-switcher />
+@if (user(); as currentUser) {
+  <header class="app-header">
+    <button
+      matIconButton
+      class="menu-button"
+      (click)="menuOpen.set(true)"
+      [attr.aria-label]="'nav.openMenu' | translate"
+      aria-controls="app-drawer"
+      [attr.aria-expanded]="menuOpen()"
+    >
+      <mat-icon>menu</mat-icon>
+    </button>
+    <a routerLink="/dashboard" class="wordmark">Pecunia</a>
+    <nav class="app-nav" [attr.aria-label]="'nav.mainNavigation' | translate">
+      <a routerLink="/dashboard" routerLinkActive="active">{{ 'nav.dashboard' | translate }}</a>
+      <a routerLink="/accounts" routerLinkActive="active">{{ 'nav.accounts' | translate }}</a>
+      <a routerLink="/categories" routerLinkActive="active">{{ 'nav.categories' | translate }}</a>
+    </nav>
+    <div class="header-utilities">
+      <app-language-switcher class="header-languages" />
+      <span class="user-initials" aria-hidden="true">{{ initials(currentUser.displayName) }}</span>
+      <button matIconButton (click)="logout()" [attr.aria-label]="'auth.logout' | translate">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </header>
+} @else {
+  <div class="floating-language">
+    <app-language-switcher />
+  </div>
+}
+
+<mat-sidenav-container class="app-body">
+  <mat-sidenav
+    id="app-drawer"
+    class="app-drawer"
+    mode="over"
+    [opened]="menuOpen()"
+    (openedChange)="menuOpen.set($event)"
+  >
+    <nav class="drawer-nav" [attr.aria-label]="'nav.mainNavigation' | translate">
+      <a routerLink="/dashboard" routerLinkActive="active" (click)="menuOpen.set(false)">
+        <mat-icon>space_dashboard</mat-icon>
+        {{ 'nav.dashboard' | translate }}
+      </a>
+      <a routerLink="/accounts" routerLinkActive="active" (click)="menuOpen.set(false)">
+        <mat-icon>account_balance</mat-icon>
+        {{ 'nav.accounts' | translate }}
+      </a>
+      <a routerLink="/categories" routerLinkActive="active" (click)="menuOpen.set(false)">
+        <mat-icon>category</mat-icon>
+        {{ 'nav.categories' | translate }}
+      </a>
+    </nav>
+    <div class="drawer-footer">
+      <app-language-switcher />
+    </div>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <main>
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

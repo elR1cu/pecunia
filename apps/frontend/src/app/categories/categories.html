@@ -1,11 +1,14 @@
 <header class="page-header">
-  <h1>{{ 'categories.title' | translate }}</h1>
+  <h1 class="page-title">{{ 'categories.title' | translate }}</h1>
 </header>
 
 <div class="category-columns">
   <section class="category-section">
     <div class="section-header">
-      <h2>{{ 'categories.expenses' | translate }}</h2>
+      <h2>
+        {{ 'categories.expenses' | translate }}
+        <span class="section-count tabular">{{ expenseCount() }}</span>
+      </h2>
       <button matButton (click)="openCreate(CategoryType.Expense)">
         <mat-icon>add</mat-icon>
         {{ 'categories.new' | translate }}
@@ -19,13 +22,19 @@
         (archive)="archive($event)"
       />
     } @else {
-      <p class="empty-state">{{ 'categories.emptyExpenses' | translate }}</p>
+      <div class="empty-state">
+        <mat-icon>south_west</mat-icon>
+        <p>{{ 'categories.emptyExpenses' | translate }}</p>
+      </div>
     }
   </section>
 
   <section class="category-section">
     <div class="section-header">
-      <h2>{{ 'categories.income' | translate }}</h2>
+      <h2>
+        {{ 'categories.income' | translate }}
+        <span class="section-count tabular">{{ incomeCount() }}</span>
+      </h2>
       <button matButton (click)="openCreate(CategoryType.Income)">
         <mat-icon>add</mat-icon>
         {{ 'categories.new' | translate }}
@@ -39,7 +48,10 @@
         (archive)="archive($event)"
       />
     } @else {
-      <p class="empty-state">{{ 'categories.emptyIncome' | translate }}</p>
+      <div class="empty-state">
+        <mat-icon>south_east</mat-icon>
+        <p>{{ 'categories.emptyIncome' | translate }}</p>
+      </div>
     }
   </section>
 </div>

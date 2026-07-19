@@ -1,11 +1,50 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { MatIconButton } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { LanguageSwitcher } from './components/language-switcher/language-switcher';
+import { AuthService } from './services/auth-service';
+import { IdentityState } from './services/identity-state';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, LanguageSwitcher],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    MatIconButton,
+    MatIconModule,
+    MatSidenavModule,
+    TranslatePipe,
+    LanguageSwitcher,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {}
+export class App {
+  private readonly authService = inject(AuthService);
+  private readonly identityState = inject(IdentityState);
+
+  // The auth guard populates the identity on protected routes; on the public
+  // landing it stays null, which is what hides the app header there.
+  protected readonly user = this.identityState.user;
+
+  // Mobile-only navigation drawer; the hamburger toggles it, the drawer's
+  // backdrop / Escape / a navigation click close it.
+  protected readonly menuOpen = signal(false);
+
+  protected initials(displayName: string): string {
+    return displayName
+      .split(/\s+/)
+      .filter((part) => part.length > 0)
+      .slice(0, 2)
+      .map((part) => part[0].toUpperCase())
+      .join('');
+  }
+
+  protected logout(): void {
+    this.authService.logout();
+  }
+}

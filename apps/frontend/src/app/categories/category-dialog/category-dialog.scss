@@ -5,9 +5,60 @@ mat-dialog-content {
   min-width: min(420px, 80vw);
 }
 
-.type-line {
-  margin: 0;
+// The preview mirrors a tree row, so choices are judged in context.
+.preview-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 4px;
+  background-color: var(--mat-sys-surface-container-low);
+  border: 1px dashed var(--mat-sys-outline-variant);
+  border-radius: 12px;
+}
+
+.category-badge {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  flex-shrink: 0;
+  background-color: color-mix(in srgb, var(--category-color) 15%, transparent);
+  color: var(--category-color);
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.preview-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.preview-name-empty {
   color: var(--mat-sys-on-surface-variant);
+  font-weight: 400;
+}
+
+.type-chip {
+  font: var(--mat-sys-label-small);
+  border-radius: 999px;
+  padding: 3px 10px;
+  color: var(--mat-sys-on-primary-container);
+  background-color: var(--mat-sys-primary-container);
+}
+
+.type-chip-income {
+  color: var(--pecunia-brass);
+  background-color: color-mix(in srgb, var(--pecunia-brass) 14%, transparent);
 }
 
 .field-label {
@@ -42,13 +93,31 @@ mat-dialog-content {
   border-color: var(--mat-sys-on-surface);
 }
 
+// The native color picker, dressed as one more (custom) swatch.
 .color-input {
-  width: 34px;
+  appearance: none;
+  width: 30px;
   height: 30px;
-  border: none;
+  border: 1px dashed var(--mat-sys-outline-variant);
+  border-radius: 50%;
+  overflow: hidden;
   background: none;
   padding: 0;
   cursor: pointer;
+
+  &::-webkit-color-swatch-wrapper {
+    padding: 4px;
+  }
+
+  &::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: 2px;
+  }
 }
 
 .icon-suggestions {

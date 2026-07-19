@@ -1,5 +1,26 @@
+mat-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: min(420px, 80vw);
+  padding-top: 8px;
+}
+
+.iban-input {
+  letter-spacing: 0.04em;
+}
+
 .field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: var(--mat-sys-error);
-  font-size: var(--mat-sys-body-small-size);
-  margin: 0;
+  font: var(--mat-sys-body-small);
+  margin: -2px 0 10px;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
 }

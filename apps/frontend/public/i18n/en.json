@@ -9,15 +9,32 @@
     "login": "Sign in",
     "logout": "Sign out"
   },
+  "nav": {
+    "mainNavigation": "Main navigation",
+    "openMenu": "Open navigation",
+    "dashboard": "Dashboard",
+    "accounts": "Accounts",
+    "categories": "Categories"
+  },
   "landing": {
-    "tagline": "Manage your personal budget."
+    "tagline": "Manage your personal budget.",
+    "subline": "Import your Swiss bank statements (camt.053), categorize every transaction, and see your savings capacity at a glance.",
+    "demo": {
+      "income": "Income",
+      "spending": "Spending",
+      "savings": "Savings capacity"
+    }
   },
   "dashboard": {
+    "eyebrow": "Overview",
     "greeting": "Hello {{name}}",
     "myAccounts": "My accounts",
-    "myCategories": "My categories"
+    "accountsHint": "Manage your bank accounts and their balances.",
+    "myCategories": "My categories",
+    "categoriesHint": "Organize spending and income into a category tree."
   },
   "accounts": {
+    "title": "Accounts",
     "new": "New account",
     "empty": "No account yet.",
     "archive": "Archive",
@@ -70,6 +87,7 @@
       "editTitle": "Edit category",
       "type": "Type",
       "name": "Name",
+      "namePlaceholder": "Category name",
       "color": "Color",
       "customColor": "Custom color",
       "icon": "Icon",

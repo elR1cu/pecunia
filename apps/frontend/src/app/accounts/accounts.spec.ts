@@ -55,6 +55,14 @@ describe('Accounts', () => {
     component = TestBed.createComponent(Accounts).componentInstance;
   });
 
+  it('maps each account type to its statement-row icon', () => {
+    const handle = component as unknown as { icon: (type: AccountType) => string };
+
+    expect(handle.icon(AccountType.Current)).toBe('account_balance');
+    expect(handle.icon(AccountType.Savings)).toBe('savings');
+    expect(handle.icon(AccountType.CreditCard)).toBe('credit_card');
+  });
+
   it('loads the accounts on init', () => {
     component.ngOnInit();
     expect(accountsState.load).toHaveBeenCalledOnce();

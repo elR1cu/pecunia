@@ -1,0 +1,73 @@
+:host {
+  display: block;
+  padding: 40px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page-header {
+  margin-bottom: 32px;
+}
+
+.quick-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  max-width: 760px;
+}
+
+.quick-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 24px;
+  background-color: var(--mat-sys-surface-container-lowest);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 16px;
+  text-decoration: none;
+  color: var(--mat-sys-on-surface);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+
+  > mat-icon:first-child {
+    color: var(--mat-sys-primary);
+  }
+
+  &:hover {
+    border-color: var(--mat-sys-primary);
+    box-shadow: 0 10px 24px -18px rgb(28 32 29 / 0.4);
+
+    .quick-card-arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: 2px;
+  }
+}
+
+.quick-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.quick-card-title {
+  font: var(--mat-sys-title-medium);
+}
+
+.quick-card-hint {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.quick-card-arrow {
+  color: var(--mat-sys-on-surface-variant);
+  transition: transform 140ms ease;
+}

@@ -77,6 +77,7 @@ export class CategoryDialog {
   private readonly notifications = inject(NotificationService);
 
   protected readonly data = inject<CategoryDialogData>(MAT_DIALOG_DATA);
+  protected readonly type = this.data.mode === 'create' ? this.data.type : this.data.category.type;
   protected readonly iconSuggestions = ICON_SUGGESTIONS;
   protected readonly colorPresets = COLOR_PRESETS;
   protected readonly submitting = signal(false);
@@ -130,7 +131,7 @@ export class CategoryDialog {
   }
 
   private categoryType(): CategoryType {
-    return this.data.mode === 'create' ? this.data.type : this.data.category.type;
+    return this.type;
   }
 
   private initial<K extends 'name' | 'color' | 'icon' | 'displayOrder'>(
