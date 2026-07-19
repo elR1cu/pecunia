@@ -14,7 +14,8 @@
   },
   "dashboard": {
     "greeting": "Hello {{name}}",
-    "myAccounts": "My accounts"
+    "myAccounts": "My accounts",
+    "myCategories": "My categories"
   },
   "accounts": {
     "new": "New account",
@@ -40,6 +41,43 @@
       "create": "Create",
       "ibanRequired": "An IBAN is required for a current or savings account.",
       "ibanForbidden": "A credit card must not have an IBAN."
+    }
+  },
+  "categories": {
+    "title": "Categories",
+    "new": "New category",
+    "expenses": "Expenses",
+    "income": "Income",
+    "emptyExpenses": "No expense category yet. Create one to start organizing your spending.",
+    "emptyIncome": "No income category yet. Create one to classify what comes in.",
+    "archived": "Archived",
+    "actionsFor": "Actions for {{name}}",
+    "edit": "Edit",
+    "move": "Move",
+    "archive": "Archive",
+    "archiveConfirmTitle": "Archive category",
+    "archiveConfirmMessage": "Archive « {{name}} »? Its subcategories stay in place.",
+    "moveTitle": "Move « {{name}} »",
+    "moveTarget": "New parent",
+    "moveRoot": "— Top level —",
+    "moveSubmit": "Move",
+    "type": {
+      "EXPENSE": "Expense",
+      "INCOME": "Income"
+    },
+    "form": {
+      "createTitle": "New category",
+      "editTitle": "Edit category",
+      "type": "Type",
+      "name": "Name",
+      "color": "Color",
+      "customColor": "Custom color",
+      "icon": "Icon",
+      "parent": "Parent category",
+      "parentNone": "— None (top level) —",
+      "order": "Order",
+      "create": "Create",
+      "save": "Save"
     }
   }
 }
