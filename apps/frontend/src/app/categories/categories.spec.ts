@@ -1,7 +1,7 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { TranslateService } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { CategoryNodeResponse, CategoryType } from '../../generated/api';
@@ -23,6 +23,7 @@ function aNode(overrides: Partial<CategoryNodeResponse> = {}): CategoryNodeRespo
 }
 
 describe('Categories', () => {
+  let fixture: ComponentFixture<Categories>;
   let component: Categories;
   let categoriesState: {
     expenseRoots: ReturnType<typeof signal<CategoryNodeResponse[]>>;
@@ -58,10 +59,33 @@ describe('Categories', () => {
         { provide: CategoriesState, useValue: categoriesState },
         { provide: MatDialog, useValue: dialog },
         { provide: NotificationService, useValue: notifications },
-        { provide: TranslateService, useValue: { instant: (key: string) => key } },
+        provideTranslateService(), // the template imports TranslatePipe
       ],
     });
-    component = TestBed.createComponent(Categories).componentInstance;
+    fixture = TestBed.createComponent(Categories);
+    component = fixture.componentInstance;
+  });
+
+  it('renders each section with its tree of roots', () => {
+    categoriesState.expenseRoots.set([aNode(), aNode({ id: 'id-2', name: 'Transport' })]);
+    categoriesState.incomeRoots.set([
+      aNode({ id: 'id-3', name: 'Salary', type: CategoryType.Income }),
+    ]);
+
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelectorAll('.category-section')).toHaveLength(2);
+    expect(host.querySelectorAll('.category-row')).toHaveLength(3);
+    expect(host.querySelectorAll('.empty-state')).toHaveLength(0);
+  });
+
+  it('renders an empty state per section when there is nothing to show', () => {
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelectorAll('.category-row')).toHaveLength(0);
+    expect(host.querySelectorAll('.empty-state')).toHaveLength(2);
   });
 
   it('loads the categories on init', () => {
