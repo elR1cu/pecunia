@@ -53,6 +53,16 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Override the Spring Boot BOM's postgresql (42.7.11) to patch CVE-2026-54291:
+                 SCRAM-SHA-256-PLUS downgrade MITM bypass, fixed in 42.7.12. Declared before
+                 the BOM import so this managed version wins (overriding a version property of
+                 an imported BOM is not possible — that only works under the parent-POM model).
+                 Remove once the BOM manages 42.7.12+. -->
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.7.12</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
