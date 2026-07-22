@@ -3,7 +3,6 @@ package com.pecunia.category.web;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -316,7 +315,7 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id").value(CATEGORY_ID.toString()))
                 .andExpect(jsonPath("$[0].name").value("Food"))
-                .andExpect(jsonPath("$[0].icon").value(nullValue()))
+                .andExpect(jsonPath("$[0].icon").doesNotExist())
                 .andExpect(jsonPath("$[0].children", hasSize(1)))
                 .andExpect(jsonPath("$[0].children[0].id").value(CHILD_ID.toString()))
                 .andExpect(jsonPath("$[0].children[0].name").value("Groceries"))
