@@ -27,7 +27,7 @@
         </div>
         <div class="account-balance">
           <span class="balance-amount tabular">
-            {{ account.initialBalance.amount }} {{ account.initialBalance.currency }}
+            {{ account.initialBalance | money }}
           </span>
           <span class="balance-label">{{ 'accounts.form.initialBalance' | translate }}</span>
         </div>

@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AccountResponse, AccountStatus, AccountType } from '../../generated/api';
 import { ConfirmDialog } from '../components/confirm-dialog/confirm-dialog';
+import { MoneyPipe } from '../pipes/money-pipe';
 import { AccountsState } from '../services/accounts-state';
 import { NotificationService } from '../services/notification-service';
 import { OpenAccountDialog } from './open-account-dialog/open-account-dialog';
@@ -18,7 +19,7 @@ const TYPE_ICONS: Record<AccountType, string> = {
 
 @Component({
   selector: 'app-accounts',
-  imports: [MatCardModule, MatButton, MatIconModule, TranslatePipe],
+  imports: [MatCardModule, MatButton, MatIconModule, TranslatePipe, MoneyPipe],
   templateUrl: './accounts.html',
   styleUrl: './accounts.scss',
 })
