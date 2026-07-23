@@ -40,6 +40,30 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-23 — Session 33
+
+**Block / Task**: Block 2 — Domain Model (exit criterion validated end-to-end; block closed, tag `block-2-complete`)
+
+**Done**:
+- Launched the full stack (backend + `spring-boot-docker-compose` infra;                                                                                                      
+  Angular dev server on Node 24) and validated the Block 2 exit criterion                                                                                                     
+  end to end — confirmed in Postgres: UBS Current + UBS Visa (the                                                                                                             
+  `CREDIT_CARD ⇒ no IBAN` invariant) and a real category hierarchy proving                                                                                                    
+  nest/move/rename/archive.
+- Fixed the four-decimal CHF display (PR #59): a pure `MoneyPipe` on                                                                                                          
+  `Intl.NumberFormat('de-CH')` → `CHF 8'000.00`, chosen over `CurrencyPipe`                                                                                                   
+  (precision loss #23893, no `registerLocaleData`). Suite 66 → 71.
+- Cleaned the E2E residue from the dev DB (5 accounts + 4 categories),                                                                                                        
+  FK-safe in a transaction.
+- Tagged `block-2-complete`.
+
+**Next**:
+- Merge the Session 33 recap (docs PR) and add this JOURNAL entry.
+- Define the minimal deployment path (stated priority).
+- Start Block 3 (camt.053 import): `BankStatementParser` port + adapter.
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-23-session-33.md).
+
 ### 2026-07-19 — Session 32
 
 **Block / Task**: Block 2 — Domain Model (category Angular slice + full UI redesign; PRs #52 & #53)
