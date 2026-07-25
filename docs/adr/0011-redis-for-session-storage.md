@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by [ADR-0038](0038-postgresql-session-storage.md)
 
 ## Context
 

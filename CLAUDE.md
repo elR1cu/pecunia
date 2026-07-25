@@ -180,7 +180,9 @@ When the user asks for advice on a choice with multiple options:
 ### Persistence and Infrastructure
 
 - **PostgreSQL 17**
-- **Redis** (session storage via `spring-session-data-redis` for BFF)
+- **HTTP sessions in PostgreSQL** via `spring-session-jdbc` (ADR-0038;
+  replaces Redis, which currently remains in the code until the migration
+  PR lands — reintroduction trigger documented in roadmap.md)
 - Spring `ApplicationEventPublisher` for domain events (port/adapter
   design allows future migration to Kafka without domain change)
 
@@ -196,7 +198,9 @@ When the user asks for advice on a choice with multiple options:
 - **k3d** (local Kubernetes for learning and demo)
 - **Helm** (K8s deployment)
 - **GitHub Actions** (CI/CD)
-- Production hosting: economical Swiss/EU VPS (Hetzner or Infomaniak)
+- Production hosting: **Infomaniak Public Cloud** (Swiss data residency,
+  ADR-0035), provisioned with **OpenTofu** (OpenStack provider, encrypted
+  state, ADR-0036); runtime secrets via **SOPS + age** (ADR-0037)
 - IDE: **IntelliJ IDEA Ultimate** (backend), **VS Code** (frontend)
 
 ### Observability
