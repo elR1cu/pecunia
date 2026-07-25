@@ -63,8 +63,7 @@ flowchart TB
 
     subgraph External
         Keycloak[Keycloak<br/>OIDC Provider]
-        Postgres[(PostgreSQL)]
-        Redis[(Redis<br/>Sessions)]
+        Postgres[(PostgreSQL<br/>data + HTTP sessions)]
         Claude[Anthropic Claude API<br/>future]
     end
 
@@ -73,7 +72,7 @@ flowchart TB
     App --> Domain
     Domain -.implements.-> Infra
     Infra --> Postgres
-    Web --> Redis
+    Web -->|HTTP sessions| Postgres
     Web -->|OIDC flow| Keycloak
     Infra -.future.-> Claude
 ```
@@ -199,7 +198,7 @@ sequenceDiagram
     participant A as Angular SPA
     participant B as Spring Boot BFF
     participant K as Keycloak
-    participant R as Redis
+    participant S as Session store (PostgreSQL)
 
     U->>A: Open app
     A->>B: GET /api/me (no session)
@@ -211,10 +210,10 @@ sequenceDiagram
     K->>B: Authorization code (callback)
     B->>K: Exchange code for tokens
     K-->>B: Access token, refresh token, ID token
-    B->>R: Store session with tokens (server-side)
+    B->>S: Store session with tokens (server-side)
     B-->>A: Set HttpOnly session cookie
     A->>B: GET /api/me (with cookie)
-    B->>R: Retrieve session
+    B->>S: Retrieve session
     B-->>A: User info
 ```
 
@@ -377,7 +376,17 @@ PostgreSQL 18 is the single primary datastore for Pecunia.
 
 ### Sessions
 
-- **Spring Session Data Redis** stores HTTP sessions in Redis.
+- **Spring Session JDBC** stores HTTP sessions in PostgreSQL
+  ([ADR-0038](adr/0038-postgresql-session-storage.md), superseding the
+  original Redis choice; the migration from
+  `spring-session-data-redis` is a pending PR). With a single
+  application instance, session *persistence* is the requirement, and
+  PostgreSQL — already deployed, backed up, and secured — provides it
+  without an extra service.
+- **Redis remains the future target for multi-instance topologies**
+  (shared session store, caching, distributed rate limiting); the
+  reintroduction trigger is documented in
+  [`roadmap.md`](roadmap.md) ("Technology Adoption Triggers").
 - **Session cookie**: `HttpOnly`, `Secure`, `SameSite=Strict`.
 - **Session timeout**: 8 hours of inactivity (configurable).
 
@@ -452,7 +461,8 @@ separate codebase.
 ### Local development
 
 - Starting `PecuniaApplication` (from IntelliJ or `mvn -f apps/api/pom.xml spring-boot:run`
-  at the repository root) auto-starts PostgreSQL, Keycloak, and Redis through
+  at the repository root) auto-starts PostgreSQL and Keycloak (plus
+  Redis, until the ADR-0038 session migration lands) through
   `spring-boot-docker-compose` —
   see [ADR-0020](adr/0020-spring-boot-docker-compose-for-local-dev.md).
 - **Spring Boot DevTools** triggers an automatic application restart on
@@ -463,13 +473,20 @@ separate codebase.
 
 ### Production (target)
 
-- Single VPS in Switzerland or EU (Hetzner Cloud or Infomaniak).
+- Single VM on **Infomaniak Public Cloud** (Swiss data residency,
+  [ADR-0035](adr/0035-infomaniak-public-cloud-hosting.md)), provisioned
+  with **OpenTofu** through the OpenStack provider
+  ([ADR-0036](adr/0036-opentofu-for-infrastructure-as-code.md)); runtime
+  secrets encrypted in-repo with **SOPS + age**
+  ([ADR-0037](adr/0037-sops-age-secrets-management.md)).
 - Docker Compose deployment with a reverse proxy (Caddy or Traefik) for
   TLS termination and Let's Encrypt automation.
-- PostgreSQL, Redis, Keycloak, and the application run as containers on the
+- PostgreSQL, Keycloak, and the application run as containers on the
   same host.
-- Automated backups of PostgreSQL to encrypted off-site storage
-  (Backblaze B2 or equivalent).
+- **Recoverability over availability** (ADR-0035): single-VM SPOFs are
+  accepted; RPO 24 h / RTO < 1 h through automated encrypted off-site
+  PostgreSQL backups (Backblaze B2 or equivalent) plus full VM
+  reconstruction from the repository, with a tested restore procedure.
 - CI/CD via GitHub Actions: on merge to `main`, build, test, and deploy to
   the VPS over SSH.
 
@@ -492,7 +509,7 @@ readiness.
 
 - `/actuator/health` — overall application status. Anonymous callers see
   only `{"status":"UP"}`; authenticated callers see component details
-  (datasource, Redis, …) thanks to `show-details: when-authorized`.
+  (datasource, session store, …) thanks to `show-details: when-authorized`.
 - `/actuator/health/liveness` and `/actuator/health/readiness` — boolean
   probes for liveness and readiness, designed for Kubernetes and reverse-
   proxy health checks. They never include component details.
