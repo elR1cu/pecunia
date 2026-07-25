@@ -150,12 +150,23 @@ sequence. Having a live URL early enables the CV value to materialize
 quickly.
 
 **Deliverables**:
-- VPS provisioned with Hetzner Cloud or Infomaniak (one of the two,
-  decided when the block starts).
+- Pre-step: replace Redis session storage with `spring-session-jdbc`
+  (PostgreSQL), removing Redis from the stack (ADR-0038), so the
+  production topology is final before the compose file is written.
+- VM provisioned on **Infomaniak Public Cloud** (`a4-ram8-disk50-perf1`,
+  ADR-0035) with **OpenTofu** through the OpenStack provider, client-side
+  state encryption enabled (ADR-0036).
+- Runtime secrets encrypted in-repo with **SOPS + age**, decrypted by the
+  deployment pipeline (ADR-0037).
 - Domain name registered (e.g., `pecunia.example.ch`).
 - Docker Compose production configuration: reverse proxy with TLS (Caddy
   or Traefik with Let's Encrypt), application container, PostgreSQL,
-  Keycloak, Redis.
+  Keycloak.
+- Recoverability over availability (ADR-0035): accepted single-VM SPOFs,
+  RPO 24 h / RTO < 1 h, with a **tested** restore procedure.
+- Demo isolation: a `demo` user with fictional data on the production
+  instance (multi-tenancy provides the isolation); real data stays behind
+  the author's login.
 - Encrypted off-site backup of PostgreSQL (Backblaze B2 or equivalent).
 - GitHub Actions deployment job: on merge to `main`, build images, push,
   deploy over SSH.
@@ -294,6 +305,11 @@ month?".
 - Ingress controller with TLS.
 - Observability stack deployed in the cluster (Prometheus, Grafana).
 - Documentation: "5-minute demo" runbook for interview presentations.
+- Optional extension (ADR-0035): apply the same Helm charts to an
+  **ephemeral AKS cluster** (Azure Switzerland North) created before an
+  interview and destroyed after — hourly billing, fictional data only.
+  Infomaniak KaaS is a possible Swiss alternative (covered by the official
+  Infomaniak Terraform provider).
 
 ### Block 11 — Performance and Resilience Engineering
 
@@ -315,7 +331,7 @@ them. Infrastructure-level chaos additionally depends on Block 10 (k3d).
 - **Application-level chaos** with **Chaos Monkey for Spring Boot**: inject
   latency, exceptions, and bean kills to validate graceful degradation.
 - **Dependency/network fault injection** with **Toxiproxy**: simulate
-  PostgreSQL/Redis latency and outages. Ties into the Resilience4j adoption
+  PostgreSQL latency and outages. Ties into the Resilience4j adoption
   planned at Block 6.
 - **Infrastructure chaos** on the k3d cluster (**Chaos Mesh** or
   **LitmusChaos**): pod kills validating probes, HPA, and self-healing.
@@ -365,9 +381,9 @@ non-invasive.
 
 Resilience4j provides circuit breakers, retries, rate limiters, and
 related patterns for resilient external service calls. The MVP has no
-external HTTP service calls (Keycloak, PostgreSQL, and Redis are
-accessed via specialized clients with their own resilience mechanisms),
-so Resilience4j is not adopted.
+external HTTP service calls (Keycloak and PostgreSQL are accessed via
+specialized clients with their own resilience mechanisms), so
+Resilience4j is not adopted.
 
 Adoption is planned for Block 6 (AI categorization with the Anthropic
 API), where it becomes clearly necessary:
@@ -380,10 +396,9 @@ A dedicated ADR will be written at adoption time.
 
 ### Application-level caching
 
-Redis is in the stack for session storage (ADR-0011), but no application-
-level caching is configured in the MVP. The single-user scale makes
-caching unnecessary, and premature caching introduces consistency
-complexity without measurable benefit.
+No application-level caching is configured in the MVP. The single-user
+scale makes caching unnecessary, and premature caching introduces
+consistency complexity without measurable benefit.
 
 Adoption will be considered when:
 
@@ -394,7 +409,42 @@ Adoption will be considered when:
   transactions.
 - Any specific query or computation is identified as a bottleneck.
 
-When introduced, Redis is the backend (consistency with existing stack).
+When introduced, Redis is the natural backend and would return to the
+stack (see the Redis trigger below). A dedicated ADR will be written at
+adoption time.
+
+### Redis (reintroduction)
+
+Redis was removed from the stack when session storage moved to
+PostgreSQL via `spring-session-jdbc` (ADR-0038): with a single
+application instance, session *persistence* is the requirement, and
+PostgreSQL — already deployed, backed up, and secured — provides it
+without an extra service.
+
+Reintroduction triggers:
+
+- A second application instance (shared session store).
+- Application-level caching adoption (see above).
+- Distributed rate limiting or similar cross-instance coordination.
+
+Reintroduction is a dependency and configuration change
+(`spring-session` keeps the store swappable), not a redesign.
+
+### OpenBao / secret manager
+
+Production secrets are managed with SOPS + age (ADR-0037): encrypted in
+the repository, decrypted by the deployment pipeline. A server-based
+secret manager (OpenBao, the Linux Foundation Vault fork, coherent with
+the OpenTofu choice of ADR-0036) is deliberately deferred.
+
+Adoption triggers:
+
+- Automatic or dynamic secret rotation becomes a real need.
+- A second secrets consumer appears (e.g., Kubernetes at Block 10 via
+  external-secrets).
+- A dedicated post-MVP learning exercise (strong CV keyword in Swiss
+  banking), potentially run ephemerally like the AKS demo.
+
 A dedicated ADR will be written at adoption time.
 
 ### Other deferred technologies

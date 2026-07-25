@@ -40,6 +40,39 @@ Each entry follows this structure:
 
 ---
 
+### 2026-07-25 — Session 34
+
+**Block / Task**: Block 8 preparation — deployment platform decisions (paper only, no code)
+
+**Done**:
+- Researched the European VPS/IaC landscape and settled the deciding
+  constraint: real financial data stays in Switzerland (anonymization
+  examined and rejected — it solves "showing", not "residing").
+- Wrote four ADRs: **0035** Infomaniak Public Cloud
+  (`a4-ram8-disk50-perf1`, ~€14.50/mo, recoverability-over-availability
+  doctrine with RPO 24h / RTO < 1h, demo user via multi-tenancy, Azure
+  kept as ephemeral AKS interview demo); **0036** OpenTofu (client-side
+  state encryption, verified absent from Terraform CLI); **0037**
+  SOPS + age for runtime secrets (OpenBao deferred with triggers);
+  **0038** sessions → `spring-session-jdbc`, Redis removed
+  (supersedes ADR-0011).
+- Updated roadmap (Block 8/10/11, new Redis & OpenBao adoption
+  triggers) and CLAUDE.md stack lines accordingly.
+
+**Learned**:
+- OpenStack's explicit resource graph (~7-8 resources per VM) is the
+  same model as azurerm/AWS — a feature for learning, not a tax.
+- The canonical BFF blueprint smuggled Redis in without a scale test:
+  every component must be justified by a requirement, not by the
+  reference diagram.
+
+**Next**:
+- Redis → `spring-session-jdbc` migration PR (small, self-contained).
+- Confirm CHF pricing in the Infomaniak calculator, then start Block 8
+  execution (first OpenTofu root module).
+
+See [detailed recap](docs/session-recaps/2026-07/2026-07-25-session-34.md).
+
 ### 2026-07-23 — Session 33
 
 **Block / Task**: Block 2 — Domain Model (exit criterion validated end-to-end; block closed, tag `block-2-complete`)
