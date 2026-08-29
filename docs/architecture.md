@@ -217,6 +217,63 @@ sequenceDiagram
     B-->>A: User info
 ```
 
+### Session lifetimes
+
+A successful login creates **two independent sessions**, each with its own
+cookie on its own origin. Confusing them is the usual source of "why am I
+still logged in / already logged out?" questions.
+
+| | Application session | Keycloak SSO session |
+|---|---|---|
+| Stored in | `SPRING_SESSION` (PostgreSQL) | Keycloak's own store |
+| Cookie | `SESSION`, on the backend origin | `KEYCLOAK_IDENTITY`, on the Keycloak origin |
+| Means | "this browser is logged in to Pecunia" | "this browser authenticated to Keycloak" |
+| Refreshed by | every request to Pecunia | every interaction **with Keycloak** |
+
+The second row of "refreshed by" is the subtle part: **browsing Pecunia does
+not refresh the Keycloak session**. The two clocks run independently.
+
+Four durations govern the whole flow:
+
+| Duration | Value | Where it is set | What it controls |
+|---|---|---|---|
+| Application session idle | **8 h** | `server.servlet.session.timeout` | How long a user stays logged in to Pecunia. Each authenticated request pushes the deadline back (`last_access_time`). On expiry the row is deleted by the cleanup job, the cookie matches nothing, and the request gets a 401 that the Angular interceptor turns into a redirect to Keycloak. |
+| Keycloak SSO idle | 30 min | Keycloak default (not set in the realm) | How long Keycloak remembers the authentication for *Single Sign-On*. Only useful with several clients in the realm. |
+| Keycloak SSO max | 10 h | Keycloak default (not set in the realm) | Absolute ceiling regardless of activity: re-authentication is forced even for a continuously active user. |
+| Access token lifespan | 15 min | `accessTokenLifespan` in `pecunia-realm.json` | Validity of the JWT Keycloak issues. Under the BFF pattern it is kept **server-side** in the application session and never reaches the browser. |
+
+Two consequences follow, both deliberate:
+
+- **The application session is the only duration that matters today.** The
+  realm holds a single client (`pecunia-bff`), so the SSO session grants no
+  silent re-authentication to anyone — when the application session finally
+  expires, the user re-enters credentials rather than being waved through.
+  The access token is likewise dormant: `/api/me` reads identity from the
+  session, and no outbound call is made on the user's behalf, so its 15-minute
+  expiry has no observable effect. That would change if Pecunia ever called an
+  external API as the user, since refreshing the token depends on the Keycloak
+  session still being alive.
+- **The 8-hour application session deliberately outlives the 30-minute SSO
+  session.** This decoupling is normal for a BFF and was weighed explicitly:
+  Pecunia is a daily-use personal tool on a personal device, and the session
+  cookie is `HttpOnly`. The value is worth revisiting when the production
+  instance goes public alongside the `demo` user.
+
+A concrete timeline — login at 09:00, one click at 09:20, then a lunch break:
+
+```
+09:00  login         app → 09:30 (later 17:00)   SSO idle → 09:30   token → 09:15
+09:20  a click       app → 09:50                 SSO idle → 09:30 (unchanged!)
+09:15  ───────────   token expires. No effect: nothing consumes it.
+09:30  ───────────   Keycloak forgets. No effect: the app session stands.
+09:50  ───────────   app session would expire here at the old 30 min default
+                     → 401 → redirect → Keycloak no longer knows the user
+                     → login form
+```
+
+With the 8-hour timeout the fourth line moves to 17:00, and the first three
+events remain just as inconsequential.
+
 ### Why BFF instead of SPA + JWT
 
 - **Tokens never reach the browser**: no risk of XSS exfiltrating access tokens.
@@ -395,11 +452,9 @@ PostgreSQL 18 is the single primary datastore for Pecunia.
   withhold the cookie on the redirect back from Keycloak and break the
   OIDC login.
 - **Session timeout**: 8 hours of inactivity, set explicitly via
-  `server.servlet.session.timeout`. Keycloak's SSO session is a separate,
-  shorter clock (30 min idle by default) that Pecunia requests do not
-  refresh; with a single client in the realm it provides no silent
-  re-authentication, so the application session alone governs how long a
-  user stays logged in.
+  `server.servlet.session.timeout`. See
+  [Session lifetimes](#session-lifetimes) for how this clock relates to
+  Keycloak's own, shorter one and to the access token.
 
 ## camt.053 Import
 
