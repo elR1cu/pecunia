@@ -41,14 +41,14 @@
         <!-- Generated code excluded from all analysis (OpenAPI client + MapStruct *Impl under target/generated-sources). -->
         <sonar.exclusions>**/generated-sources/**</sonar.exclusions>
         <!-- Excluded from the coverage metric only: the bootstrap class, declarative
-             config beans (Spring Security filter chain, Redis session), thin
+             config beans (Spring Security filter chain), thin
              infrastructure adapters that only delegate to a library (the UUID v7
              generator), and JPA entities (data holders exercised by integration tests,
              which JaCoCo cannot attribute through the Hibernate proxy) — see the testing
              policy in CLAUDE.md ("no target on infrastructure adapters"). Security/
              behavioural logic (log masking, logout strategy, OIDC provisioning) and
              domain/kernel value objects are deliberately NOT excluded and unit-tested. -->
-        <sonar.coverage.exclusions>**/PecuniaApplication.java,**/SecurityConfig.java,**/SwaggerSecurityConfig.java,**/RedisSessionConfig.java,**/Uuidv7IdGenerator.java,**/*Entity.java</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/PecuniaApplication.java,**/SecurityConfig.java,**/SwaggerSecurityConfig.java,**/Uuidv7IdGenerator.java,**/*Entity.java</sonar.coverage.exclusions>
     </properties>
 
     <dependencyManagement>
@@ -126,7 +126,7 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-session-data-redis</artifactId>
+            <artifactId>spring-boot-starter-session-jdbc</artifactId>
         </dependency>
 
         <!-- Observability: Spring Boot 4 OpenTelemetry starter. Bundles Micrometer Tracing,

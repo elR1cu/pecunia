@@ -181,8 +181,8 @@ When the user asks for advice on a choice with multiple options:
 
 - **PostgreSQL 17**
 - **HTTP sessions in PostgreSQL** via `spring-session-jdbc` (ADR-0038;
-  replaces Redis, which currently remains in the code until the migration
-  PR lands — reintroduction trigger documented in roadmap.md)
+  replaced Redis, whose reintroduction trigger is documented in
+  roadmap.md)
 - Spring `ApplicationEventPublisher` for domain events (port/adapter
   design allows future migration to Kafka without domain change)
 

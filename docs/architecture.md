@@ -378,8 +378,9 @@ PostgreSQL 18 is the single primary datastore for Pecunia.
 
 - **Spring Session JDBC** stores HTTP sessions in PostgreSQL
   ([ADR-0038](adr/0038-postgresql-session-storage.md), superseding the
-  original Redis choice; the migration from
-  `spring-session-data-redis` is a pending PR). With a single
+  original Redis choice). The `SPRING_SESSION` schema is owned by Flyway
+  (`V5__spring_sessions.sql`), not by Spring Session's own initializer.
+  With a single
   application instance, session *persistence* is the requirement, and
   PostgreSQL — already deployed, backed up, and secured — provides it
   without an extra service.
@@ -461,8 +462,7 @@ separate codebase.
 ### Local development
 
 - Starting `PecuniaApplication` (from IntelliJ or `mvn -f apps/api/pom.xml spring-boot:run`
-  at the repository root) auto-starts PostgreSQL and Keycloak (plus
-  Redis, until the ADR-0038 session migration lands) through
+  at the repository root) auto-starts PostgreSQL and Keycloak through
   `spring-boot-docker-compose` —
   see [ADR-0020](adr/0020-spring-boot-docker-compose-for-local-dev.md).
 - **Spring Boot DevTools** triggers an automatic application restart on

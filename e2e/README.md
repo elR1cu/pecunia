@@ -1,7 +1,7 @@
 # End-to-End Tests (Playwright)
 
 System-level tests that drive a real browser against the full Pecunia stack
-(Angular dev server → BFF backend → Keycloak / Postgres / Redis). They live
+(Angular dev server → BFF backend → Keycloak / Postgres). They live
 here, at the repository root, rather than under `apps/frontend`, because they
 exercise the whole system rather than the Angular app in isolation.
 
@@ -27,7 +27,7 @@ is the hard part. For now the suite runs locally, on demand.
 1. **The full dev stack must already be running** (see `docs/dev-setup.md`):
    - Backend, from the repository root:
      `mvn -f apps/api/pom.xml spring-boot:run`
-     (auto-starts Postgres, Keycloak and Redis via `spring-boot-docker-compose`).
+     (auto-starts Postgres and Keycloak via `spring-boot-docker-compose`).
    - Frontend: `cd apps/frontend && npm start` (serves http://localhost:4200).
 2. **Node 24**: `nvm use`.
 3. **Install dependencies and the browser binary**:

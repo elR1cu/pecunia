@@ -23,14 +23,11 @@ spring:
       file: deploy/docker-compose/docker-compose.dev.yml
       lifecycle-management: start-only
 
-  data:
-    redis:
-      host: localhost
-      port: 6379
-
   session:
-    redis:
-      namespace: pecunia:session
+    jdbc:
+      # Flyway owns the schema (V5__spring_sessions.sql), as it does for every
+      # other table. Spring Session must never run its own DDL. See ADR-0038.
+      initialize-schema: never
 
   security:
     oauth2:
@@ -64,7 +61,7 @@ management:
         # Adds /actuator/health/liveness and /actuator/health/readiness for K8s probes.
         enabled: true
       # Anonymous callers see only the overall status; authenticated callers
-      # also see component details (datasource, Redis, ...).
+      # also see component details (datasource, ...).
       show-details: when-authorized
   tracing:
     sampling:

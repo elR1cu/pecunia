@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 // The suite runs against an already-running local dev stack: the backend on
-// :8080 (which auto-starts Postgres/Keycloak/Redis via spring-boot-docker-
+// :8080 (which auto-starts Postgres/Keycloak via spring-boot-docker-
 // compose) and the Angular dev server on :4200 (proxying /api, /oauth2,
 // /login, /logout to the backend). See README.md.
 //
