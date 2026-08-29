@@ -380,16 +380,26 @@ PostgreSQL 18 is the single primary datastore for Pecunia.
   ([ADR-0038](adr/0038-postgresql-session-storage.md), superseding the
   original Redis choice). The `SPRING_SESSION` schema is owned by Flyway
   (`V5__spring_sessions.sql`), not by Spring Session's own initializer.
-  With a single
-  application instance, session *persistence* is the requirement, and
-  PostgreSQL — already deployed, backed up, and secured — provides it
-  without an extra service.
+  With a single application instance, session *persistence* is the
+  requirement, and PostgreSQL — already deployed, backed up, and secured
+  — provides it without an extra service.
 - **Redis remains the future target for multi-instance topologies**
   (shared session store, caching, distributed rate limiting); the
   reintroduction trigger is documented in
   [`roadmap.md`](roadmap.md) ("Technology Adoption Triggers").
-- **Session cookie**: `HttpOnly`, `Secure`, `SameSite=Strict`.
-- **Session timeout**: 8 hours of inactivity (configurable).
+- **Session cookie**: `HttpOnly` (unreachable from JavaScript),
+  `SameSite=Lax`, and `Secure` whenever the request is served over TLS —
+  Spring Session's `DefaultCookieSerializer` derives that flag from the
+  request, so it is set in production and omitted on plain-HTTP local
+  development. `SameSite=Strict` is deliberately **not** used: it would
+  withhold the cookie on the redirect back from Keycloak and break the
+  OIDC login.
+- **Session timeout**: 8 hours of inactivity, set explicitly via
+  `server.servlet.session.timeout`. Keycloak's SSO session is a separate,
+  shorter clock (30 min idle by default) that Pecunia requests do not
+  refresh; with a single client in the realm it provides no silent
+  re-authentication, so the application session alone governs how long a
+  user stays logged in.
 
 ## camt.053 Import
 
