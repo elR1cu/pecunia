@@ -86,6 +86,13 @@ flavor:
 
 ![Infomaniak Public Cloud calculator, 2026-08-29](assets/0035-infomaniak-calculator-2026-08-29.png)
 
+The estimate is also reachable live:
+[calculator estimate `be4bfa39`](https://www.infomaniak.com/fr/hebergement/public-cloud/calculateur?uuid=be4bfa39-7b6c-4170-81eb-54f7b43d0200)
+(public, no login). Both are kept on purpose: the link restores the
+*configuration* and will always show the tariffs of the day it is opened,
+so only the dated screenshot evidences what the price actually was when
+this decision was taken.
+
 Two corrections to the July analysis follow from this:
 
 - **The estimate was low by roughly 50 %.** ~€14.50/month became CHF 19.43
