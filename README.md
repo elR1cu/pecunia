@@ -63,8 +63,8 @@ _TODO: screenshots will be added at the end of Block 4 (dashboard + transactions
   pattern matching, virtual threads)
 - **Spring Boot 4** with Spring Security 7 (OAuth2 Client / BFF pattern)
 - **Spring Data JPA** with Hibernate
-- **PostgreSQL 18** as the primary datastore
-- **Redis** for distributed session storage (BFF pattern)
+- **PostgreSQL 18** as the primary datastore, including HTTP session storage
+  via `spring-session-jdbc` (BFF pattern)
 - **Flyway** for database migrations
 - **MapStruct** for type-safe object mapping
 - **JUnit 6**, **AssertJ**, **Mockito**, **Testcontainers** for testing
@@ -121,7 +121,7 @@ _TODO: Mermaid diagram will be added in `docs/architecture.md` and embedded here
   typed Angular client.
 - **BFF authentication**: no tokens leak to the browser. The Angular SPA talks
   to the Spring Boot backend over a session cookie; the backend handles the
-  OIDC flow with Keycloak and stores tokens in a Redis-backed session.
+  OIDC flow with Keycloak and stores tokens in a PostgreSQL-backed session.
 - **Domain events via a port**: business events are published through a
   `DomainEventPublisher` port, implemented today by Spring's
   `ApplicationEventPublisher`. The port is designed to swap in a Kafka adapter
@@ -176,8 +176,8 @@ pecunia/
 
 ### Local development
 
-The backend uses `spring-boot-docker-compose` to start PostgreSQL, Keycloak
-and Redis automatically — no manual `docker compose up` is required.
+The backend uses `spring-boot-docker-compose` to start PostgreSQL and
+Keycloak automatically — no manual `docker compose up` is required.
 
 ```bash
 # 1. Clone

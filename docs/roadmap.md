@@ -150,9 +150,11 @@ sequence. Having a live URL early enables the CV value to materialize
 quickly.
 
 **Deliverables**:
-- Pre-step: replace Redis session storage with `spring-session-jdbc`
+- ~~Pre-step: replace Redis session storage with `spring-session-jdbc`
   (PostgreSQL), removing Redis from the stack (ADR-0038), so the
-  production topology is final before the compose file is written.
+  production topology is final before the compose file is written.~~
+  **Done** — the production topology is now app + PostgreSQL + Keycloak
+  + reverse proxy.
 - VM provisioned on **Infomaniak Public Cloud** (`a4-ram8-disk50-perf1`,
   ADR-0035) with **OpenTofu** through the OpenStack provider, client-side
   state encryption enabled (ADR-0036).
@@ -184,7 +186,7 @@ quickly.
     released artifacts against future CVEs (e.g. via Dependency-Track). May
     warrant a short ADR.
   - Add Dependabot's `docker` ecosystem for the production compose/Dockerfile
-    image tags (postgres, keycloak, redis).
+    image tags (postgres, keycloak).
 - Basic Ansible playbook for VPS provisioning (Docker installation,
   firewall, fail2ban, automatic security updates).
 - Updated README with the live URL and a short demo description.

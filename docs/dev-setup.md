@@ -12,7 +12,7 @@ those parts of the project land.
 - **Docker Desktop** running. Verify with `docker info`.
 - A Git client and a JVM-capable IDE (IntelliJ IDEA recommended).
 
-The infrastructure stack (PostgreSQL, Keycloak, Redis) does **not** need to
+The infrastructure stack (PostgreSQL, Keycloak) does **not** need to
 be started by hand — it is started automatically by Spring Boot's
 `spring-boot-docker-compose` integration. See
 [ADR-0020](adr/0020-spring-boot-docker-compose-for-local-dev.md) for the
@@ -75,8 +75,6 @@ When the backend boots:
   `JdbcConnectionDetails` bean that **overrides** `spring.datasource.{url,
   username, password}` in `application.yml`. The YAML values are kept as
   documentation and as a fallback when the module is disabled.
-- For **Redis**, same mechanism: `spring.data.redis.{host,port}` are
-  overridden by an auto-detected connection.
 - For **Keycloak**: no built-in `ConnectionDetails` factory exists in
   Spring Boot 4, so the container is started but the OAuth2 configuration
   (`spring.security.oauth2.client…issuer-uri`) is kept as written in
@@ -156,10 +154,13 @@ open http://localhost:9090/realms/pecunia/.well-known/openid-configuration
 
 - **Reset Postgres and Keycloak to a clean slate**: same command with
   `down -v` (also deletes the named volumes).
-- **Inspect Redis sessions** (after logging in via the BFF):
+- **Inspect sessions** (after logging in via the BFF). Sessions live in
+  PostgreSQL since [ADR-0038](adr/0038-postgresql-session-storage.md):
 
   ```bash
-  docker exec -it $(docker ps -qf name=redis) redis-cli KEYS 'pecunia:session:*'
+  docker exec -it $(docker ps -qf name=postgres) \
+    psql -U pecunia -d pecunia \
+    -c "SELECT session_id, principal_name, to_timestamp(expiry_time / 1000) AS expires_at FROM spring_session;"
   ```
 
 ## Troubleshooting
@@ -180,11 +181,11 @@ The `.env` file is missing or unreachable. Confirm:
 **`Cannot connect to the Docker daemon` / `error during connect`**
 Docker Desktop is not running. Start it and retry.
 
-**Port already in use (`5432`, `6379`, `9090`)**
+**Port already in use (`5432`, `9090`)**
 Another service is bound to that port. Either stop it or change the
 host-side port mapping in `deploy/docker-compose/docker-compose.dev.yml`.
-Note that PostgreSQL and Redis ports are also referenced in
-`application.yml` (as a fallback) and would need to be aligned.
+Note that the PostgreSQL port is also referenced in `application.yml`
+(as a fallback) and would need to be aligned.
 
 **Keycloak realm not present after login attempt**
 The realm import only runs on **first** Keycloak startup. To force a
@@ -202,5 +203,6 @@ Keycloak database, then start the backend again.
 
 - [ADR-0020: `spring-boot-docker-compose` for local development](adr/0020-spring-boot-docker-compose-for-local-dev.md)
 - [ADR-0006: BFF authentication pattern](adr/0006-bff-authentication-pattern.md)
-- [ADR-0011: Redis for session storage](adr/0011-redis-for-session-storage.md)
+- [ADR-0038: PostgreSQL session storage](adr/0038-postgresql-session-storage.md)
+  (supersedes [ADR-0011](adr/0011-redis-for-session-storage.md))
 - [Spring Boot reference — Docker Compose support](https://docs.spring.io/spring-boot/reference/features/dev-services.html#features.dev-services.docker-compose)
