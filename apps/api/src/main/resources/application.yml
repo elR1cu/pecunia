@@ -47,6 +47,17 @@ spring:
 server:
   port: 8080
   shutdown: graceful
+  servlet:
+    session:
+      # Applied by Spring Session to newly created sessions (stored as
+      # max_inactive_interval in SPRING_SESSION). Deliberately long: Pecunia is a
+      # daily-use personal tool on a personal device, and the session cookie is
+      # HttpOnly, so it is out of reach of injected scripts. Keycloak's own SSO
+      # session is independent and shorter (30 min idle by default) -- with a
+      # single client in the realm it grants no silent re-authentication, so this
+      # value alone governs how long a user stays logged in. Worth revisiting when
+      # the production instance goes public. See architecture.md "Sessions".
+      timeout: 8h
 
 management:
   # Actuator exposure & security policy: see ADR-0021.
