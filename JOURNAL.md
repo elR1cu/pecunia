@@ -40,6 +40,42 @@ Each entry follows this structure:
 
 ---
 
+### 2026-08-29 — Session 35
+
+**Block / Task**: Block 8 — Production Deployment (pre-step executed; three PRs merged)
+
+**Done**:
+- Migrated HTTP sessions from Redis to PostgreSQL (`spring-session-jdbc`,                                                                                                                                                                                                                                                                              
+  PR #71): `V5__spring_sessions.sql` copied verbatim from the resolved jar,                                                                                                                                                                                                                                                                            
+  Flyway kept sole owner of the schema, `RedisSessionConfig` and the Redis                                                                                                                                                                                                                                                                             
+  compose service removed. Production topology is now app + PostgreSQL +                                                                                                                                                                                                                                                                               
+  Keycloak + reverse proxy.
+- Validated it for real rather than by inspection: Keycloak login, session                                                                                                                                                                                                                                                                             
+  row with the serialized security context in `spring_session`, and                                                                                                                                                                                                                                                                                    
+  `/api/me` still returning 200 with the pre-restart cookie on a fresh JVM.
+- Fixed two claims `architecture.md` made but nothing enforced (PR #72):                                                                                                                                                                                                                                                                               
+  the session timeout was the 1800 s default rather than the documented 8 h,                                                                                                                                                                                                                                                                           
+  and the cookie is `SameSite=Lax`, not `Strict` — which would in fact break                                                                                                                                                                                                                                                                           
+  the OIDC login. Added a "Session lifetimes" section explaining the two                                                                                                                                                                                                                                                                               
+  independent clocks and the four durations.
+- Added `ApplicationContextSmokeTest`, the module's first `@SpringBootTest`:                                                                                                                                                                                                                                                                           
+  nothing previously verified that the beans wire together, so both                                                                                                                                                                                                                                                                                    
+  migrations could only be checked by hand.
+- Confirmed the Infomaniak price in CHF (PR #73): **CHF 19.43/month excl.                                                                                                                                                                                                                                                                              
+  VAT** (CHF 16.09 instance + CHF 3.34 reserved IPv4), ~50 % above the July                                                                                                                                                                                                                                                                            
+  EUR estimate, almost entirely the IPv4 no aggregator listed. Decision                                                                                                                                                                                                                                                                                
+  unaffected; ADR-0035 updated with a dated screenshot and the live link.
+
+**Next**:
+- First OpenTofu root module, with `prevent_destroy` on the instance from                                                                                                                                                                                                                                                                              
+  the start — the 50 GB disk shares its lifecycle, so a replacement would                                                                                                                                                                                                                                                                              
+  destroy PostgreSQL.
+- SOPS + age bootstrap once the first real secret exists.
+- Small `fix(deps)` PR: four transitive npm advisories, plus a decision on                                                                                                                                                                                                                                                                             
+  the frontend bundle budget (527 kB against a 500 kB warning threshold).
+
+See [detailed recap](docs/session-recaps/2026-08/2026-08-29-session-35.md).
+
 ### 2026-07-25 — Session 34
 
 **Block / Task**: Block 8 preparation — deployment platform decisions (paper only, no code)
